@@ -1,4 +1,4 @@
-
+//this shit
 public class Node {
 		private int value;//the value of the node	
 		private Node nextNode;//the next node on the list
