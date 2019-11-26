@@ -1,4 +1,4 @@
-//this shit
+
 public class Node {
 		private int value;//the value of the node	
 		private Node nextNode;//the next node on the list
@@ -19,7 +19,5 @@ public class Node {
 			public void setValue(int value) {
 				this.value = value;
 			}
-	//fefd f dgrebervf
 		
 }
-//231313123
