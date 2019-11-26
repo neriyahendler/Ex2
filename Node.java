@@ -6,7 +6,7 @@ public class Node {
 		{
 			this.setValue(0);
 			this.setNext(null);
-		}// class Node constructor
+		}// //default constructor
 		public void setNext(Node nextNode){
 			this.nextNode = nextNode;
 		}// class node set
@@ -15,9 +15,9 @@ public class Node {
 		}// class node get
 			public int getValue() {
 				return value;
-			}
+			}//class node get
 			public void setValue(int value) {
 				this.value = value;
-			}
+			}//class node set
 		
 }
