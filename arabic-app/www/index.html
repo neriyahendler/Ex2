@@ -349,11 +349,11 @@
 </div>
 
 <div class="nav-tabs">
-  <div class="nav-tab active" onclick="showScreen('categories')">📚 אוצר מילים</div>
-  <div class="nav-tab" onclick="showScreen('phrases')">💬 ביטויים</div>
-  <div class="nav-tab" onclick="showScreen('flashcards')">🃏 כרטיסיות</div>
-  <div class="nav-tab" onclick="showScreen('quiz')">❓ חידון</div>
-  <div class="nav-tab" onclick="showScreen('stats')">📊 התקדמות</div>
+  <div class="nav-tab active" onclick="showScreen('categories',this)">📚 אוצר מילים</div>
+  <div class="nav-tab" onclick="showScreen('phrases',this)">💬 ביטויים</div>
+  <div class="nav-tab" onclick="showScreen('flashcards',this)">🃏 כרטיסיות</div>
+  <div class="nav-tab" onclick="showScreen('quiz',this)">❓ חידון</div>
+  <div class="nav-tab" onclick="showScreen('stats',this)">📊 התקדמות</div>
 </div>
 
 <!-- VOCABULARY SCREEN -->
@@ -678,27 +678,33 @@ let fcFlipped = false;
 let fcSelectedCats = new Set(categories.map(c => c.id));
 let quizScore = 0;
 let quizTotal = 0;
-let stats = JSON.parse(localStorage.getItem('arabicStats') || '{"words":0,"correct":0,"streak":0,"total":0,"lastVisit":"","mastered":[]}');
+let stats = {words:0,correct:0,streak:0,total:0,lastVisit:"",mastered:[]};
+try {
+  const saved = localStorage.getItem('arabicStats');
+  if (saved) stats = JSON.parse(saved);
+} catch(e) {}
 
-function saveStats() { localStorage.setItem('arabicStats', JSON.stringify(stats)); }
+function saveStats() { try { localStorage.setItem('arabicStats', JSON.stringify(stats)); } catch(e) {} }
 
 // Count visits
-const today = new Date().toDateString();
-if (stats.lastVisit !== today) {
-  stats.total++;
-  const yesterday = new Date(Date.now() - 86400000).toDateString();
-  if (stats.lastVisit === yesterday) stats.streak++;
-  else if (stats.lastVisit !== today) stats.streak = 1;
-  stats.lastVisit = today;
-  saveStats();
-}
+try {
+  const today = new Date().toDateString();
+  if (stats.lastVisit !== today) {
+    stats.total++;
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (stats.lastVisit === yesterday) stats.streak++;
+    else stats.streak = 1;
+    stats.lastVisit = today;
+    saveStats();
+  }
+} catch(e) {}
 
 // ===== NAVIGATION =====
-function showScreen(id) {
+function showScreen(id, el) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
-  event.target.classList.add('active');
+  if (el) el.classList.add('active');
   if (id === 'stats') renderStats();
   if (id === 'phrases') renderPhrases();
   if (id === 'flashcards') renderFCCategories();
@@ -933,8 +939,15 @@ function renderStats() {
 }
 
 // ===== INIT =====
-renderCategories();
-renderPhrases();
+document.addEventListener('DOMContentLoaded', function() {
+  try { renderCategories(); } catch(e) { console.error('renderCategories:', e); }
+  try { renderPhrases(); } catch(e) { console.error('renderPhrases:', e); }
+});
+// fallback if DOMContentLoaded already fired
+if (document.readyState !== 'loading') {
+  try { renderCategories(); } catch(e) {}
+  try { renderPhrases(); } catch(e) {}
+}
 </script>
 </body>
 </html>
