@@ -117,19 +117,12 @@
       transition: background 0.15s;
     }
     .word-card:active { background: #e8f5e9; }
-    .word-arabic {
-      font-size: 1.6rem;
+    .word-arabic { display: none; }
+    .word-phonetic {
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--primary-dark);
-      direction: rtl;
-      text-align: right;
       margin-bottom: 4px;
-    }
-    .word-phonetic {
-      font-size: 1rem;
-      color: var(--accent);
-      font-weight: 600;
-      margin-bottom: 3px;
     }
     .word-hebrew {
       font-size: 0.9rem;
@@ -147,7 +140,7 @@
       color: var(--text);
       margin-top: 6px;
     }
-    .word-example .ar { color: var(--primary-dark); font-size: 1rem; direction: rtl; }
+    .word-example .ar { display: none; }
     .word-example .ph { color: var(--accent); font-size: 0.85rem; }
     .word-example .he { color: var(--text-muted); font-size: 0.82rem; }
     /* Flashcard screen */
@@ -186,21 +179,15 @@
     }
     .flashcard:active { transform: scale(0.98); }
     .flashcard .hint { font-size: 0.75rem; color: var(--text-muted); position: absolute; bottom: 14px; }
-    .flashcard .fc-arabic {
-      font-size: 2.2rem;
+    .flashcard .fc-arabic { display: none; }
+    .flashcard .fc-phonetic {
+      font-size: 2rem;
       font-weight: 700;
       color: var(--primary-dark);
       margin-bottom: 10px;
-      direction: rtl;
-    }
-    .flashcard .fc-phonetic {
-      font-size: 1.3rem;
-      color: var(--accent);
-      font-weight: 600;
-      margin-bottom: 8px;
     }
     .flashcard .fc-hebrew {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: var(--text-muted);
       display: none;
     }
@@ -287,8 +274,8 @@
       margin-bottom: 10px;
       box-shadow: var(--shadow);
     }
-    .phrase-arabic { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); direction: rtl; text-align: right; }
-    .phrase-phonetic { font-size: 1rem; color: var(--accent); font-weight: 600; margin-top: 4px; }
+    .phrase-arabic { display: none; }
+    .phrase-phonetic { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-top: 0; }
     .phrase-hebrew { font-size: 0.9rem; color: var(--text-muted); margin-top: 3px; }
     .phrase-tag {
       display: inline-block;
@@ -431,8 +418,8 @@
     <div class="progress-text" id="fcProgressText">0 / 0</div>
     <div class="flashcard" id="flashcard" onclick="flipCard()">
       <span class="fc-category" id="fcCategory"></span>
-      <div class="fc-arabic" id="fcArabic">לחץ על התחל</div>
-      <div class="fc-phonetic" id="fcPhonetic"></div>
+      <div class="fc-arabic" id="fcArabic"></div>
+      <div class="fc-phonetic" id="fcPhonetic">לחץ על התחל</div>
       <div class="fc-hebrew" id="fcHebrew"></div>
       <button class="speak-btn" id="fcSpeakBtn" onclick="speakCurrentFC(event)" style="position:absolute;top:10px;left:10px;font-size:1.5rem;display:none">🔊</button>
       <span class="hint">לחץ לגלות תרגום</span>
@@ -724,6 +711,7 @@ let filteredWords = [];
 let fcDeck = [];
 let fcIndex = 0;
 let fcFlipped = false;
+let currentFCWord = null;
 let fcSelectedCats = new Set(categories.map(c => c.id));
 let quizScore = 0;
 let quizTotal = 0;
@@ -819,8 +807,7 @@ function speakArabic(text, e) {
 }
 
 function speakCurrentFC(e) {
-  const txt = document.getElementById('fcArabic').textContent;
-  speakArabic(txt, e);
+  if (currentFCWord) speakArabic(currentFCWord.ar, e);
 }
 
 function speakCurrentQuiz(e) {
@@ -973,21 +960,22 @@ function startFlashcards() {
 
 function showFCCard() {
   if (fcIndex >= fcDeck.length) {
-    document.getElementById('fcArabic').textContent = '🎉 סיימת!';
-    document.getElementById('fcPhonetic').textContent = 'לחץ התחל לסבב חדש';
-    document.getElementById('fcHebrew').textContent = '';
+    document.getElementById('fcPhonetic').textContent = '🎉 סיימת!';
+    document.getElementById('fcHebrew').textContent = 'לחץ התחל לסבב חדש';
     document.getElementById('fcSpeakBtn').style.display = 'none';
     document.getElementById('btnWrong').style.display = 'none';
     document.getElementById('btnRight').style.display = 'none';
     document.getElementById('btnStart').style.display = 'block';
     document.getElementById('btnStart').textContent = '🔄 סבב חדש';
+    document.getElementById('flashcard').classList.add('flipped');
+    currentFCWord = null;
     return;
   }
   fcFlipped = false;
   const card = fcDeck[fcIndex];
+  currentFCWord = card;
   const cat = categories.find(c => c.id === card.cat);
   document.getElementById('fcCategory').textContent = cat.emoji + ' ' + cat.name;
-  document.getElementById('fcArabic').textContent = card.ar;
   document.getElementById('fcPhonetic').textContent = card.ph;
   document.getElementById('fcHebrew').textContent = card.he;
   document.getElementById('fcSpeakBtn').style.display = 'block';
@@ -1033,19 +1021,16 @@ function startQuiz() {
   const wrong = vocabulary.filter(w => w.id !== correct.id).sort(() => Math.random()-0.5).slice(0, 3);
   const options = [...wrong, correct].sort(() => Math.random() - 0.5);
 
-  const types = ['arToHe', 'heToAr', 'phToHe'];
-  const type = types[Math.floor(Math.random() * types.length)];
+  // Only spoken-relevant types: phonetic→meaning or Hebrew→phonetic
+  const type = Math.random() < 0.6 ? 'phToHe' : 'heToPh';
 
   let q, sub, hint, optionsFn, showSpeak;
-  if (type === 'arToHe') {
-    q = correct.ar; sub = correct.ph; hint = 'מה המשמעות?';
+  if (type === 'phToHe') {
+    q = correct.ph; sub = ''; hint = 'מה המשמעות בעברית?';
     optionsFn = o => o.he; quizAnswer = correct.he; showSpeak = true;
-  } else if (type === 'heToAr') {
-    q = correct.he; sub = ''; hint = 'מה הכתיב הערבי?';
-    optionsFn = o => o.ar; quizAnswer = correct.ar; showSpeak = false;
   } else {
-    q = correct.ph; sub = correct.ar; hint = 'מה המשמעות? (תעתיק)';
-    optionsFn = o => o.he; quizAnswer = correct.he; showSpeak = true;
+    q = correct.he; sub = ''; hint = 'כיצד אומרים בערבית?';
+    optionsFn = o => o.ph; quizAnswer = correct.ph; showSpeak = true;
   }
 
   document.getElementById('quizQ').textContent = q;
