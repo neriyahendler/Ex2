@@ -352,6 +352,16 @@
     /* Category progress bar */
     .cat-progress { height: 4px; background: var(--border); border-radius: 4px; margin-top: 7px; overflow: hidden; }
     .cat-progress-fill { height: 100%; background: var(--primary); border-radius: 4px; }
+    .cat-locked { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .locked-notice {
+      text-align: center;
+      padding: 16px 12px;
+      margin-top: 8px;
+      border: 1.5px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
     /* Quiz live level */
     .quiz-level-live {
       text-align: center; margin-bottom: 10px; padding: 8px 16px;
@@ -468,203 +478,418 @@
 <script>
 // ===== DATA =====
 const categories = [
-  { id: 'greetings', name: 'ברכות', emoji: '👋' },
-  { id: 'numbers', name: 'מספרים', emoji: '🔢' },
-  { id: 'family', name: 'משפחה', emoji: '👨‍👩‍👧' },
-  { id: 'food', name: 'אוכל ושתייה', emoji: '🍽️' },
-  { id: 'colors', name: 'צבעים', emoji: '🎨' },
-  { id: 'time', name: 'זמן', emoji: '⏰' },
-  { id: 'body', name: 'גוף', emoji: '🧍' },
-  { id: 'home', name: 'בית', emoji: '🏠' },
-  { id: 'market', name: 'שוק וקניות', emoji: '🛒' },
-  { id: 'directions', name: 'כיוונים', emoji: '🗺️' },
-  { id: 'feelings', name: 'רגשות', emoji: '😊' },
-  { id: 'nature', name: 'טבע', emoji: '🌿' },
-  { id: 'transport', name: 'תחבורה', emoji: '🚌' },
-  { id: 'work', name: 'עבודה', emoji: '💼' },
+  { id: 'greetings',  name: 'ברכות',       emoji: '👋' },
+  { id: 'numbers',    name: 'מספרים',      emoji: '🔢' },
+  { id: 'family',     name: 'משפחה',       emoji: '👨‍👩‍👧' },
+  { id: 'food',       name: 'אוכל ושתייה', emoji: '🍽️' },
+  { id: 'colors',     name: 'צבעים',       emoji: '🎨' },
+  { id: 'time',       name: 'זמן',         emoji: '⏰' },
+  { id: 'body',       name: 'גוף',         emoji: '🧍' },
+  { id: 'home',       name: 'בית',         emoji: '🏠' },
+  { id: 'market',     name: 'שוק וקניות',  emoji: '🛒' },
+  { id: 'directions', name: 'כיוונים',     emoji: '🗺️' },
+  { id: 'feelings',   name: 'רגשות',       emoji: '😊' },
+  { id: 'nature',     name: 'טבע',         emoji: '🌿' },
+  { id: 'transport',  name: 'תחבורה',      emoji: '🚌' },
+  { id: 'work',       name: 'עבודה',       emoji: '💼' },
+  { id: 'verbs',      name: 'פעלים',       emoji: '🏃' },
+  { id: 'adjectives', name: 'תארים',       emoji: '📝' },
+  { id: 'places',     name: 'מקומות',      emoji: '🏙️' },
+  { id: 'clothes',    name: 'בגדים',       emoji: '👕' },
+  { id: 'health',     name: 'בריאות',      emoji: '🏥' },
+  { id: 'weather',    name: 'מזג אוויר',   emoji: '🌤️' },
 ];
 
+const UNLOCK_AT = {1:0, 2:12, 3:30, 4:70, 5:130};
+
+function getUnlockedVocabulary() {
+  const m = getMasteredCount();
+  return vocabulary.filter(w => (UNLOCK_AT[w.lv] || 0) <= m);
+}
+
 const vocabulary = [
-  // Greetings
-  {id:'g1',cat:'greetings',ar:'مرحبا',ph:"מרחבא",he:'שלום / ברוך הבא',ex:[{ar:'مرحبا، كيف حالك؟',ph:"מרחבא, כיפ חָאלַק?",he:'שלום, מה שלומך?'}]},
-  {id:'g2',cat:'greetings',ar:'كيف حالك؟',ph:"כיפ חָאלַק?",he:'מה שלומך? (לגבר)',ex:[{ar:'كيف حالك اليوم؟',ph:"כיפ חָאלַק אל-יום?",he:'מה שלומך היום?'}]},
-  {id:'g3',cat:'greetings',ar:'كيف حالك؟',ph:"כיפ חָאלִך?",he:'מה שלומך? (לאישה)',ex:[]},
-  {id:'g4',cat:'greetings',ar:'منيح، شكراً',ph:"מְנִיח, שֻׁקְרַן",he:'בסדר, תודה',ex:[]},
-  {id:'g5',cat:'greetings',ar:'صباح الخير',ph:"צְבָאח אל-חֵיר",he:'בוקר טוב',ex:[{ar:'صباح الخير، كيف حالك؟',ph:"צְבָאח אל-חֵיר, כיפ חָאלַק?",he:'בוקר טוב, מה שלומך?'}]},
-  {id:'g6',cat:'greetings',ar:'صباح النور',ph:"צְבָאח אן-נוּר",he:'בוקר אור (תשובה לבוקר טוב)',ex:[]},
-  {id:'g7',cat:'greetings',ar:'مساء الخير',ph:"מַסָּא אל-חֵיר",he:'ערב טוב',ex:[]},
-  {id:'g8',cat:'greetings',ar:'مع السلامة',ph:"מע אס-סלָאמֶה",he:'להתראות',ex:[]},
-  {id:'g9',cat:'greetings',ar:'يلا باي',ph:"יַלָּה בַּאי",he:'להתראות (מדובר)',ex:[]},
-  {id:'g10',cat:'greetings',ar:'أهلاً وسهلاً',ph:"אַהְלַן וְסַהְלַן",he:'ברוכים הבאים / שמח להכיר',ex:[]},
-  {id:'g11',cat:'greetings',ar:'شو اسمك؟',ph:"שוּ אִסְמַק?",he:'מה שמך?',ex:[{ar:'شو اسمك؟ اسمي أحמד',ph:"שוּ אִסְמַק? אִסְמִי אַחְמַד",he:'מה שמך? שמי אחמד'}]},
-  {id:'g12',cat:'greetings',ar:'من وين أنت؟',ph:"מִן וֵין אַנְתְ?",he:'מאין אתה?',ex:[]},
-  {id:'g13',cat:'greetings',ar:'يلا',ph:"יַלָּה",he:'יאללה (לך, בוא, קדימה)',ex:[]},
-  {id:'g14',cat:'greetings',ar:'إن شاء الله',ph:"אִנְ שָׁא אַלְלָה",he:'אם ירצה השם (אינשאלה)',ex:[]},
-  {id:'g15',cat:'greetings',ar:'الحمد لله',ph:"אַלְחַמְדּוּ לִלָּה",he:'תודה לאל / ברוך השם',ex:[]},
-
-  // Numbers
-  {id:'n1',cat:'numbers',ar:'صفر',ph:"צִפֶר",he:'אפס',ex:[]},
-  {id:'n2',cat:'numbers',ar:'واحد',ph:"וָאחַד",he:'אחד',ex:[]},
-  {id:'n3',cat:'numbers',ar:'اثنين',ph:"אִתְנֵין",he:'שניים',ex:[]},
-  {id:'n4',cat:'numbers',ar:'ثلاثة',ph:"תְּלָאתֶה",he:'שלושה',ex:[]},
-  {id:'n5',cat:'numbers',ar:'أربعة',ph:"אַרְבַּעֶה",he:'ארבעה',ex:[]},
-  {id:'n6',cat:'numbers',ar:'خمسة',ph:"חַמְסֶה",he:'חמישה',ex:[]},
-  {id:'n7',cat:'numbers',ar:'ستة',ph:"סִתֶּה",he:'שישה',ex:[]},
-  {id:'n8',cat:'numbers',ar:'سبعة',ph:"סַבְּעֶה",he:'שבעה',ex:[]},
-  {id:'n9',cat:'numbers',ar:'ثمانية',ph:"תְּמָאנְיֶה",he:'שמונה',ex:[]},
-  {id:'n10',cat:'numbers',ar:'تسعة',ph:"תִּסְעֶה",he:'תשעה',ex:[]},
-  {id:'n11',cat:'numbers',ar:'عشرة',ph:"עַשְׁרֶה",he:'עשרה',ex:[]},
-  {id:'n12',cat:'numbers',ar:'عشرين',ph:"עִשְׁרִין",he:'עשרים',ex:[]},
-  {id:'n13',cat:'numbers',ar:'مية',ph:"מִיֶּה",he:'מאה',ex:[]},
-  {id:'n14',cat:'numbers',ar:'ألف',ph:"אַלְף",he:'אלף',ex:[]},
-  {id:'n15',cat:'numbers',ar:'بكم هذا؟',ph:"בְּכַם הָאדָה?",he:'כמה זה עולה?',ex:[]},
-
-  // Family
-  {id:'f1',cat:'family',ar:'أب',ph:"אַב",he:'אבא',ex:[]},
-  {id:'f2',cat:'family',ar:'أم',ph:"אֻמּ",he:'אמא',ex:[]},
-  {id:'f3',cat:'family',ar:'أخ',ph:"אַח",he:'אח',ex:[]},
-  {id:'f4',cat:'family',ar:'أخت',ph:"אֻחְתּ",he:'אחות',ex:[]},
-  {id:'f5',cat:'family',ar:'ابن',ph:"אִבֶּן",he:'בן',ex:[]},
-  {id:'f6',cat:'family',ar:'بنت',ph:"בִּנְתּ",he:'בת',ex:[]},
-  {id:'f7',cat:'family',ar:'جد',ph:"סִידּ / גַ'ד",he:'סבא',ex:[]},
-  {id:'f8',cat:'family',ar:'تيتا',ph:"תֵּיתָה",he:'סבתא',ex:[]},
-  {id:'f9',cat:'family',ar:'عم',ph:"עַמּ",he:'דוד (מצד אבא)',ex:[]},
-  {id:'f10',cat:'family',ar:'خال',ph:"חָאל",he:'דוד (מצד אמא)',ex:[]},
-  {id:'f11',cat:'family',ar:'عمة',ph:"עַמֶּה",he:'דודה (מצד אבא)',ex:[]},
-  {id:'f12',cat:'family',ar:'زوج',ph:"זוֹג",he:'בעל',ex:[]},
-  {id:'f13',cat:'family',ar:'زوجة',ph:"זוֹגֶ'ה",he:'אישה',ex:[]},
-  {id:'f14',cat:'family',ar:'أصحاب',ph:"אַצְחָאב",he:'חברים',ex:[]},
-  {id:'f15',cat:'family',ar:'صاحب',ph:"צָאחַב",he:'חבר',ex:[]},
-
-  // Food
-  {id:'fo1',cat:'food',ar:'أكل',ph:"אָכַל",he:'אוכל',ex:[]},
-  {id:'fo2',cat:'food',ar:'ماء',ph:"מַיָּה",he:'מים',ex:[]},
-  {id:'fo3',cat:'food',ar:'خبز',ph:"חֻבֶּז",he:'לחם',ex:[]},
-  {id:'fo4',cat:'food',ar:'حمص',ph:"חֻמֻּס",he:'חומוס',ex:[]},
-  {id:'fo5',cat:'food',ar:'فلافل',ph:"פַלָאפֵל",he:'פלאפל',ex:[]},
-  {id:'fo6',cat:'food',ar:'شاي',ph:"שַׁאיֵ",he:'תה',ex:[]},
-  {id:'fo7',cat:'food',ar:'قهوة',ph:"קַהְוֶה",he:'קפה',ex:[]},
-  {id:'fo8',cat:'food',ar:'لحمة',ph:"לַחְמֶה",he:'בשר',ex:[]},
-  {id:'fo9',cat:'food',ar:'دجاج',ph:"דְּ'גָ'אג'",he:'עוף / תרנגול',ex:[]},
-  {id:'fo10',cat:'food',ar:'خضار',ph:"חַ'ְדָּר",he:'ירקות',ex:[]},
-  {id:'fo11',cat:'food',ar:'فواكه',ph:"פַוָּאכֶּה",he:'פירות',ex:[]},
-  {id:'fo12',cat:'food',ar:'تفاح',ph:"תֻפָּאח",he:'תפוח',ex:[]},
-  {id:'fo13',cat:'food',ar:'عيش / أرز',ph:"עֵיש / אֻרֶּז",he:'אורז',ex:[]},
-  {id:'fo14',cat:'food',ar:'ملح',ph:"מִלְח",he:'מלח',ex:[]},
-  {id:'fo15',cat:'food',ar:'سكر',ph:"סֻכַּר",he:'סוכר',ex:[]},
-
-  // Colors
-  {id:'c1',cat:'colors',ar:'أحمر',ph:"אַחְמַר",he:'אדום',ex:[]},
-  {id:'c2',cat:'colors',ar:'أزرق',ph:"אַזְרַק",he:'כחול',ex:[]},
-  {id:'c3',cat:'colors',ar:'أخضر',ph:"אַח'ְצַ'ר",he:'ירוק',ex:[]},
-  {id:'c4',cat:'colors',ar:'أصفر',ph:"אַצְפַר",he:'צהוב',ex:[]},
-  {id:'c5',cat:'colors',ar:'أبيض',ph:"אַבְיַד",he:'לבן',ex:[]},
-  {id:'c6',cat:'colors',ar:'أسود',ph:"אַסְוַד",he:'שחור',ex:[]},
-  {id:'c7',cat:'colors',ar:'برتقالي',ph:"בּוּרְתֻּקָאלִי",he:'כתום',ex:[]},
-  {id:'c8',cat:'colors',ar:'بنفسجي',ph:"בַּנַפְסַ'גִ'י",he:'סגול',ex:[]},
-  {id:'c9',cat:'colors',ar:'وردي',ph:"וַרְדִּי",he:'ורוד',ex:[]},
-  {id:'c10',cat:'colors',ar:'بني',ph:"בּוּנִּי",he:'חום',ex:[]},
-
-  // Time
-  {id:'t1',cat:'time',ar:'اليوم',ph:"אַליוֹם",he:'היום',ex:[]},
-  {id:'t2',cat:'time',ar:'بكرا',ph:"בֻּכְרָה",he:'מחר',ex:[]},
-  {id:'t3',cat:'time',ar:'إمبارح',ph:"אִמְבָּארִח",he:'אתמול',ex:[]},
-  {id:'t4',cat:'time',ar:'هلق',ph:"הַלַּק",he:'עכשיו',ex:[]},
-  {id:'t5',cat:'time',ar:'بعدين',ph:"בַּעְדֵּין",he:'אחר כך',ex:[]},
-  {id:'t6',cat:'time',ar:'قبل',ph:"קַבְּל",he:'לפני',ex:[]},
-  {id:'t7',cat:'time',ar:'دقيقة',ph:"דַּקִּיקֶה",he:'דקה',ex:[]},
-  {id:'t8',cat:'time',ar:'ساعة',ph:"סָאעֶה",he:'שעה',ex:[]},
-  {id:'t9',cat:'time',ar:'يوم',ph:"יוֹם",he:'יום',ex:[]},
-  {id:'t10',cat:'time',ar:'أسبوع',ph:"אֻסְבּוּעַ",he:'שבוע',ex:[]},
-  {id:'t11',cat:'time',ar:'شهر',ph:"שַׁהְר",he:'חודש',ex:[]},
-  {id:'t12',cat:'time',ar:'سنة',ph:"סַנֶה",he:'שנה',ex:[]},
-  {id:'t13',cat:'time',ar:'صبح',ph:"צֻבּוּח",he:'בוקר',ex:[]},
-  {id:'t14',cat:'time',ar:'ضهر',ph:"דֻּהֶר",he:'צהריים',ex:[]},
-  {id:'t15',cat:'time',ar:'مسا',ph:"מַסָּה",he:'ערב',ex:[]},
-
-  // Body
-  {id:'b1',cat:'body',ar:'رأس',ph:"רָאס",he:'ראש',ex:[]},
-  {id:'b2',cat:'body',ar:'وجه',ph:"וַ'גִ'ה",he:'פנים',ex:[]},
-  {id:'b3',cat:'body',ar:'عين',ph:"עֵין",he:'עין',ex:[]},
-  {id:'b4',cat:'body',ar:'أذن',ph:"אֻדֻן",he:'אוזן',ex:[]},
-  {id:'b5',cat:'body',ar:'أنف',ph:"אַנְף",he:'אף',ex:[]},
-  {id:'b6',cat:'body',ar:'فم',ph:"פֻמּ",he:'פה',ex:[]},
-  {id:'b7',cat:'body',ar:'يد',ph:"אִיד",he:'יד',ex:[]},
-  {id:'b8',cat:'body',ar:'رجل',ph:"רִ'גִ'ל",he:'רגל',ex:[]},
-  {id:'b9',cat:'body',ar:'قلب',ph:"קַלְבּ",he:'לב',ex:[]},
-  {id:'b10',cat:'body',ar:'بطن',ph:"בַּטֶן",he:'בטן',ex:[]},
-
-  // Home
-  {id:'h1',cat:'home',ar:'بيت',ph:"בֵּית",he:'בית',ex:[]},
-  {id:'h2',cat:'home',ar:'باب',ph:"בָּאב",he:'דלת',ex:[]},
-  {id:'h3',cat:'home',ar:'شباك',ph:"שֻׁבָּאק",he:'חלון',ex:[]},
-  {id:'h4',cat:'home',ar:'غرفة',ph:"גֻ'רְפֶה",he:'חדר',ex:[]},
-  {id:'h5',cat:'home',ar:'مطبخ',ph:"מַטְבַּח",he:'מטבח',ex:[]},
-  {id:'h6',cat:'home',ar:'حمام',ph:"חַמָּאם",he:'אמבטיה / שירותים',ex:[]},
-  {id:'h7',cat:'home',ar:'سرير',ph:"סְרִיר",he:'מיטה',ex:[]},
-  {id:'h8',cat:'home',ar:'كرسي',ph:"כֻּרְסִי",he:'כיסא',ex:[]},
-  {id:'h9',cat:'home',ar:'طاولة',ph:"טָאוְלֶה",he:'שולחן',ex:[]},
-  {id:'h10',cat:'home',ar:'تلفزيون',ph:"תִּלְפִּזְיוֹן",he:'טלוויזיה',ex:[]},
-
-  // Market
-  {id:'m1',cat:'market',ar:'سوق',ph:"סוּק",he:'שוק',ex:[]},
-  {id:'m2',cat:'market',ar:'دكان',ph:"דֻּכָּאן",he:'חנות',ex:[]},
-  {id:'m3',cat:'market',ar:'بكم؟',ph:"בְּכַם?",he:'כמה עולה?',ex:[]},
-  {id:'m4',cat:'market',ar:'غالي',ph:"גָ'אלִי",he:'יקר',ex:[]},
-  {id:'m5',cat:'market',ar:'رخيص',ph:"רְחִ'יץ",he:'זול',ex:[]},
-  {id:'m6',cat:'market',ar:'اشتريت',ph:"אִשְׁתְּרֵית",he:'קניתי',ex:[]},
-  {id:'m7',cat:'market',ar:'بدي',ph:"בִּדִּי",he:'אני רוצה',ex:[]},
-  {id:'m8',cat:'market',ar:'ما بدي',ph:"מָא בִּדִּי",he:'אני לא רוצה',ex:[]},
-  {id:'m9',cat:'market',ar:'كتير',ph:"כְּתִיר",he:'הרבה',ex:[]},
-  {id:'m10',cat:'market',ar:'شوي',ph:"שְׁוֵי",he:'קצת',ex:[]},
-
-  // Directions
-  {id:'d1',cat:'directions',ar:'وين؟',ph:"וֵין?",he:'איפה?',ex:[]},
-  {id:'d2',cat:'directions',ar:'يمين',ph:"יְמִין",he:'ימין',ex:[]},
-  {id:'d3',cat:'directions',ar:'شمال',ph:"שְׁמָאל",he:'שמאל',ex:[]},
-  {id:'d4',cat:'directions',ar:'دغري',ph:"דֻּגְ'רִי",he:'ישר',ex:[]},
-  {id:'d5',cat:'directions',ar:'قريب',ph:"קַרִיב",he:'קרוב',ex:[]},
-  {id:'d6',cat:'directions',ar:'بعيد',ph:"בְּעִיד",he:'רחוק',ex:[]},
-  {id:'d7',cat:'directions',ar:'فوق',ph:"פוֹק",he:'למעלה',ex:[]},
-  {id:'d8',cat:'directions',ar:'تحت',ph:"תַחְתּ",he:'למטה',ex:[]},
-  {id:'d9',cat:'directions',ar:'جنب',ph:"גַ'נְבּ",he:'ליד',ex:[]},
-  {id:'d10',cat:'directions',ar:'قدام',ph:"קֻדָּאם",he:'מול / לפני',ex:[]},
-
-  // Feelings
-  {id:'fe1',cat:'feelings',ar:'مبسوط',ph:"מַבְסוּט",he:'שמח',ex:[]},
-  {id:'fe2',cat:'feelings',ar:'زعلان',ph:"זַעְלָאן",he:'עצוב / כועס',ex:[]},
-  {id:'fe3',cat:'feelings',ar:'تعبان',ph:"תַּעְבָּאן",he:'עייף / חולה',ex:[]},
-  {id:'fe4',cat:'feelings',ar:'خايف',ph:"חָ'איִף",he:'מפוחד',ex:[]},
-  {id:'fe5',cat:'feelings',ar:'جوعان',ph:"גַ'וְעָאן",he:'רעב',ex:[]},
-  {id:'fe6',cat:'feelings',ar:'عطشان',ph:"עַטְשָׁאן",he:'צמא',ex:[]},
-  {id:'fe7',cat:'feelings',ar:'برد',ph:"בַּרְד",he:'קר (לי קר)',ex:[]},
-  {id:'fe8',cat:'feelings',ar:'حر',ph:"חַרּ",he:'חם (לי חם)',ex:[]},
-  {id:'fe9',cat:'feelings',ar:'منيح',ph:"מְנִיח",he:'בסדר / טוב',ex:[]},
-  {id:'fe10',cat:'feelings',ar:'مش منيح',ph:"מִשׁ מְנִיח",he:'לא בסדר',ex:[]},
-
-  // Nature
-  {id:'na1',cat:'nature',ar:'شمس',ph:"שַׁמְס",he:'שמש',ex:[]},
-  {id:'na2',cat:'nature',ar:'قمر',ph:"קַמַר",he:'ירח',ex:[]},
-  {id:'na3',cat:'nature',ar:'مطر',ph:"מַטַר",he:'גשם',ex:[]},
-  {id:'na4',cat:'nature',ar:'بحر',ph:"בַּחַר",he:'ים',ex:[]},
-  {id:'na5',cat:'nature',ar:'جبل',ph:"גַ'בַּל",he:'הר',ex:[]},
-  {id:'na6',cat:'nature',ar:'شجرة',ph:"שַׁגַ'רֶה",he:'עץ',ex:[]},
-  {id:'na7',cat:'nature',ar:'وادي',ph:"וָאדִי",he:'ואדי / עמק',ex:[]},
-  {id:'na8',cat:'nature',ar:'هوا',ph:"הַוָּה",he:'אוויר / רוח',ex:[]},
-
-  // Transport
-  {id:'tr1',cat:'transport',ar:'سيارة',ph:"סַיָּארֶה",he:'מכונית',ex:[]},
-  {id:'tr2',cat:'transport',ar:'باص',ph:"בָּאץ",he:'אוטובוס',ex:[]},
-  {id:'tr3',cat:'transport',ar:'تكسي',ph:"טַקְסִי",he:'מונית',ex:[]},
-  {id:'tr4',cat:'transport',ar:'طريق',ph:"טַרִיק",he:'דרך',ex:[]},
-  {id:'tr5',cat:'transport',ar:'محطة',ph:"מַחַטָּה",he:'תחנה',ex:[]},
-
-  // Work
-  {id:'w1',cat:'work',ar:'شغل',ph:"שֻׁגִ'ל",he:'עבודה',ex:[]},
-  {id:'w2',cat:'work',ar:'مدرسة',ph:"מַדְרַסֶה",he:'בית ספר',ex:[]},
-  {id:'w3',cat:'work',ar:'دكتور',ph:"דֻּכְּתוּר",he:'רופא',ex:[]},
-  {id:'w4',cat:'work',ar:'مهندس',ph:"מֻהַנְדִּס",he:'מהנדס',ex:[]},
-  {id:'w5',cat:'work',ar:'أستاذ',ph:"אֻסְתָּאז",he:'מורה / פרופסור',ex:[]},
+  // GREETINGS
+  {id:"g1",cat:"greetings",lv:1,ar:"\u0645\u0631\u062d\u0628\u0627",ph:"\u05de\u05e8\u05d7\u05d1\u05d0",he:"\u05e9\u05dc\u05d5\u05dd",ex:[]},
+  {id:"g2",cat:"greetings",lv:1,ar:"\u0643\u064a\u0641 \u062d\u0627\u0644\u0643\u061f",ph:"\u05db\u05d9\u05e4 \u05d7\u05b8\u05d0\u05dc\u05b7\u05e7?",he:"\u05de\u05d4 \u05e9\u05dc\u05d5\u05de\u05da? (\u05dc\u05d2\u05d1\u05e8)",ex:[]},
+  {id:"g3",cat:"greetings",lv:1,ar:"\u0643\u064a\u0641 \u062d\u0627\u0644\u0643\u061f",ph:"\u05db\u05d9\u05e4 \u05d7\u05b8\u05d0\u05dc\u05b4\u05da?",he:"\u05de\u05d4 \u05e9\u05dc\u05d5\u05de\u05da? (\u05dc\u05d0\u05d9\u05e9\u05d4)",ex:[]},
+  {id:"g4",cat:"greetings",lv:1,ar:"\u0645\u0646\u064a\u062d\u060c \u0634\u0643\u0631\u0627\u064b",ph:"\u05de\u05b0\u05e0\u05b4\u05d9\u05d7, \u05e9\u05bb\u05c1\u05e7\u05b0\u05e8\u05b7\u05df",he:"\u05d1\u05e1\u05d3\u05e8, \u05ea\u05d5\u05d3\u05d4",ex:[]},
+  {id:"g5",cat:"greetings",lv:1,ar:"\u0635\u0628\u0627\u062d \u0627\u0644\u062e\u064a\u0631",ph:"\u05e6\u05b0\u05d1\u05b8\u05d0\u05d7 \u05d0\u05dc-\u05d7\u05b5\u05d9\u05e8",he:"\u05d1\u05d5\u05e7\u05e8 \u05d8\u05d5\u05d1",ex:[]},
+  {id:"g6",cat:"greetings",lv:1,ar:"\u0635\u0628\u0627\u062d \u0627\u0644\u0646\u0648\u0631",ph:"\u05e6\u05b0\u05d1\u05b8\u05d0\u05d7 \u05d0\u05df-\u05e0\u05d5\u05bc\u05e8",he:"\u05d1\u05d5\u05e7\u05e8 \u05d0\u05d5\u05e8",ex:[]},
+  {id:"g7",cat:"greetings",lv:1,ar:"\u0645\u0633\u0627\u0621 \u0627\u0644\u062e\u064a\u0631",ph:"\u05de\u05b7\u05e1\u05b8\u05bc\u05d0 \u05d0\u05dc-\u05d7\u05b5\u05d9\u05e8",he:"\u05e2\u05e8\u05d1 \u05d8\u05d5\u05d1",ex:[]},
+  {id:"g8",cat:"greetings",lv:1,ar:"\u0645\u0639 \u0627\u0644\u0633\u0644\u0627\u0645\u0629",ph:"\u05de\u05e2 \u05d0\u05e1-\u05e1\u05dc\u05b8\u05d0\u05de\u05b6\u05d4",he:"\u05dc\u05d4\u05ea\u05e8\u05d0\u05d5\u05ea",ex:[]},
+  {id:"g9",cat:"greetings",lv:1,ar:"\u064a\u0644\u0627 \u0628\u0627\u064a",ph:"\u05d9\u05b7\u05dc\u05b8\u05bc\u05d4 \u05d1\u05b7\u05bc\u05d0\u05d9",he:"\u05dc\u05d4\u05ea\u05e8\u05d0\u05d5\u05ea (\u05d3\u05d9\u05d1\u05d5\u05e8\u05d9)",ex:[]},
+  {id:"g10",cat:"greetings",lv:1,ar:"\u0623\u0647\u0644\u0627\u064b \u0648\u0633\u0647\u0644\u0627\u064b",ph:"\u05d0\u05b7\u05d4\u05b0\u05dc\u05b7\u05df \u05d5\u05b0\u05e1\u05b7\u05d4\u05b0\u05dc\u05b7\u05df",he:"\u05d1\u05e8\u05d5\u05db\u05d9\u05dd \u05d4\u05d1\u05d0\u05d9\u05dd",ex:[]},
+  {id:"g11",cat:"greetings",lv:1,ar:"\u0634\u0648 \u0627\u0633\u0645\u0643\u061f",ph:"\u05e9\u05d5\u05bc \u05d0\u05b4\u05e1\u05b0\u05de\u05b7\u05e7?",he:"\u05de\u05d4 \u05e9\u05de\u05da?",ex:[]},
+  {id:"g12",cat:"greetings",lv:1,ar:"\u0645\u0646 \u0648\u064a\u0646 \u0623\u0646\u062a\u061f",ph:"\u05de\u05b4\u05df \u05d5\u05b5\u05d9\u05df \u05d0\u05b7\u05e0\u05b0\u05ea\u05b0?",he:"\u05de\u05d0\u05d9\u05df \u05d0\u05ea\u05d4?",ex:[]},
+  {id:"g13",cat:"greetings",lv:1,ar:"\u064a\u0644\u0627",ph:"\u05d9\u05b7\u05dc\u05b8\u05bc\u05d4",he:"\u05d9\u05d0\u05dc\u05dc\u05d4 (\u05e7\u05d3\u05d9\u05de\u05d4)",ex:[]},
+  {id:"g14",cat:"greetings",lv:1,ar:"\u0625\u0646 \u0634\u0627\u0621 \u0627\u0644\u0644\u0647",ph:"\u05d0\u05b4\u05e0\u05b0 \u05e9\u05b8\u05c1\u05d0 \u05d0\u05b7\u05dc\u05b0\u05dc\u05b8\u05d4",he:"\u05d0\u05d9\u05e0\u05e9\u05d0\u05dc\u05d4",ex:[]},
+  {id:"g15",cat:"greetings",lv:1,ar:"\u0627\u0644\u062d\u0645\u062f \u0644\u0644\u0647",ph:"\u05d0\u05b7\u05dc\u05b0\u05d7\u05b7\u05de\u05b0\u05d3\u05bc\u05d5\u05bc \u05dc\u05b4\u05dc\u05b8\u05bc\u05d4",he:"\u05d1\u05e8\u05d5\u05da \u05d4\u05e9\u05dd",ex:[]},
+  {id:"g16",cat:"greetings",lv:2,ar:"\u062a\u0634\u0631\u0641\u0646\u0627",ph:"\u05ea\u05b0\u05bc\u05e9\u05b7\u05c1\u05e8\u05b7\u05bc\u05e4\u05b0\u05e0\u05b8\u05d4",he:"\u05e9\u05de\u05d7 \u05dc\u05d4\u05db\u05d9\u05e8",ex:[]},
+  {id:"g17",cat:"greetings",lv:2,ar:"\u062a\u0645\u0627\u0645",ph:"\u05ea\u05b0\u05bc\u05de\u05b8\u05d0\u05dd",he:"\u05de\u05e2\u05d5\u05dc\u05d4 / \u05ea\u05de\u05d0\u05dd",ex:[]},
+  {id:"g18",cat:"greetings",lv:2,ar:"\u0634\u0648 \u0641\u064a\u061f",ph:"\u05e9\u05d5\u05bc \u05e4\u05b4\u05d9?",he:"\u05de\u05d4 \u05e7\u05d5\u05e8\u05d4?",ex:[]},
+  {id:"g19",cat:"greetings",lv:2,ar:"\u0648\u0627\u0644\u0644\u0647",ph:"\u05d5\u05b7\u05dc\u05b0\u05dc\u05b8\u05d4",he:"\u05d1\u05d0\u05de\u05ea?",ex:[]},
+  {id:"g20",cat:"greetings",lv:3,ar:"\u0631\u0628\u0646\u0627 \u064a\u0633\u0644\u0645\u0643",ph:"\u05e8\u05b7\u05d1\u05b6\u05bc\u05e0\u05b8\u05bc\u05d4 \u05d9\u05b0\u05e1\u05b7\u05dc\u05b0\u05bc\u05de\u05b7\u05e7",he:"\u05d0\u05dc\u05d5\u05d4\u05d9\u05dd \u05d9\u05e9\u05de\u05d5\u05e8 \u05d0\u05d5\u05ea\u05da",ex:[]},
+  // NUMBERS
+  {id:"n1",cat:"numbers",lv:1,ar:"\u0635\u0641\u0631",ph:"\u05e6\u05b4\u05e4\u05b6\u05e8",he:"\u05d0\u05e4\u05e1",ex:[]},
+  {id:"n2",cat:"numbers",lv:1,ar:"\u0648\u0627\u062d\u062f",ph:"\u05d5\u05b8\u05d0\u05d7\u05b7\u05d3",he:"\u05d0\u05d7\u05d3",ex:[]},
+  {id:"n3",cat:"numbers",lv:1,ar:"\u0627\u062b\u0646\u064a\u0646",ph:"\u05d0\u05b4\u05ea\u05b0\u05e0\u05b5\u05d9\u05df",he:"\u05e9\u05e0\u05d9\u05d9\u05dd",ex:[]},
+  {id:"n4",cat:"numbers",lv:1,ar:"\u062b\u0644\u0627\u062b\u0629",ph:"\u05ea\u05b0\u05bc\u05dc\u05b8\u05d0\u05ea\u05b6\u05d4",he:"\u05e9\u05dc\u05d5\u05e9\u05d4",ex:[]},
+  {id:"n5",cat:"numbers",lv:1,ar:"\u0623\u0631\u0628\u0639\u0629",ph:"\u05d0\u05b7\u05e8\u05b0\u05d1\u05b7\u05bc\u05e2\u05b6\u05d4",he:"\u05d0\u05e8\u05d1\u05e2\u05d4",ex:[]},
+  {id:"n6",cat:"numbers",lv:1,ar:"\u062e\u0645\u0633\u0629",ph:"\u05d7\u05b7\u05de\u05b0\u05e1\u05b6\u05d4",he:"\u05d7\u05de\u05d9\u05e9\u05d4",ex:[]},
+  {id:"n7",cat:"numbers",lv:1,ar:"\u0633\u062a\u0629",ph:"\u05e1\u05b4\u05ea\u05b6\u05bc\u05d4",he:"\u05e9\u05d9\u05e9\u05d4",ex:[]},
+  {id:"n8",cat:"numbers",lv:1,ar:"\u0633\u0628\u0639\u0629",ph:"\u05e1\u05b7\u05d1\u05b0\u05bc\u05e2\u05b6\u05d4",he:"\u05e9\u05d1\u05e2\u05d4",ex:[]},
+  {id:"n9",cat:"numbers",lv:1,ar:"\u062b\u0645\u0627\u0646\u064a\u0629",ph:"\u05ea\u05b0\u05bc\u05de\u05b8\u05d0\u05e0\u05b0\u05d9\u05b6\u05d4",he:"\u05e9\u05de\u05d5\u05e0\u05d4",ex:[]},
+  {id:"n10",cat:"numbers",lv:1,ar:"\u062a\u0633\u0639\u0629",ph:"\u05ea\u05b4\u05bc\u05e1\u05b0\u05e2\u05b6\u05d4",he:"\u05ea\u05e9\u05e2\u05d4",ex:[]},
+  {id:"n11",cat:"numbers",lv:1,ar:"\u0639\u0634\u0631\u0629",ph:"\u05e2\u05b7\u05e9\u05b0\u05c1\u05e8\u05b6\u05d4",he:"\u05e2\u05e9\u05e8\u05d4",ex:[]},
+  {id:"n12",cat:"numbers",lv:1,ar:"\u0639\u0634\u0631\u064a\u0646",ph:"\u05e2\u05b4\u05e9\u05b0\u05c1\u05e8\u05b4\u05d9\u05df",he:"\u05e2\u05e9\u05e8\u05d9\u05dd",ex:[]},
+  {id:"n13",cat:"numbers",lv:1,ar:"\u0645\u064a\u0629",ph:"\u05de\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05de\u05d0\u05d4",ex:[]},
+  {id:"n14",cat:"numbers",lv:1,ar:"\u0623\u0644\u0641",ph:"\u05d0\u05b7\u05dc\u05b0\u05e3",he:"\u05d0\u05dc\u05e3",ex:[]},
+  {id:"n15",cat:"numbers",lv:1,ar:"\u0628\u0643\u0645 \u0647\u0630\u0627\u061f",ph:"\u05d1\u05b0\u05bc\u05db\u05b7\u05dd \u05d4\u05b8\u05d0\u05d3\u05b8\u05d4?",he:"\u05db\u05de\u05d4 \u05d6\u05d4 \u05e2\u05d5\u05dc\u05d4?",ex:[]},
+  {id:"n16",cat:"numbers",lv:2,ar:"\u0625\u062d\u062f\u0639\u0634",ph:"\u05d0\u05b4\u05d7\u05b0\u05d3\u05b7\u05bc\u05e2\u05b5\u05e9\u05c1",he:"\u05d0\u05d7\u05d3 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n17",cat:"numbers",lv:2,ar:"\u0625\u062a\u0646\u0627\u0639\u0634",ph:"\u05d0\u05b4\u05ea\u05b0\u05e0\u05b7\u05d0\u05e2\u05b5\u05e9\u05c1",he:"\u05e9\u05e0\u05d9\u05d9\u05dd \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n18",cat:"numbers",lv:2,ar:"\u062a\u0644\u062a\u0627\u0634\u0631",ph:"\u05ea\u05b7\u05bc\u05dc\u05b0\u05d8\u05b8\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05dc\u05d5\u05e9\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n19",cat:"numbers",lv:2,ar:"\u0623\u0631\u0628\u0639\u062a\u0627\u0634\u0631",ph:"\u05d0\u05b7\u05e8\u05b0\u05d1\u05b7\u05bc\u05e2\u05b0\u05ea\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05d0\u05e8\u05d1\u05e2\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n20",cat:"numbers",lv:2,ar:"\u062e\u0645\u0633\u062a\u0627\u0634\u0631",ph:"\u05d7\u05b7\u05de\u05b0\u05e1\u05b7\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05d7\u05de\u05d9\u05e9\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n21",cat:"numbers",lv:2,ar:"\u0633\u062a\u0627\u0634\u0631",ph:"\u05e1\u05b4\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05d9\u05e9\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n22",cat:"numbers",lv:2,ar:"\u0633\u0628\u0639\u062a\u0627\u0634\u0631",ph:"\u05e1\u05b7\u05d1\u05b0\u05bc\u05e2\u05b7\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05d1\u05e2\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n23",cat:"numbers",lv:2,ar:"\u062a\u0645\u0627\u0646\u062a\u0627\u0634\u0631",ph:"\u05ea\u05b0\u05bc\u05de\u05b7\u05d0\u05e0\u05b0\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05de\u05d5\u05e0\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n24",cat:"numbers",lv:2,ar:"\u062a\u0633\u0639\u062a\u0627\u0634\u0631",ph:"\u05ea\u05b4\u05bc\u05e1\u05b0\u05e2\u05b7\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05ea\u05e9\u05e2\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n25",cat:"numbers",lv:2,ar:"\u062a\u0644\u0627\u062a\u064a\u0646",ph:"\u05ea\u05b0\u05bc\u05dc\u05b8\u05d0\u05ea\u05b4\u05d9\u05df",he:"\u05e9\u05dc\u05d5\u05e9\u05d9\u05dd",ex:[]},
+  {id:"n26",cat:"numbers",lv:2,ar:"\u0623\u0631\u0628\u0639\u064a\u0646",ph:"\u05d0\u05b7\u05e8\u05b0\u05d1\u05b0\u05bc\u05e2\u05b4\u05d9\u05df",he:"\u05d0\u05e8\u05d1\u05e2\u05d9\u05dd",ex:[]},
+  {id:"n27",cat:"numbers",lv:2,ar:"\u062e\u0645\u0633\u064a\u0646",ph:"\u05d7\u05b7\u05de\u05b0\u05e1\u05b4\u05d9\u05df",he:"\u05d7\u05de\u05d9\u05e9\u05d9\u05dd",ex:[]},
+  {id:"n28",cat:"numbers",lv:3,ar:"\u0633\u062a\u064a\u0646",ph:"\u05e1\u05b4\u05ea\u05b4\u05bc\u05d9\u05df",he:"\u05e9\u05d9\u05e9\u05d9\u05dd",ex:[]},
+  {id:"n29",cat:"numbers",lv:3,ar:"\u0633\u0628\u0639\u064a\u0646",ph:"\u05e1\u05b7\u05d1\u05b0\u05bc\u05e2\u05b4\u05d9\u05df",he:"\u05e9\u05d1\u05e2\u05d9\u05dd",ex:[]},
+  {id:"n30",cat:"numbers",lv:3,ar:"\u062a\u0645\u0627\u0646\u064a\u0646",ph:"\u05ea\u05b0\u05bc\u05de\u05b7\u05d0\u05e0\u05b4\u05d9\u05df",he:"\u05e9\u05de\u05d5\u05e0\u05d9\u05dd",ex:[]},
+  {id:"n31",cat:"numbers",lv:3,ar:"\u062a\u0633\u0639\u064a\u0646",ph:"\u05ea\u05b4\u05bc\u05e1\u05b0\u05e2\u05b4\u05d9\u05df",he:"\u05ea\u05e9\u05e2\u05d9\u05dd",ex:[]},
+  // FAMILY
+  {id:"f1",cat:"family",lv:1,ar:"\u0623\u0628",ph:"\u05d0\u05b7\u05d1",he:"\u05d0\u05d1\u05d0",ex:[]},
+  {id:"f2",cat:"family",lv:1,ar:"\u0623\u0645",ph:"\u05d0\u05bb\u05de\u05bc",he:"\u05d0\u05de\u05d0",ex:[]},
+  {id:"f3",cat:"family",lv:1,ar:"\u0623\u062e",ph:"\u05d0\u05b7\u05d7",he:"\u05d0\u05d7",ex:[]},
+  {id:"f4",cat:"family",lv:1,ar:"\u0623\u062e\u062a",ph:"\u05d0\u05bb\u05d7\u05b0\u05ea\u05bc",he:"\u05d0\u05d7\u05d5\u05ea",ex:[]},
+  {id:"f5",cat:"family",lv:1,ar:"\u0627\u0628\u0646",ph:"\u05d0\u05b4\u05d1\u05b6\u05bc\u05df",he:"\u05d1\u05df",ex:[]},
+  {id:"f6",cat:"family",lv:1,ar:"\u0628\u0646\u062a",ph:"\u05d1\u05b4\u05bc\u05e0\u05b0\u05ea\u05bc",he:"\u05d1\u05ea",ex:[]},
+  {id:"f7",cat:"family",lv:1,ar:"\u062c\u062f",ph:"\u05e1\u05b4\u05d9\u05d3\u05bc",he:"\u05e1\u05d1\u05d0",ex:[]},
+  {id:"f8",cat:"family",lv:1,ar:"\u062a\u064a\u062a\u0627",ph:"\u05ea\u05b5\u05bc\u05d9\u05ea\u05b8\u05d4",he:"\u05e1\u05d1\u05ea\u05d0",ex:[]},
+  {id:"f9",cat:"family",lv:1,ar:"\u0639\u0645",ph:"\u05e2\u05b7\u05de\u05bc",he:"\u05d3\u05d5\u05d3 (\u05de\u05e6\u05d3 \u05d0\u05d1\u05d0)",ex:[]},
+  {id:"f10",cat:"family",lv:1,ar:"\u062e\u0627\u0644",ph:"\u05d7\u05b8\u05d0\u05dc",he:"\u05d3\u05d5\u05d3 (\u05de\u05e6\u05d3 \u05d0\u05de\u05d0)",ex:[]},
+  {id:"f11",cat:"family",lv:2,ar:"\u0639\u0645\u0629",ph:"\u05e2\u05b7\u05de\u05b6\u05bc\u05d4",he:"\u05d3\u05d5\u05d3\u05d4 (\u05de\u05e6\u05d3 \u05d0\u05d1\u05d0)",ex:[]},
+  {id:"f12",cat:"family",lv:2,ar:"\u0632\u0648\u062c",ph:"\u05d6\u05d5\u05b9\u05d2",he:"\u05d1\u05e2\u05dc",ex:[]},
+  {id:"f13",cat:"family",lv:2,ar:"\u0632\u0648\u062c\u0629",ph:"\u05d6\u05d5\u05b9\u05d2\u05b6\u05d4",he:"\u05d0\u05d9\u05e9\u05d4",ex:[]},
+  {id:"f14",cat:"family",lv:2,ar:"\u0623\u0635\u062d\u0627\u0628",ph:"\u05d0\u05b7\u05e6\u05b0\u05d7\u05b8\u05d0\u05d1",he:"\u05d7\u05d1\u05e8\u05d9\u05dd",ex:[]},
+  {id:"f15",cat:"family",lv:2,ar:"\u0635\u0627\u062d\u0628",ph:"\u05e6\u05b8\u05d0\u05d7\u05b7\u05d1",he:"\u05d7\u05d1\u05e8",ex:[]},
+  {id:"f16",cat:"family",lv:2,ar:"\u0623\u0648\u0644\u0627\u062f",ph:"\u05d0\u05b7\u05d5\u05b0\u05dc\u05b8\u05d0\u05d3",he:"\u05d9\u05dc\u05d3\u05d9\u05dd",ex:[]},
+  {id:"f17",cat:"family",lv:2,ar:"\u062e\u0627\u0644\u0629",ph:"\u05d7\u05b8\u05d0\u05dc\u05b6\u05d4",he:"\u05d3\u05d5\u05d3\u05d4 (\u05de\u05e6\u05d3 \u05d0\u05de\u05d0)",ex:[]},
+  {id:"f18",cat:"family",lv:2,ar:"\u062c\u0627\u0631",ph:"\u05d2\u05b8'\u05d0\u05e8",he:"\u05e9\u05db\u05df",ex:[]},
+  {id:"f19",cat:"family",lv:3,ar:"\u062d\u0641\u064a\u062f",ph:"\u05d7\u05b0\u05e4\u05b4\u05d9\u05d3",he:"\u05e0\u05db\u05d3",ex:[]},
+  {id:"f20",cat:"family",lv:3,ar:"\u0627\u0628\u0646 \u0639\u0645",ph:"\u05d0\u05b4\u05d1\u05b6\u05bc\u05df \u05e2\u05b7\u05de\u05bc",he:"\u05d1\u05df \u05d3\u05d5\u05d3",ex:[]},
+  // FOOD
+  {id:"fo1",cat:"food",lv:1,ar:"\u0623\u0643\u0644",ph:"\u05d0\u05b8\u05db\u05b7\u05dc",he:"\u05d0\u05d5\u05db\u05dc",ex:[]},
+  {id:"fo2",cat:"food",lv:1,ar:"\u0645\u064a / \u0645\u0627\u0621",ph:"\u05de\u05b7\u05d9\u05b8\u05bc\u05d4",he:"\u05de\u05d9\u05dd",ex:[]},
+  {id:"fo3",cat:"food",lv:1,ar:"\u062e\u0628\u0632",ph:"\u05d7\u05bb\u05d1\u05b6\u05bc\u05d6",he:"\u05dc\u05d7\u05dd",ex:[]},
+  {id:"fo4",cat:"food",lv:1,ar:"\u062d\u0645\u0635",ph:"\u05d7\u05bb\u05de\u05bb\u05bc\u05e1",he:"\u05d7\u05d5\u05de\u05d5\u05e1",ex:[]},
+  {id:"fo5",cat:"food",lv:1,ar:"\u0641\u0644\u0627\u0641\u0644",ph:"\u05e4\u05b7\u05dc\u05b8\u05d0\u05e4\u05b5\u05dc",he:"\u05e4\u05dc\u05d0\u05e4\u05dc",ex:[]},
+  {id:"fo6",cat:"food",lv:1,ar:"\u0634\u0627\u064a",ph:"\u05e9\u05b7\u05c1\u05d0\u05d9\u05b5",he:"\u05ea\u05d4",ex:[]},
+  {id:"fo7",cat:"food",lv:1,ar:"\u0642\u0647\u0648\u0629",ph:"\u05e7\u05b7\u05d4\u05b0\u05d5\u05b6\u05d4",he:"\u05e7\u05e4\u05d4",ex:[]},
+  {id:"fo8",cat:"food",lv:1,ar:"\u0644\u062d\u0645\u0629",ph:"\u05dc\u05b7\u05d7\u05b0\u05de\u05b6\u05d4",he:"\u05d1\u05e9\u05e8",ex:[]},
+  {id:"fo9",cat:"food",lv:1,ar:"\u062f\u062c\u0627\u062c",ph:"\u05d3\u05b0\u05bc\u05d2\u05b8'\u05d0\u05d2",he:"\u05e2\u05d5\u05e3",ex:[]},
+  {id:"fo10",cat:"food",lv:1,ar:"\u062e\u0636\u0627\u0631",ph:"\u05d7\u05b7'\u05d3\u05b8\u05bc\u05e8",he:"\u05d9\u05e8\u05e7\u05d5\u05ea",ex:[]},
+  {id:"fo11",cat:"food",lv:2,ar:"\u0641\u0648\u0627\u0643\u0647",ph:"\u05e4\u05b7\u05d5\u05b8\u05bc\u05d0\u05db\u05b6\u05bc\u05d4",he:"\u05e4\u05d9\u05e8\u05d5\u05ea",ex:[]},
+  {id:"fo12",cat:"food",lv:2,ar:"\u062a\u0641\u0627\u062d",ph:"\u05ea\u05bb\u05e4\u05b8\u05bc\u05d0\u05d7",he:"\u05ea\u05e4\u05d5\u05d7",ex:[]},
+  {id:"fo13",cat:"food",lv:2,ar:"\u0639\u064a\u0634",ph:"\u05e2\u05b5\u05d9\u05e9",he:"\u05d0\u05d5\u05e8\u05d6",ex:[]},
+  {id:"fo14",cat:"food",lv:2,ar:"\u0645\u0644\u062d",ph:"\u05de\u05b4\u05dc\u05b0\u05d7",he:"\u05de\u05dc\u05d7",ex:[]},
+  {id:"fo15",cat:"food",lv:2,ar:"\u0633\u0643\u0631",ph:"\u05e1\u05bb\u05db\u05b7\u05bc\u05e8",he:"\u05e1\u05d5\u05db\u05e8",ex:[]},
+  {id:"fo16",cat:"food",lv:2,ar:"\u0628\u064a\u0636",ph:"\u05d1\u05b5\u05bc\u05d9\u05d3",he:"\u05d1\u05d9\u05e6\u05d4",ex:[]},
+  {id:"fo17",cat:"food",lv:2,ar:"\u062c\u0628\u0646\u0629",ph:"\u05d2\u05bb'\u05d1\u05b0\u05bc\u05e0\u05b6\u05d4",he:"\u05d2\u05d1\u05d9\u05e0\u05d4",ex:[]},
+  {id:"fo18",cat:"food",lv:2,ar:"\u0632\u064a\u062a",ph:"\u05d6\u05b5\u05d9\u05ea",he:"\u05e9\u05de\u05df",ex:[]},
+  {id:"fo19",cat:"food",lv:2,ar:"\u0628\u0646\u062f\u0648\u0631\u0629",ph:"\u05d1\u05b7\u05bc\u05e0\u05b0\u05d3\u05bc\u05d5\u05bc\u05e8\u05b6\u05d4",he:"\u05e2\u05d2\u05d1\u05e0\u05d9\u05d9\u05d4",ex:[]},
+  {id:"fo20",cat:"food",lv:2,ar:"\u062e\u064a\u0627\u0631",ph:"\u05d7\u05b0\u05d9\u05b8\u05d0\u05e8",he:"\u05de\u05dc\u05e4\u05e4\u05d5\u05df",ex:[]},
+  {id:"fo21",cat:"food",lv:2,ar:"\u0628\u0635\u0644",ph:"\u05d1\u05b7\u05bc\u05e6\u05b7\u05bc\u05dc",he:"\u05d1\u05e6\u05dc",ex:[]},
+  {id:"fo22",cat:"food",lv:2,ar:"\u0633\u0645\u0643",ph:"\u05e1\u05b7\u05de\u05b7\u05bc\u05e7",he:"\u05d3\u05d2",ex:[]},
+  {id:"fo23",cat:"food",lv:2,ar:"\u062d\u0644\u064a\u0628",ph:"\u05d7\u05b0\u05dc\u05b4\u05d9\u05d1",he:"\u05d7\u05dc\u05d1",ex:[]},
+  {id:"fo24",cat:"food",lv:2,ar:"\u0639\u0635\u064a\u0631",ph:"\u05e2\u05b7\u05e6\u05b4\u05bc\u05d9\u05e8",he:"\u05de\u05d9\u05e5",ex:[]},
+  {id:"fo25",cat:"food",lv:2,ar:"\u0632\u064a\u062a\u0648\u0646",ph:"\u05d6\u05b5\u05d9\u05ea\u05d5\u05bc\u05df",he:"\u05d6\u05d9\u05ea\u05d9\u05dd",ex:[]},
+  {id:"fo26",cat:"food",lv:3,ar:"\u0628\u0637\u0627\u0637\u0627",ph:"\u05d1\u05b7\u05bc\u05d8\u05b8\u05bc\u05d0\u05d8\u05b8\u05d4",he:"\u05ea\u05e4\u05d5\u05d7 \u05d0\u05d3\u05de\u05d4",ex:[]},
+  {id:"fo27",cat:"food",lv:3,ar:"\u062b\u0648\u0645",ph:"\u05ea\u05bc\u05d5\u05bc\u05dd",he:"\u05e9\u05d5\u05dd",ex:[]},
+  {id:"fo28",cat:"food",lv:3,ar:"\u0631\u0645\u0627\u0646",ph:"\u05e8\u05bb\u05de\u05b8\u05bc\u05d0\u05df",he:"\u05e8\u05d9\u05de\u05d5\u05df",ex:[]},
+  {id:"fo29",cat:"food",lv:3,ar:"\u0641\u0644\u0641\u0644",ph:"\u05e4\u05b4\u05bc\u05dc\u05b0\u05e4\u05b5\u05bc\u05dc",he:"\u05e4\u05dc\u05e4\u05dc",ex:[]},
+  {id:"fo30",cat:"food",lv:4,ar:"\u062a\u064a\u0646",ph:"\u05ea\u05b4\u05bc\u05d9\u05df",he:"\u05ea\u05d0\u05e0\u05d4",ex:[]},
+  {id:"fo31",cat:"food",lv:4,ar:"\u0646\u0628\u064a\u062a",ph:"\u05e0\u05b0\u05d1\u05b4\u05bc\u05d9\u05ea",he:"\u05d9\u05d9\u05df",ex:[]},
+  // COLORS
+  {id:"c1",cat:"colors",lv:1,ar:"\u0623\u062d\u0645\u0631",ph:"\u05d0\u05b7\u05d7\u05b0\u05de\u05b7\u05e8",he:"\u05d0\u05d3\u05d5\u05dd",ex:[]},
+  {id:"c2",cat:"colors",lv:1,ar:"\u0623\u0632\u0631\u0642",ph:"\u05d0\u05b7\u05d6\u05b0\u05e8\u05b7\u05e7",he:"\u05db\u05d7\u05d5\u05dc",ex:[]},
+  {id:"c3",cat:"colors",lv:1,ar:"\u0623\u062e\u0636\u0631",ph:"\u05d0\u05b7\u05d7'\u05b0\u05e6\u05b7'\u05e8",he:"\u05d9\u05e8\u05d5\u05e7",ex:[]},
+  {id:"c4",cat:"colors",lv:1,ar:"\u0623\u0635\u0641\u0631",ph:"\u05d0\u05b7\u05e6\u05b0\u05e4\u05b7\u05e8",he:"\u05e6\u05d4\u05d5\u05d1",ex:[]},
+  {id:"c5",cat:"colors",lv:1,ar:"\u0623\u0628\u064a\u0636",ph:"\u05d0\u05b7\u05d1\u05b0\u05d9\u05b7\u05d3",he:"\u05dc\u05d1\u05df",ex:[]},
+  {id:"c6",cat:"colors",lv:1,ar:"\u0623\u0633\u0648\u062f",ph:"\u05d0\u05b7\u05e1\u05b0\u05d5\u05b7\u05d3",he:"\u05e9\u05d7\u05d5\u05e8",ex:[]},
+  {id:"c7",cat:"colors",lv:1,ar:"\u0628\u0631\u062a\u0642\u0627\u0644\u064a",ph:"\u05d1\u05bc\u05d5\u05bc\u05e8\u05b0\u05ea\u05bb\u05bc\u05e7\u05b8\u05d0\u05dc\u05b4\u05d9",he:"\u05db\u05ea\u05d5\u05dd",ex:[]},
+  {id:"c8",cat:"colors",lv:2,ar:"\u0628\u0646\u0641\u0633\u062c\u064a",ph:"\u05d1\u05b7\u05bc\u05e0\u05b7\u05e4\u05b0\u05e1\u05b7\u05d2\u05b4'\u05d9",he:"\u05e1\u05d2\u05d5\u05dc",ex:[]},
+  {id:"c9",cat:"colors",lv:2,ar:"\u0648\u0631\u062f\u064a",ph:"\u05d5\u05b7\u05e8\u05b0\u05d3\u05b4\u05bc\u05d9",he:"\u05d5\u05e8\u05d5\u05d3",ex:[]},
+  {id:"c10",cat:"colors",lv:2,ar:"\u0628\u0646\u064a",ph:"\u05d1\u05bc\u05d5\u05bc\u05e0\u05b4\u05bc\u05d9",he:"\u05d7\u05d5\u05dd",ex:[]},
+  {id:"c11",cat:"colors",lv:2,ar:"\u0631\u0645\u0627\u062f\u064a",ph:"\u05e8\u05b0\u05de\u05b8\u05d0\u05d3\u05b4\u05d9",he:"\u05d0\u05e4\u05d5\u05e8",ex:[]},
+  {id:"c12",cat:"colors",lv:3,ar:"\u0630\u0647\u0628\u064a",ph:"\u05d3\u05b7\u05d4\u05b7\u05d1\u05b4\u05bc\u05d9",he:"\u05d6\u05d4\u05d5\u05d1",ex:[]},
+  {id:"c13",cat:"colors",lv:3,ar:"\u0641\u0636\u064a",ph:"\u05e4\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05db\u05e1\u05d5\u05e3",ex:[]},
+  // TIME
+  {id:"t1",cat:"time",lv:1,ar:"\u0627\u0644\u064a\u0648\u0645",ph:"\u05d0\u05b7\u05dc\u05d9\u05d5\u05b9\u05dd",he:"\u05d4\u05d9\u05d5\u05dd",ex:[]},
+  {id:"t2",cat:"time",lv:1,ar:"\u0628\u0643\u0631\u0627",ph:"\u05d1\u05bb\u05bc\u05db\u05b0\u05e8\u05b8\u05d4",he:"\u05de\u05d7\u05e8",ex:[]},
+  {id:"t3",cat:"time",lv:1,ar:"\u0625\u0645\u0628\u0627\u0631\u062d",ph:"\u05d0\u05b4\u05de\u05b0\u05d1\u05b8\u05bc\u05d0\u05e8\u05b4\u05d7",he:"\u05d0\u05ea\u05de\u05d5\u05dc",ex:[]},
+  {id:"t4",cat:"time",lv:1,ar:"\u0647\u0644\u0642",ph:"\u05d4\u05b7\u05dc\u05b7\u05bc\u05e7",he:"\u05e2\u05db\u05e9\u05d9\u05d5",ex:[]},
+  {id:"t5",cat:"time",lv:1,ar:"\u0628\u0639\u062f\u064a\u0646",ph:"\u05d1\u05b7\u05bc\u05e2\u05b0\u05d3\u05b5\u05bc\u05d9\u05df",he:"\u05d0\u05d7\u05e8 \u05db\u05da",ex:[]},
+  {id:"t6",cat:"time",lv:1,ar:"\u0642\u0628\u0644",ph:"\u05e7\u05b7\u05d1\u05b0\u05bc\u05dc",he:"\u05dc\u05e4\u05e0\u05d9",ex:[]},
+  {id:"t7",cat:"time",lv:1,ar:"\u062f\u0642\u064a\u0642\u0629",ph:"\u05d3\u05b7\u05bc\u05e7\u05b4\u05bc\u05d9\u05e7\u05b6\u05d4",he:"\u05d3\u05e7\u05d4",ex:[]},
+  {id:"t8",cat:"time",lv:1,ar:"\u0633\u0627\u0639\u0629",ph:"\u05e1\u05b8\u05d0\u05e2\u05b6\u05d4",he:"\u05e9\u05e2\u05d4",ex:[]},
+  {id:"t9",cat:"time",lv:1,ar:"\u064a\u0648\u0645",ph:"\u05d9\u05d5\u05b9\u05dd",he:"\u05d9\u05d5\u05dd",ex:[]},
+  {id:"t10",cat:"time",lv:1,ar:"\u0623\u0633\u0628\u0648\u0639",ph:"\u05d0\u05bb\u05e1\u05b0\u05d1\u05bc\u05d5\u05bc\u05e2\u05b7",he:"\u05e9\u05d1\u05d5\u05e2",ex:[]},
+  {id:"t11",cat:"time",lv:2,ar:"\u0634\u0647\u0631",ph:"\u05e9\u05b7\u05c1\u05d4\u05b0\u05e8",he:"\u05d7\u05d5\u05d3\u05e9",ex:[]},
+  {id:"t12",cat:"time",lv:2,ar:"\u0633\u0646\u0629",ph:"\u05e1\u05b7\u05e0\u05b6\u05d4",he:"\u05e9\u05e0\u05d4",ex:[]},
+  {id:"t13",cat:"time",lv:2,ar:"\u0635\u0628\u062d",ph:"\u05e6\u05bb\u05d1\u05bc\u05d5\u05bc\u05d7",he:"\u05d1\u05d5\u05e7\u05e8",ex:[]},
+  {id:"t14",cat:"time",lv:2,ar:"\u0636\u0647\u0631",ph:"\u05d3\u05bb\u05bc\u05d4\u05b6\u05e8",he:"\u05e6\u05d4\u05e8\u05d9\u05d9\u05dd",ex:[]},
+  {id:"t15",cat:"time",lv:2,ar:"\u0645\u0633\u0627",ph:"\u05de\u05b7\u05e1\u05b8\u05bc\u05d4",he:"\u05e2\u05e8\u05d1",ex:[]},
+  {id:"t16",cat:"time",lv:2,ar:"\u0644\u064a\u0644",ph:"\u05dc\u05b5\u05d9\u05dc",he:"\u05dc\u05d9\u05dc\u05d4",ex:[]},
+  {id:"t17",cat:"time",lv:2,ar:"\u0627\u0644\u0625\u062b\u0646\u064a\u0646",ph:"\u05d0\u05b7\u05dc-\u05d0\u05b4\u05ea\u05b0\u05e0\u05b5\u05d9\u05df",he:"\u05d9\u05d5\u05dd \u05e9\u05e0\u05d9",ex:[]},
+  {id:"t18",cat:"time",lv:2,ar:"\u0627\u0644\u062b\u0644\u0627\u062b\u0627\u0621",ph:"\u05d0\u05b7\u05ea-\u05ea\u05b0\u05bc\u05dc\u05b8\u05d0\u05ea\u05b8\u05d4",he:"\u05d9\u05d5\u05dd \u05e9\u05dc\u05d9\u05e9\u05d9",ex:[]},
+  {id:"t19",cat:"time",lv:2,ar:"\u0627\u0644\u0623\u0631\u0628\u0639\u0627\u0621",ph:"\u05d0\u05b7\u05dc-\u05d0\u05b7\u05e8\u05b0\u05d1\u05b0\u05bc\u05e2\u05b8\u05d4",he:"\u05d9\u05d5\u05dd \u05e8\u05d1\u05d9\u05e2\u05d9",ex:[]},
+  {id:"t20",cat:"time",lv:2,ar:"\u0627\u0644\u062e\u0645\u064a\u0633",ph:"\u05d0\u05b7\u05dc-\u05d7\u05b0\u05de\u05b4\u05d9\u05e1",he:"\u05d9\u05d5\u05dd \u05d7\u05de\u05d9\u05e9\u05d9",ex:[]},
+  {id:"t21",cat:"time",lv:2,ar:"\u0627\u0644\u062c\u0645\u0639\u0629",ph:"\u05d0\u05b7\u05dc-\u05d2\u05bb'\u05de\u05b0\u05e2\u05b6\u05d4",he:"\u05d9\u05d5\u05dd \u05e9\u05d9\u05e9\u05d9",ex:[]},
+  {id:"t22",cat:"time",lv:2,ar:"\u0627\u0644\u0633\u0628\u062a",ph:"\u05d0\u05b7\u05e1-\u05e1\u05b7\u05d1\u05b6\u05bc\u05ea",he:"\u05e9\u05d1\u05ea",ex:[]},
+  {id:"t23",cat:"time",lv:2,ar:"\u0627\u0644\u0623\u062d\u062f",ph:"\u05d0\u05b7\u05dc-\u05d0\u05b7\u05d7\u05b7\u05d3",he:"\u05d9\u05d5\u05dd \u05e8\u05d0\u05e9\u05d5\u05df",ex:[]},
+  {id:"t24",cat:"time",lv:3,ar:"\u0631\u0628\u064a\u0639",ph:"\u05e8\u05b7\u05d1\u05b4\u05bc\u05d9\u05e2",he:"\u05d0\u05d1\u05d9\u05d1",ex:[]},
+  {id:"t25",cat:"time",lv:3,ar:"\u0635\u064a\u0641",ph:"\u05e6\u05b5\u05d9\u05d9\u05e3",he:"\u05e7\u05d9\u05e5",ex:[]},
+  {id:"t26",cat:"time",lv:3,ar:"\u062e\u0631\u064a\u0641",ph:"\u05d7\u05b0\u05e8\u05b4\u05d9\u05e3",he:"\u05e1\u05ea\u05d9\u05d5",ex:[]},
+  {id:"t27",cat:"time",lv:3,ar:"\u0634\u062a\u0627",ph:"\u05e9\u05b0\u05c1\u05ea\u05b8\u05bc\u05d4",he:"\u05d7\u05d5\u05e8\u05e3",ex:[]},
+  // BODY
+  {id:"b1",cat:"body",lv:1,ar:"\u0631\u0623\u0633",ph:"\u05e8\u05b8\u05d0\u05e1",he:"\u05e8\u05d0\u05e9",ex:[]},
+  {id:"b2",cat:"body",lv:1,ar:"\u0648\u062c\u0647",ph:"\u05d5\u05b7\u05d2\u05b4'\u05d4",he:"\u05e4\u05e0\u05d9\u05dd",ex:[]},
+  {id:"b3",cat:"body",lv:1,ar:"\u0639\u064a\u0646",ph:"\u05e2\u05b5\u05d9\u05df",he:"\u05e2\u05d9\u05df",ex:[]},
+  {id:"b4",cat:"body",lv:1,ar:"\u0623\u0630\u0646",ph:"\u05d0\u05bb\u05d3\u05bb\u05df",he:"\u05d0\u05d5\u05d6\u05df",ex:[]},
+  {id:"b5",cat:"body",lv:1,ar:"\u0623\u0646\u0641",ph:"\u05d0\u05b7\u05e0\u05b0\u05e3",he:"\u05d0\u05e3",ex:[]},
+  {id:"b6",cat:"body",lv:1,ar:"\u0641\u0645",ph:"\u05e4\u05bb\u05de\u05bc",he:"\u05e4\u05d4",ex:[]},
+  {id:"b7",cat:"body",lv:1,ar:"\u064a\u062f",ph:"\u05d0\u05b4\u05d9\u05d3",he:"\u05d9\u05d3",ex:[]},
+  {id:"b8",cat:"body",lv:1,ar:"\u0631\u062c\u0644",ph:"\u05e8\u05b4\u05d2\u05b4'\u05dc",he:"\u05e8\u05d2\u05dc",ex:[]},
+  {id:"b9",cat:"body",lv:2,ar:"\u0642\u0644\u0628",ph:"\u05e7\u05b7\u05dc\u05b0\u05d1\u05bc",he:"\u05dc\u05d1",ex:[]},
+  {id:"b10",cat:"body",lv:2,ar:"\u0628\u0637\u0646",ph:"\u05d1\u05b7\u05bc\u05d8\u05b6\u05df",he:"\u05d1\u05d8\u05df",ex:[]},
+  {id:"b11",cat:"body",lv:2,ar:"\u0643\u062a\u0641",ph:"\u05db\u05b4\u05bc\u05ea\u05b6\u05e3",he:"\u05db\u05ea\u05e3",ex:[]},
+  {id:"b12",cat:"body",lv:2,ar:"\u0631\u0643\u0628\u0629",ph:"\u05e8\u05bb\u05db\u05b0\u05bc\u05d1\u05b6\u05bc\u05d4",he:"\u05d1\u05e8\u05da",ex:[]},
+  {id:"b13",cat:"body",lv:2,ar:"\u0638\u0647\u0631",ph:"\u05d3\u05b0\u05bc\u05d4\u05b6\u05e8",he:"\u05d2\u05d1",ex:[]},
+  {id:"b14",cat:"body",lv:2,ar:"\u0639\u0646\u0642",ph:"\u05e2\u05bb\u05e0\u05bb\u05e7",he:"\u05e6\u05d5\u05d5\u05d0\u05e8",ex:[]},
+  {id:"b15",cat:"body",lv:2,ar:"\u0623\u0633\u0646\u0627\u0646",ph:"\u05d0\u05b7\u05e1\u05b0\u05e0\u05b8\u05d0\u05df",he:"\u05e9\u05d9\u05e0\u05d9\u05d9\u05dd",ex:[]},
+  {id:"b16",cat:"body",lv:2,ar:"\u0634\u0639\u0631",ph:"\u05e9\u05b7\u05c1\u05e2\u05b6\u05e8",he:"\u05e9\u05d9\u05e2\u05e8",ex:[]},
+  {id:"b17",cat:"body",lv:3,ar:"\u0635\u062f\u0631",ph:"\u05e6\u05b7\u05d3\u05b6\u05bc\u05e8",he:"\u05d7\u05d6\u05d4",ex:[]},
+  {id:"b18",cat:"body",lv:3,ar:"\u062f\u0645",ph:"\u05d3\u05b7\u05de\u05bc",he:"\u05d3\u05dd",ex:[]},
+  {id:"b19",cat:"body",lv:3,ar:"\u062c\u0644\u062f",ph:"\u05d2\u05b4'\u05dc\u05b0\u05d3",he:"\u05e2\u05d5\u05e8",ex:[]},
+  {id:"b20",cat:"body",lv:4,ar:"\u0639\u0638\u0645",ph:"\u05e2\u05b7\u05d3\u05b0'\u05dd",he:"\u05e2\u05e6\u05dd",ex:[]},
+  // HOME
+  {id:"h1",cat:"home",lv:1,ar:"\u0628\u064a\u062a",ph:"\u05d1\u05b5\u05bc\u05d9\u05ea",he:"\u05d1\u05d9\u05ea",ex:[]},
+  {id:"h2",cat:"home",lv:1,ar:"\u0628\u0627\u0628",ph:"\u05d1\u05b8\u05bc\u05d0\u05d1",he:"\u05d3\u05dc\u05ea",ex:[]},
+  {id:"h3",cat:"home",lv:1,ar:"\u0634\u0628\u0627\u0643",ph:"\u05e9\u05bb\u05c1\u05d1\u05b8\u05bc\u05d0\u05e7",he:"\u05d7\u05dc\u05d5\u05df",ex:[]},
+  {id:"h4",cat:"home",lv:1,ar:"\u063a\u0631\u0641\u0629",ph:"\u05d2\u05bb'\u05e8\u05b0\u05e4\u05b6\u05d4",he:"\u05d7\u05d3\u05e8",ex:[]},
+  {id:"h5",cat:"home",lv:1,ar:"\u0645\u0637\u0628\u062e",ph:"\u05de\u05b7\u05d8\u05b0\u05d1\u05b7\u05bc\u05d7",he:"\u05de\u05d8\u05d1\u05d7",ex:[]},
+  {id:"h6",cat:"home",lv:1,ar:"\u062d\u0645\u0627\u0645",ph:"\u05d7\u05b7\u05de\u05b8\u05bc\u05d0\u05dd",he:"\u05e9\u05d9\u05e8\u05d5\u05ea\u05d9\u05dd",ex:[]},
+  {id:"h7",cat:"home",lv:1,ar:"\u0633\u0631\u064a\u0631",ph:"\u05e1\u05b0\u05e8\u05b4\u05d9\u05e8",he:"\u05de\u05d9\u05d8\u05d4",ex:[]},
+  {id:"h8",cat:"home",lv:1,ar:"\u0643\u0631\u0633\u064a",ph:"\u05db\u05bb\u05bc\u05e8\u05b0\u05e1\u05b4\u05d9",he:"\u05db\u05d9\u05e1\u05d0",ex:[]},
+  {id:"h9",cat:"home",lv:2,ar:"\u0637\u0627\u0648\u0644\u0629",ph:"\u05d8\u05b8\u05d0\u05d5\u05b0\u05dc\u05b6\u05d4",he:"\u05e9\u05d5\u05dc\u05d7\u05df",ex:[]},
+  {id:"h10",cat:"home",lv:2,ar:"\u062a\u0644\u0641\u0632\u064a\u0648\u0646",ph:"\u05ea\u05b4\u05bc\u05dc\u05b0\u05e4\u05b4\u05bc\u05d6\u05b0\u05d9\u05d5\u05b9\u05df",he:"\u05d8\u05dc\u05d5\u05d5\u05d9\u05d6\u05d9\u05d4",ex:[]},
+  {id:"h11",cat:"home",lv:2,ar:"\u062b\u0644\u0627\u062c\u0629",ph:"\u05ea\u05b7\u05bc\u05dc\u05b8\u05bc\u05d2\u05b6\u05d4",he:"\u05de\u05e7\u05e8\u05e8",ex:[]},
+  {id:"h12",cat:"home",lv:2,ar:"\u0645\u0643\u064a\u0641",ph:"\u05de\u05b0\u05db\u05b7\u05d9\u05b0\u05bc\u05e3",he:"\u05de\u05d6\u05d2\u05df",ex:[]},
+  {id:"h13",cat:"home",lv:2,ar:"\u0645\u0641\u062a\u0627\u062d",ph:"\u05de\u05b7\u05e4\u05b0\u05ea\u05b8\u05bc\u05d0\u05d7",he:"\u05de\u05e4\u05ea\u05d7",ex:[]},
+  {id:"h14",cat:"home",lv:2,ar:"\u0646\u0648\u0631",ph:"\u05e0\u05d5\u05bc\u05e8",he:"\u05d0\u05d5\u05e8 / \u05d7\u05e9\u05de\u05dc",ex:[]},
+  {id:"h15",cat:"home",lv:3,ar:"\u063a\u0633\u0627\u0644\u0629",ph:"\u05d2\u05b7'\u05e1\u05b8\u05bc\u05d0\u05dc\u05b6\u05d4",he:"\u05de\u05db\u05d5\u05e0\u05ea \u05db\u05d1\u05d9\u05e1\u05d4",ex:[]},
+  {id:"h16",cat:"home",lv:3,ar:"\u0633\u062c\u0627\u062f\u0629",ph:"\u05e1\u05b7\u05d2\u05b8\u05bc\u05d0\u05d3\u05b6\u05d4",he:"\u05e9\u05d8\u05d9\u05d7",ex:[]},
+  {id:"h17",cat:"home",lv:3,ar:"\u0628\u0644\u0643\u0648\u0646",ph:"\u05d1\u05b7\u05bc\u05dc\u05b0\u05db\u05bc\u05d5\u05b9\u05df",he:"\u05de\u05e8\u05e4\u05e1\u05ea",ex:[]},
+  {id:"h18",cat:"home",lv:3,ar:"\u062d\u0648\u0634",ph:"\u05d7\u05d5\u05b9\u05e9\u05c1",he:"\u05d7\u05e6\u05e8",ex:[]},
+  // MARKET
+  {id:"m1",cat:"market",lv:1,ar:"\u0633\u0648\u0642",ph:"\u05e1\u05d5\u05bc\u05e7",he:"\u05e9\u05d5\u05e7",ex:[]},
+  {id:"m2",cat:"market",lv:1,ar:"\u062f\u0643\u0627\u0646",ph:"\u05d3\u05bb\u05bc\u05db\u05b8\u05bc\u05d0\u05df",he:"\u05d7\u05e0\u05d5\u05ea",ex:[]},
+  {id:"m3",cat:"market",lv:1,ar:"\u0628\u0643\u0645\u061f",ph:"\u05d1\u05b0\u05bc\u05db\u05b7\u05dd?",he:"\u05db\u05de\u05d4 \u05e2\u05d5\u05dc\u05d4?",ex:[]},
+  {id:"m4",cat:"market",lv:1,ar:"\u063a\u0627\u0644\u064a",ph:"\u05d2\u05b8'\u05d0\u05dc\u05b4\u05d9",he:"\u05d9\u05e7\u05e8",ex:[]},
+  {id:"m5",cat:"market",lv:1,ar:"\u0631\u062e\u064a\u0635",ph:"\u05e8\u05b0\u05d7\u05b4\u05d9\u05e5",he:"\u05d6\u05d5\u05dc",ex:[]},
+  {id:"m6",cat:"market",lv:1,ar:"\u0628\u062f\u064a",ph:"\u05d1\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05d0\u05e0\u05d9 \u05e8\u05d5\u05e6\u05d4",ex:[]},
+  {id:"m7",cat:"market",lv:1,ar:"\u0645\u0627 \u0628\u062f\u064a",ph:"\u05de\u05b8\u05d0 \u05d1\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05d0\u05e0\u05d9 \u05dc\u05d0 \u05e8\u05d5\u05e6\u05d4",ex:[]},
+  {id:"m8",cat:"market",lv:1,ar:"\u0643\u062a\u064a\u0631",ph:"\u05db\u05b0\u05bc\u05ea\u05b4\u05d9\u05e8",he:"\u05d4\u05e8\u05d1\u05d4",ex:[]},
+  {id:"m9",cat:"market",lv:1,ar:"\u0634\u0648\u064a",ph:"\u05e9\u05b0\u05c1\u05d5\u05b5\u05d9",he:"\u05e7\u05e6\u05ea",ex:[]},
+  {id:"m10",cat:"market",lv:2,ar:"\u0627\u0634\u062a\u0631\u064a\u062a",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05ea\u05b0\u05bc\u05e8\u05b5\u05d9\u05ea",he:"\u05e7\u05e0\u05d9\u05ea\u05d9",ex:[]},
+  {id:"m11",cat:"market",lv:2,ar:"\u0646\u0642\u0648\u062f",ph:"\u05e0\u05b0\u05e7\u05d5\u05bc\u05d3",he:"\u05de\u05d6\u05d5\u05de\u05df",ex:[]},
+  {id:"m12",cat:"market",lv:2,ar:"\u0628\u0637\u0627\u0642\u0629",ph:"\u05d1\u05b4\u05bc\u05d8\u05b8\u05bc\u05d0\u05e7\u05b6\u05d4",he:"\u05db\u05e8\u05d8\u05d9\u05e1 \u05d0\u05e9\u05e8\u05d0\u05d9",ex:[]},
+  {id:"m13",cat:"market",lv:2,ar:"\u062d\u0633\u0627\u0628",ph:"\u05d7\u05b0\u05e1\u05b8\u05d0\u05d1",he:"\u05d7\u05e9\u05d1\u05d5\u05df",ex:[]},
+  {id:"m14",cat:"market",lv:3,ar:"\u062a\u062e\u0641\u064a\u0636",ph:"\u05ea\u05b7\u05bc\u05d7\u05b0\u05e4\u05b4\u05bc\u05d9\u05d3",he:"\u05d4\u05e0\u05d7\u05d4",ex:[]},
+  {id:"m15",cat:"market",lv:3,ar:"\u0648\u0635\u0644",ph:"\u05d5\u05b7\u05e6\u05b6\u05bc\u05dc",he:"\u05e7\u05d1\u05dc\u05d4",ex:[]},
+  // DIRECTIONS
+  {id:"d1",cat:"directions",lv:1,ar:"\u0648\u064a\u0646\u061f",ph:"\u05d5\u05b5\u05d9\u05df?",he:"\u05d0\u05d9\u05e4\u05d4?",ex:[]},
+  {id:"d2",cat:"directions",lv:1,ar:"\u064a\u0645\u064a\u0646",ph:"\u05d9\u05b0\u05de\u05b4\u05d9\u05df",he:"\u05d9\u05de\u05d9\u05df",ex:[]},
+  {id:"d3",cat:"directions",lv:1,ar:"\u0634\u0645\u0627\u0644",ph:"\u05e9\u05b0\u05c1\u05de\u05b8\u05d0\u05dc",he:"\u05e9\u05de\u05d0\u05dc",ex:[]},
+  {id:"d4",cat:"directions",lv:1,ar:"\u062f\u063a\u0631\u064a",ph:"\u05d3\u05bb\u05bc\u05d2\u05b0\u05e8\u05b4\u05d9",he:"\u05d9\u05e9\u05e8",ex:[]},
+  {id:"d5",cat:"directions",lv:1,ar:"\u0642\u0631\u064a\u0628",ph:"\u05e7\u05b7\u05e8\u05b4\u05d9\u05d1",he:"\u05e7\u05e8\u05d5\u05d1",ex:[]},
+  {id:"d6",cat:"directions",lv:1,ar:"\u0628\u0639\u064a\u062f",ph:"\u05d1\u05b0\u05bc\u05e2\u05b4\u05d9\u05d3",he:"\u05e8\u05d7\u05d5\u05e7",ex:[]},
+  {id:"d7",cat:"directions",lv:1,ar:"\u0641\u0648\u0642",ph:"\u05e4\u05d5\u05b9\u05e7",he:"\u05dc\u05de\u05e2\u05dc\u05d4",ex:[]},
+  {id:"d8",cat:"directions",lv:2,ar:"\u062a\u062d\u062a",ph:"\u05ea\u05b7\u05d7\u05b0\u05ea\u05bc",he:"\u05dc\u05de\u05d8\u05d4",ex:[]},
+  {id:"d9",cat:"directions",lv:2,ar:"\u062c\u0646\u0628",ph:"\u05d2\u05b7'\u05e0\u05b0\u05d1\u05bc",he:"\u05dc\u05d9\u05d3",ex:[]},
+  {id:"d10",cat:"directions",lv:2,ar:"\u0642\u062f\u0627\u0645",ph:"\u05e7\u05bb\u05d3\u05b8\u05bc\u05d0\u05dd",he:"\u05dc\u05e4\u05e0\u05d9 / \u05de\u05d5\u05dc",ex:[]},
+  {id:"d11",cat:"directions",lv:2,ar:"\u0648\u0631\u0627",ph:"\u05d5\u05b0\u05e8\u05b8\u05d4",he:"\u05de\u05d0\u05d7\u05d5\u05e8\u05d9",ex:[]},
+  {id:"d12",cat:"directions",lv:2,ar:"\u062d\u0627\u0631\u0629",ph:"\u05d7\u05b8\u05d0\u05e8\u05b6\u05d4",he:"\u05e9\u05db\u05d5\u05e0\u05d4",ex:[]},
+  {id:"d13",cat:"directions",lv:3,ar:"\u0645\u0646\u0637\u0642\u0629",ph:"\u05de\u05b7\u05e0\u05b0\u05d8\u05b7\u05e7\u05b6\u05d4",he:"\u05d0\u05d6\u05d5\u05e8",ex:[]},
+  {id:"d14",cat:"directions",lv:3,ar:"\u062a\u0642\u0631\u064a\u0628\u0627\u064b",ph:"\u05ea\u05b7\u05bc\u05e7\u05b0\u05e8\u05b4\u05d9\u05d1\u05b7\u05df",he:"\u05d1\u05e2\u05e8\u05da",ex:[]},
+  {id:"d15",cat:"directions",lv:3,ar:"\u0639\u0644\u0649 \u0637\u0648\u0644",ph:"\u05e2\u05b7\u05dc\u05b7-\u05d8\u05d5\u05bc\u05dc",he:"\u05d9\u05e9\u05e8 / \u05db\u05dc \u05d4\u05d6\u05de\u05df",ex:[]},
+  // FEELINGS
+  {id:"fe1",cat:"feelings",lv:1,ar:"\u0645\u0628\u0633\u0648\u0637",ph:"\u05de\u05b7\u05d1\u05b0\u05e1\u05d5\u05bc\u05d8",he:"\u05e9\u05de\u05d7",ex:[]},
+  {id:"fe2",cat:"feelings",lv:1,ar:"\u0632\u0639\u0644\u0627\u0646",ph:"\u05d6\u05b7\u05e2\u05b0\u05dc\u05b8\u05d0\u05df",he:"\u05e2\u05e6\u05d5\u05d1 / \u05db\u05d5\u05e2\u05e1",ex:[]},
+  {id:"fe3",cat:"feelings",lv:1,ar:"\u062a\u0639\u0628\u0627\u0646",ph:"\u05ea\u05b7\u05bc\u05e2\u05b0\u05d1\u05b8\u05bc\u05d0\u05df",he:"\u05e2\u05d9\u05d9\u05e3 / \u05d7\u05d5\u05dc\u05d4",ex:[]},
+  {id:"fe4",cat:"feelings",lv:1,ar:"\u062e\u0627\u064a\u0641",ph:"\u05d7\u05b8\u05d0\u05d9\u05b4\u05e3",he:"\u05de\u05e4\u05d5\u05d7\u05d3",ex:[]},
+  {id:"fe5",cat:"feelings",lv:1,ar:"\u062c\u0648\u0639\u0627\u0646",ph:"\u05d2\u05b7'\u05d5\u05b0\u05e2\u05b8\u05d0\u05df",he:"\u05e8\u05e2\u05d1",ex:[]},
+  {id:"fe6",cat:"feelings",lv:1,ar:"\u0639\u0637\u0634\u0627\u0646",ph:"\u05e2\u05b7\u05d8\u05b0\u05e9\u05b8\u05c1\u05d0\u05df",he:"\u05e6\u05de\u05d0",ex:[]},
+  {id:"fe7",cat:"feelings",lv:1,ar:"\u0628\u0631\u062f",ph:"\u05d1\u05b7\u05bc\u05e8\u05b0\u05d3",he:"\u05e7\u05e8 (\u05dc\u05d9 \u05e7\u05e8)",ex:[]},
+  {id:"fe8",cat:"feelings",lv:1,ar:"\u062d\u0631",ph:"\u05d7\u05b7\u05e8\u05bc",he:"\u05d7\u05dd (\u05dc\u05d9 \u05d7\u05dd)",ex:[]},
+  {id:"fe9",cat:"feelings",lv:2,ar:"\u0645\u0646\u064a\u062d",ph:"\u05de\u05b0\u05e0\u05b4\u05d9\u05d7",he:"\u05d1\u05e1\u05d3\u05e8 / \u05d8\u05d5\u05d1",ex:[]},
+  {id:"fe10",cat:"feelings",lv:2,ar:"\u0645\u0634 \u0645\u0646\u064a\u062d",ph:"\u05de\u05b4\u05e9\u05c1 \u05de\u05b0\u05e0\u05b4\u05d9\u05d7",he:"\u05dc\u05d0 \u05d1\u05e1\u05d3\u05e8",ex:[]},
+  {id:"fe11",cat:"feelings",lv:2,ar:"\u0641\u0631\u062d\u0627\u0646",ph:"\u05e4\u05b7\u05bc\u05e8\u05b0\u05d7\u05b8\u05d0\u05df",he:"\u05e9\u05de\u05d7 / \u05e2\u05dc\u05d9\u05d6",ex:[]},
+  {id:"fe12",cat:"feelings",lv:2,ar:"\u0632\u0647\u0642\u0627\u0646",ph:"\u05d6\u05b8\u05d4\u05b0\u05e7\u05b8\u05d0\u05df",he:"\u05de\u05e9\u05d5\u05e2\u05de\u05dd",ex:[]},
+  {id:"fe13",cat:"feelings",lv:2,ar:"\u0645\u0631\u062a\u0627\u062d",ph:"\u05de\u05bb\u05e8\u05b0\u05ea\u05b8\u05bc\u05d0\u05d7",he:"\u05e8\u05d2\u05d5\u05e2 / \u05e0\u05d5\u05d7",ex:[]},
+  {id:"fe14",cat:"feelings",lv:2,ar:"\u0645\u062a\u062d\u0645\u0633",ph:"\u05de\u05bb\u05ea\u05b0\u05d7\u05b7\u05de\u05b5\u05bc\u05e1",he:"\u05e0\u05dc\u05d4\u05d1 / \u05e0\u05e8\u05d2\u05e9",ex:[]},
+  {id:"fe15",cat:"feelings",lv:3,ar:"\u0642\u0644\u0642\u0627\u0646",ph:"\u05e7\u05b7\u05dc\u05b0\u05e7\u05b8\u05d0\u05df",he:"\u05d7\u05e8\u05d3 / \u05d3\u05d5\u05d0\u05d2",ex:[]},
+  {id:"fe16",cat:"feelings",lv:3,ar:"\u062e\u062c\u0644\u0627\u0646",ph:"\u05d7\u05b7\u05d2\u05b4'\u05dc\u05b8\u05d0\u05df",he:"\u05de\u05ea\u05d1\u05d9\u05d9\u05e9",ex:[]},
+  {id:"fe17",cat:"feelings",lv:3,ar:"\u0645\u062a\u0648\u062a\u0631",ph:"\u05de\u05bb\u05ea\u05b7\u05d5\u05b8\u05bc\u05ea\u05b5\u05bc\u05e8",he:"\u05de\u05ea\u05d5\u05d7 / \u05e2\u05e6\u05d1\u05e0\u05d9",ex:[]},
+  {id:"fe18",cat:"feelings",lv:3,ar:"\u0645\u0634\u062a\u0627\u0642",ph:"\u05de\u05bb\u05e9\u05b0\u05c1\u05ea\u05b8\u05bc\u05d0\u05e7",he:"\u05de\u05ea\u05d2\u05e2\u05d2\u05e2",ex:[]},
+  // NATURE
+  {id:"na1",cat:"nature",lv:1,ar:"\u0634\u0645\u0633",ph:"\u05e9\u05b7\u05c1\u05de\u05b0\u05e1",he:"\u05e9\u05de\u05e9",ex:[]},
+  {id:"na2",cat:"nature",lv:1,ar:"\u0642\u0645\u0631",ph:"\u05e7\u05b7\u05de\u05b7\u05e8",he:"\u05d9\u05e8\u05d7",ex:[]},
+  {id:"na3",cat:"nature",lv:1,ar:"\u0645\u0637\u0631",ph:"\u05de\u05b7\u05d8\u05b7\u05e8",he:"\u05d2\u05e9\u05dd",ex:[]},
+  {id:"na4",cat:"nature",lv:1,ar:"\u0628\u062d\u0631",ph:"\u05d1\u05b7\u05bc\u05d7\u05b7\u05e8",he:"\u05d9\u05dd",ex:[]},
+  {id:"na5",cat:"nature",lv:1,ar:"\u062c\u0628\u0644",ph:"\u05d2\u05b7'\u05d1\u05b7\u05bc\u05dc",he:"\u05d4\u05e8",ex:[]},
+  {id:"na6",cat:"nature",lv:1,ar:"\u0634\u062c\u0631\u0629",ph:"\u05e9\u05b7\u05c1\u05d2\u05b7'\u05e8\u05b6\u05d4",he:"\u05e2\u05e5",ex:[]},
+  {id:"na7",cat:"nature",lv:2,ar:"\u0648\u0627\u062f\u064a",ph:"\u05d5\u05b8\u05d0\u05d3\u05b4\u05d9",he:"\u05d5\u05d0\u05d3\u05d9 / \u05e2\u05de\u05e7",ex:[]},
+  {id:"na8",cat:"nature",lv:2,ar:"\u0647\u0648\u0627",ph:"\u05d4\u05b7\u05d5\u05b8\u05bc\u05d4",he:"\u05d0\u05d5\u05d5\u05d9\u05e8 / \u05e8\u05d5\u05d7",ex:[]},
+  {id:"na9",cat:"nature",lv:2,ar:"\u0646\u062c\u0645\u0629",ph:"\u05e0\u05b7\u05d2\u05b4'\u05de\u05b6\u05d4",he:"\u05db\u05d5\u05db\u05d1",ex:[]},
+  {id:"na10",cat:"nature",lv:2,ar:"\u0633\u0645\u0627\u0621",ph:"\u05e1\u05b7\u05de\u05b8\u05bc\u05d4",he:"\u05e9\u05de\u05d9\u05d9\u05dd",ex:[]},
+  {id:"na11",cat:"nature",lv:2,ar:"\u0623\u0631\u0636",ph:"\u05d0\u05b7\u05e8\u05b0\u05d3",he:"\u05d0\u05d3\u05de\u05d4 / \u05e7\u05e8\u05e7\u05e2",ex:[]},
+  {id:"na12",cat:"nature",lv:2,ar:"\u0646\u0647\u0631",ph:"\u05e0\u05b7\u05d4\u05b7\u05e8",he:"\u05e0\u05d4\u05e8",ex:[]},
+  {id:"na13",cat:"nature",lv:3,ar:"\u063a\u0627\u0628\u0629",ph:"\u05d2\u05b8'\u05d0\u05d1\u05b6\u05bc\u05d4",he:"\u05d9\u05e2\u05e8",ex:[]},
+  {id:"na14",cat:"nature",lv:3,ar:"\u0635\u062d\u0631\u0627",ph:"\u05e6\u05b7\u05d7\u05b0\u05e8\u05b8\u05d4",he:"\u05de\u05d3\u05d1\u05e8",ex:[]},
+  {id:"na15",cat:"nature",lv:3,ar:"\u062d\u062c\u0631",ph:"\u05d7\u05b7\u05d2\u05b7\u05bc\u05e8",he:"\u05d0\u05d1\u05df",ex:[]},
+  // TRANSPORT
+  {id:"tr1",cat:"transport",lv:1,ar:"\u0633\u064a\u0627\u0631\u0629",ph:"\u05e1\u05b7\u05d9\u05b8\u05bc\u05d0\u05e8\u05b6\u05d4",he:"\u05de\u05db\u05d5\u05e0\u05d9\u05ea",ex:[]},
+  {id:"tr2",cat:"transport",lv:1,ar:"\u0628\u0627\u0635",ph:"\u05d1\u05b8\u05bc\u05d0\u05e5",he:"\u05d0\u05d5\u05d8\u05d5\u05d1\u05d5\u05e1",ex:[]},
+  {id:"tr3",cat:"transport",lv:1,ar:"\u062a\u0643\u0633\u064a",ph:"\u05d8\u05b7\u05e7\u05b0\u05e1\u05b4\u05d9",he:"\u05de\u05d5\u05e0\u05d9\u05ea",ex:[]},
+  {id:"tr4",cat:"transport",lv:1,ar:"\u0637\u0631\u064a\u0642",ph:"\u05d8\u05b7\u05e8\u05b4\u05d9\u05e7",he:"\u05d3\u05e8\u05da",ex:[]},
+  {id:"tr5",cat:"transport",lv:2,ar:"\u0645\u062d\u0637\u0629",ph:"\u05de\u05b7\u05d7\u05b7\u05d8\u05b8\u05bc\u05d4",he:"\u05ea\u05d7\u05e0\u05d4",ex:[]},
+  {id:"tr6",cat:"transport",lv:2,ar:"\u062f\u0631\u0627\u062c\u0629",ph:"\u05d3\u05b0\u05bc\u05e8\u05b8\u05d2\u05b6\u05d4",he:"\u05d0\u05d5\u05e4\u05e0\u05d9\u05d9\u05dd",ex:[]},
+  {id:"tr7",cat:"transport",lv:2,ar:"\u0637\u064a\u0627\u0631\u0629",ph:"\u05d8\u05b7\u05d9\u05b8\u05bc\u05d0\u05e8\u05b6\u05d4",he:"\u05de\u05d8\u05d5\u05e1",ex:[]},
+  {id:"tr8",cat:"transport",lv:2,ar:"\u0632\u062d\u0645\u0629",ph:"\u05d6\u05b7\u05d7\u05b0\u05de\u05b6\u05d4",he:"\u05e4\u05e7\u05e7 \u05ea\u05e0\u05d5\u05e2\u05d4",ex:[]},
+  {id:"tr9",cat:"transport",lv:3,ar:"\u0645\u0648\u0642\u0641",ph:"\u05de\u05b7\u05d5\u05b0\u05e7\u05b6\u05e3",he:"\u05d7\u05e0\u05d9\u05d4",ex:[]},
+  {id:"tr10",cat:"transport",lv:3,ar:"\u0623\u0648\u062a\u0648\u0633\u062a\u0631\u0627\u062f",ph:"\u05d0\u05d5\u05b9\u05d8\u05d5\u05b9\u05e1\u05b0\u05d8\u05b0\u05e8\u05b8\u05d0\u05d3",he:"\u05db\u05d1\u05d9\u05e9 \u05de\u05d4\u05d9\u05e8",ex:[]},
+  // WORK
+  {id:"w1",cat:"work",lv:1,ar:"\u0634\u063a\u0644",ph:"\u05e9\u05bb\u05c1\u05d2\u05b4'\u05dc",he:"\u05e2\u05d1\u05d5\u05d3\u05d4",ex:[]},
+  {id:"w2",cat:"work",lv:1,ar:"\u0645\u062f\u0631\u0633\u0629",ph:"\u05de\u05b7\u05d3\u05b0\u05e8\u05b7\u05e1\u05b6\u05d4",he:"\u05d1\u05d9\u05ea \u05e1\u05e4\u05e8",ex:[]},
+  {id:"w3",cat:"work",lv:1,ar:"\u062f\u0643\u062a\u0648\u0631",ph:"\u05d3\u05bb\u05bc\u05db\u05b0\u05bc\u05ea\u05d5\u05bc\u05e8",he:"\u05e8\u05d5\u05e4\u05d0",ex:[]},
+  {id:"w4",cat:"work",lv:1,ar:"\u0645\u0647\u0646\u062f\u0633",ph:"\u05de\u05bb\u05d4\u05b7\u05e0\u05b0\u05d3\u05b4\u05bc\u05e1",he:"\u05de\u05d4\u05e0\u05d3\u05e1",ex:[]},
+  {id:"w5",cat:"work",lv:2,ar:"\u0623\u0633\u062a\u0627\u0630",ph:"\u05d0\u05bb\u05e1\u05b0\u05ea\u05b8\u05bc\u05d0\u05d6",he:"\u05de\u05d5\u05e8\u05d4",ex:[]},
+  {id:"w6",cat:"work",lv:2,ar:"\u0634\u0631\u0637\u064a",ph:"\u05e9\u05bb\u05c1\u05e8\u05b0\u05d8\u05b4\u05bc\u05d9",he:"\u05e9\u05d5\u05d8\u05e8",ex:[]},
+  {id:"w7",cat:"work",lv:2,ar:"\u0645\u0645\u0631\u0636\u0629",ph:"\u05de\u05bb\u05de\u05b7\u05bc\u05e8\u05b0\u05bc\u05d3\u05b6\u05d4",he:"\u05d0\u05d7\u05d5\u05ea",ex:[]},
+  {id:"w8",cat:"work",lv:2,ar:"\u0645\u0648\u0638\u0641",ph:"\u05de\u05bb\u05d5\u05b7\u05d3\u05b0\u05bc\u05d3\u05b7\u05e3",he:"\u05e2\u05d5\u05d1\u05d3 / \u05e4\u05e7\u05d9\u05d3",ex:[]},
+  {id:"w9",cat:"work",lv:3,ar:"\u0645\u062d\u0627\u0645\u064a",ph:"\u05de\u05bb\u05d7\u05b8\u05d0\u05de\u05b4\u05d9",he:"\u05e2\u05d5\u05e8\u05da \u05d3\u05d9\u05df",ex:[]},
+  {id:"w10",cat:"work",lv:3,ar:"\u0645\u062f\u064a\u0631",ph:"\u05de\u05bb\u05d3\u05b4\u05bc\u05d9\u05e8",he:"\u05de\u05e0\u05d4\u05dc",ex:[]},
+  {id:"w11",cat:"work",lv:3,ar:"\u062a\u0627\u062c\u0631",ph:"\u05ea\u05b8\u05bc\u05d2\u05b4'\u05e8",he:"\u05e1\u05d5\u05d7\u05e8",ex:[]},
+  {id:"w12",cat:"work",lv:4,ar:"\u0645\u062d\u0627\u0633\u0628",ph:"\u05de\u05bb\u05d7\u05b8\u05d0\u05e1\u05b5\u05d1",he:"\u05e8\u05d5\u05d0\u05d4 \u05d7\u05e9\u05d1\u05d5\u05df",ex:[]},
+  {id:"w13",cat:"work",lv:4,ar:"\u0631\u0627\u062a\u0628",ph:"\u05e8\u05b8\u05d0\u05ea\u05b5\u05d1",he:"\u05de\u05e9\u05db\u05d5\u05e8\u05ea",ex:[]},
+  // VERBS
+  {id:"v1",cat:"verbs",lv:1,ar:"\u0631\u0648\u062d",ph:"\u05e8\u05d5\u05bc\u05d7",he:"\u05dc\u05da",ex:[]},
+  {id:"v2",cat:"verbs",lv:1,ar:"\u062a\u0639\u0627\u0644",ph:"\u05ea\u05b0\u05bc\u05e2\u05b8\u05d0\u05dc",he:"\u05d1\u05d5\u05d0",ex:[]},
+  {id:"v3",cat:"verbs",lv:1,ar:"\u0643\u0644",ph:"\u05db\u05bb\u05bc\u05dc",he:"\u05d0\u05db\u05d5\u05dc",ex:[]},
+  {id:"v4",cat:"verbs",lv:1,ar:"\u0627\u0634\u0631\u0628",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05e8\u05b7\u05d1",he:"\u05e9\u05ea\u05d4",ex:[]},
+  {id:"v5",cat:"verbs",lv:1,ar:"\u0646\u0627\u0645",ph:"\u05e0\u05b8\u05d0\u05dd",he:"\u05d9\u05e9\u05df",ex:[]},
+  {id:"v6",cat:"verbs",lv:2,ar:"\u0627\u0642\u0639\u062f",ph:"\u05d0\u05b4\u05e7\u05b0\u05e2\u05bb\u05d3",he:"\u05e9\u05d1",ex:[]},
+  {id:"v7",cat:"verbs",lv:2,ar:"\u0642\u0648\u0645",ph:"\u05e7\u05d5\u05bc\u05dd",he:"\u05e7\u05d5\u05dd",ex:[]},
+  {id:"v8",cat:"verbs",lv:2,ar:"\u0634\u0648\u0641",ph:"\u05e9\u05c1\u05d5\u05bc\u05e3",he:"\u05ea\u05e8\u05d0\u05d4",ex:[]},
+  {id:"v9",cat:"verbs",lv:2,ar:"\u0633\u0645\u0639",ph:"\u05e1\u05b0\u05de\u05b7\u05e2",he:"\u05ea\u05e9\u05de\u05e2",ex:[]},
+  {id:"v10",cat:"verbs",lv:2,ar:"\u062d\u0643\u064a",ph:"\u05d7\u05b0\u05db\u05b4\u05bc\u05d9",he:"\u05d3\u05d1\u05e8",ex:[]},
+  {id:"v11",cat:"verbs",lv:2,ar:"\u062e\u0630",ph:"\u05d7\u05d5\u05bc\u05d3",he:"\u05e7\u05d7",ex:[]},
+  {id:"v12",cat:"verbs",lv:2,ar:"\u0639\u0637\u064a",ph:"\u05e2\u05b0\u05d8\u05b4\u05d9",he:"\u05ea\u05df",ex:[]},
+  {id:"v13",cat:"verbs",lv:2,ar:"\u0627\u0639\u0645\u0644",ph:"\u05d0\u05b4\u05e2\u05b0\u05de\u05b7\u05dc",he:"\u05e2\u05e9\u05d4",ex:[]},
+  {id:"v14",cat:"verbs",lv:3,ar:"\u0641\u062a\u062d",ph:"\u05e4\u05b0\u05bc\u05ea\u05b7\u05d7",he:"\u05e4\u05ea\u05d7",ex:[]},
+  {id:"v15",cat:"verbs",lv:3,ar:"\u0633\u0643\u0631",ph:"\u05e1\u05b7\u05db\u05b6\u05bc\u05e8",he:"\u05e1\u05d2\u05d5\u05e8",ex:[]},
+  {id:"v16",cat:"verbs",lv:3,ar:"\u0643\u062a\u0628",ph:"\u05db\u05b0\u05bc\u05ea\u05bb\u05d1",he:"\u05db\u05ea\u05d5\u05d1",ex:[]},
+  {id:"v17",cat:"verbs",lv:3,ar:"\u0627\u0634\u062a\u0631\u0649",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05ea\u05b0\u05bc\u05e8\u05b4\u05d9",he:"\u05e7\u05e0\u05d4",ex:[]},
+  {id:"v18",cat:"verbs",lv:3,ar:"\u0631\u062c\u0639",ph:"\u05e8\u05b0\u05d2\u05b7\u05e2",he:"\u05d7\u05d6\u05d5\u05e8",ex:[]},
+  {id:"v19",cat:"verbs",lv:3,ar:"\u0628\u062d\u0628",ph:"\u05d1\u05b0\u05bc\u05d7\u05bb\u05d1\u05bc",he:"\u05d0\u05e0\u05d9 \u05d0\u05d5\u05d4\u05d1",ex:[]},
+  {id:"v20",cat:"verbs",lv:4,ar:"\u0633\u0627\u0639\u062f",ph:"\u05e1\u05b8\u05d0\u05e2\u05b4\u05d3",he:"\u05e2\u05d6\u05d5\u05e8",ex:[]},
+  {id:"v21",cat:"verbs",lv:4,ar:"\u0641\u0643\u0631",ph:"\u05e4\u05b7\u05bc\u05db\u05b6\u05bc\u05e8",he:"\u05d7\u05e9\u05d5\u05d1",ex:[]},
+  {id:"v22",cat:"verbs",lv:4,ar:"\u0641\u0647\u0645",ph:"\u05e4\u05b0\u05bc\u05d4\u05b4\u05dd",he:"\u05d4\u05d1\u05df",ex:[]},
+  // ADJECTIVES
+  {id:"adj1",cat:"adjectives",lv:1,ar:"\u0643\u0628\u064a\u0631",ph:"\u05db\u05b0\u05bc\u05d1\u05b4\u05d9\u05e8",he:"\u05d2\u05d3\u05d5\u05dc",ex:[]},
+  {id:"adj2",cat:"adjectives",lv:1,ar:"\u0632\u063a\u064a\u0631",ph:"\u05d6\u05b0\u05d2\u05b4\u05d9\u05e8",he:"\u05e7\u05d8\u05df",ex:[]},
+  {id:"adj3",cat:"adjectives",lv:1,ar:"\u062d\u0644\u0648",ph:"\u05d7\u05bb\u05dc\u05b0\u05d5\u05b6\u05d4",he:"\u05d9\u05e4\u05d4 / \u05e0\u05d7\u05de\u05d3",ex:[]},
+  {id:"adj4",cat:"adjectives",lv:1,ar:"\u0648\u062d\u0634",ph:"\u05d5\u05b7\u05d7\u05b6\u05e9\u05c1",he:"\u05e8\u05e2 / \u05de\u05d2\u05e2\u05d9\u05dc",ex:[]},
+  {id:"adj5",cat:"adjectives",lv:2,ar:"\u0637\u0648\u064a\u0644",ph:"\u05d8\u05b0\u05d5\u05b4\u05d9\u05dc",he:"\u05d2\u05d1\u05d5\u05d4 / \u05d0\u05e8\u05d5\u05da",ex:[]},
+  {id:"adj6",cat:"adjectives",lv:2,ar:"\u0642\u0635\u064a\u0631",ph:"\u05e7\u05b0\u05e6\u05b4\u05d9\u05e8",he:"\u05e0\u05de\u05d5\u05da / \u05e7\u05e6\u05e8",ex:[]},
+  {id:"adj7",cat:"adjectives",lv:2,ar:"\u062c\u062f\u064a\u062f",ph:"\u05d2\u05b4'\u05d3\u05b4\u05d9\u05d3",he:"\u05d7\u05d3\u05e9",ex:[]},
+  {id:"adj8",cat:"adjectives",lv:2,ar:"\u0642\u062f\u064a\u0645",ph:"\u05e7\u05b0\u05d3\u05b4\u05d9\u05dd",he:"\u05d9\u05e9\u05df / \u05e2\u05ea\u05d9\u05e7",ex:[]},
+  {id:"adj9",cat:"adjectives",lv:2,ar:"\u0646\u0638\u064a\u0641",ph:"\u05e0\u05b0\u05d3\u05b4\u05d9\u05e3",he:"\u05e0\u05e7\u05d9",ex:[]},
+  {id:"adj10",cat:"adjectives",lv:2,ar:"\u0648\u0633\u062e",ph:"\u05d5\u05b0\u05e1\u05b4\u05d7",he:"\u05de\u05dc\u05d5\u05db\u05dc\u05da",ex:[]},
+  {id:"adj11",cat:"adjectives",lv:3,ar:"\u0633\u0631\u064a\u0639",ph:"\u05e1\u05b0\u05e8\u05b4\u05d9\u05e2\u05b7",he:"\u05de\u05d4\u05d9\u05e8",ex:[]},
+  {id:"adj12",cat:"adjectives",lv:3,ar:"\u0628\u0637\u064a\u0621",ph:"\u05d1\u05b0\u05bc\u05d8\u05b4\u05d9",he:"\u05d0\u05d9\u05d8\u05d9",ex:[]},
+  {id:"adj13",cat:"adjectives",lv:3,ar:"\u0635\u0639\u0628",ph:"\u05e6\u05b7\u05e2\u05b6\u05d1",he:"\u05e7\u05e9\u05d4",ex:[]},
+  {id:"adj14",cat:"adjectives",lv:3,ar:"\u0633\u0647\u0644",ph:"\u05e1\u05b7\u05d4\u05b6\u05dc",he:"\u05e7\u05dc / \u05e4\u05e9\u05d5\u05d8",ex:[]},
+  {id:"adj15",cat:"adjectives",lv:3,ar:"\u0645\u0645\u062a\u0627\u0632",ph:"\u05de\u05bb\u05de\u05b0\u05ea\u05b8\u05bc\u05d0\u05d6",he:"\u05de\u05e6\u05d5\u05d9\u05df",ex:[]},
+  {id:"adj16",cat:"adjectives",lv:3,ar:"\u0645\u0647\u0645",ph:"\u05de\u05bb\u05d4\u05b4\u05de\u05bc",he:"\u05d7\u05e9\u05d5\u05d1",ex:[]},
+  {id:"adj17",cat:"adjectives",lv:4,ar:"\u0645\u0634\u063a\u0648\u0644",ph:"\u05de\u05b7\u05e9\u05b0\u05c1\u05d2\u05bb\u05bc\u05d5\u05dc",he:"\u05e2\u05e1\u05d5\u05e7",ex:[]},
+  {id:"adj18",cat:"adjectives",lv:4,ar:"\u0641\u0627\u0636\u064a",ph:"\u05e4\u05b8\u05bc\u05d0\u05d3\u05b4\u05bc\u05d9",he:"\u05e4\u05e0\u05d5\u05d9 / \u05e8\u05d9\u05e7",ex:[]},
+  {id:"adj19",cat:"adjectives",lv:4,ar:"\u0645\u0631\u064a\u062d",ph:"\u05de\u05b0\u05e8\u05b4\u05d9\u05d7\u05b7",he:"\u05e0\u05d5\u05d7 / \u05e0\u05e2\u05d9\u05dd",ex:[]},
+  {id:"adj20",cat:"adjectives",lv:4,ar:"\u0639\u0627\u062f\u064a",ph:"\u05e2\u05b8\u05d0\u05d3\u05b4\u05d9",he:"\u05e8\u05d2\u05d9\u05dc",ex:[]},
+  // PLACES
+  {id:"pl1",cat:"places",lv:1,ar:"\u0645\u0633\u062a\u0634\u0641\u0649",ph:"\u05de\u05bb\u05e1\u05b0\u05ea\u05b7\u05bc\u05e9\u05b0\u05c1\u05e4\u05b8\u05d4",he:"\u05d1\u05d9\u05ea \u05d7\u05d5\u05dc\u05d9\u05dd",ex:[]},
+  {id:"pl2",cat:"places",lv:1,ar:"\u0645\u0637\u0639\u0645",ph:"\u05de\u05b7\u05d8\u05b0\u05e2\u05b7\u05dd",he:"\u05de\u05e1\u05e2\u05d3\u05d4",ex:[]},
+  {id:"pl3",cat:"places",lv:1,ar:"\u0645\u0633\u062c\u062f",ph:"\u05de\u05b7\u05e1\u05b0\u05d2\u05b4'\u05d3",he:"\u05de\u05e1\u05d2\u05d3",ex:[]},
+  {id:"pl4",cat:"places",lv:2,ar:"\u0643\u0646\u064a\u0633\u0629",ph:"\u05db\u05b0\u05bc\u05e0\u05b4\u05d9\u05e1\u05b6\u05d4",he:"\u05db\u05e0\u05e1\u05d9\u05d9\u05d4",ex:[]},
+  {id:"pl5",cat:"places",lv:2,ar:"\u0634\u0627\u0631\u0639",ph:"\u05e9\u05b8\u05c1\u05d0\u05e8\u05b5\u05e2\u05b7",he:"\u05e8\u05d7\u05d5\u05d1",ex:[]},
+  {id:"pl6",cat:"places",lv:2,ar:"\u062d\u062f\u064a\u0642\u0629",ph:"\u05d7\u05b0\u05d3\u05b4\u05d9\u05e7\u05b6\u05d4",he:"\u05d2\u05df / \u05e4\u05d0\u05e8\u05e7",ex:[]},
+  {id:"pl7",cat:"places",lv:2,ar:"\u0645\u0643\u062a\u0628",ph:"\u05de\u05b7\u05db\u05b0\u05ea\u05b7\u05bc\u05d1",he:"\u05de\u05e9\u05e8\u05d3",ex:[]},
+  {id:"pl8",cat:"places",lv:2,ar:"\u0628\u0646\u0643",ph:"\u05d1\u05b7\u05bc\u05e0\u05b0\u05e7",he:"\u05d1\u05e0\u05e7",ex:[]},
+  {id:"pl9",cat:"places",lv:2,ar:"\u0635\u064a\u062f\u0644\u064a\u0629",ph:"\u05e6\u05b5\u05d9\u05b0\u05d3\u05b0\u05bc\u05dc\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05d1\u05d9\u05ea \u05de\u05e8\u05e7\u05d7\u05ea",ex:[]},
+  {id:"pl10",cat:"places",lv:2,ar:"\u0633\u0648\u0628\u0631\u0645\u0627\u0631\u0643\u062a",ph:"\u05e1\u05d5\u05bc\u05e4\u05b6\u05bc\u05e8\u05b0\u05de\u05b7\u05e8\u05b0\u05e7\u05b6\u05d8",he:"\u05e1\u05d5\u05e4\u05e8\u05de\u05e8\u05e7\u05d8",ex:[]},
+  {id:"pl11",cat:"places",lv:3,ar:"\u0645\u0637\u0627\u0631",ph:"\u05de\u05b8\u05d8\u05b8\u05d0\u05e8",he:"\u05e9\u05d3\u05d4 \u05ea\u05e2\u05d5\u05e4\u05d4",ex:[]},
+  {id:"pl12",cat:"places",lv:3,ar:"\u0641\u0646\u062f\u0642",ph:"\u05e4\u05bb\u05e0\u05b0\u05d3\u05bb\u05bc\u05e7",he:"\u05de\u05dc\u05d5\u05df",ex:[]},
+  {id:"pl13",cat:"places",lv:3,ar:"\u0645\u062a\u062d\u0641",ph:"\u05de\u05b7\u05ea\u05b0\u05d7\u05b7\u05e3",he:"\u05de\u05d5\u05d6\u05d9\u05d0\u05d5\u05df",ex:[]},
+  {id:"pl14",cat:"places",lv:3,ar:"\u062c\u0627\u0645\u0639\u0629",ph:"\u05d2\u05b8'\u05d0\u05de\u05b0\u05e2\u05b6\u05d4",he:"\u05d0\u05d5\u05e0\u05d9\u05d1\u05e8\u05e1\u05d9\u05d8\u05d4",ex:[]},
+  {id:"pl15",cat:"places",lv:3,ar:"\u0645\u0644\u0639\u0628",ph:"\u05de\u05b7\u05dc\u05b0\u05e2\u05b7\u05d1",he:"\u05de\u05d2\u05e8\u05e9 / \u05d0\u05e6\u05d8\u05d3\u05d9\u05d5\u05df",ex:[]},
+  {id:"pl16",cat:"places",lv:4,ar:"\u0633\u0641\u0627\u0631\u0629",ph:"\u05e1\u05b0\u05e4\u05b8\u05d0\u05e8\u05b6\u05d4",he:"\u05e9\u05d2\u05e8\u05d9\u05e8\u05d5\u05ea",ex:[]},
+  {id:"pl17",cat:"places",lv:4,ar:"\u0628\u0644\u062f\u064a\u0629",ph:"\u05d1\u05b7\u05bc\u05dc\u05b0\u05d3\u05b4\u05bc\u05d9\u05b6\u05d4",he:"\u05e2\u05d9\u05e8\u05d9\u05d9\u05d4",ex:[]},
+  {id:"pl18",cat:"places",lv:4,ar:"\u0645\u062d\u0643\u0645\u0629",ph:"\u05de\u05b7\u05d7\u05b0\u05db\u05b0\u05bc\u05de\u05b6\u05d4",he:"\u05d1\u05d9\u05ea \u05de\u05e9\u05e4\u05d8",ex:[]},
+  // CLOTHES
+  {id:"cl1",cat:"clothes",lv:2,ar:"\u0642\u0645\u064a\u0635",ph:"\u05e7\u05b0\u05de\u05b4\u05d9\u05e5",he:"\u05d7\u05d5\u05dc\u05e6\u05d4",ex:[]},
+  {id:"cl2",cat:"clothes",lv:2,ar:"\u0628\u0646\u0637\u0644\u0648\u0646",ph:"\u05d1\u05b7\u05bc\u05e0\u05b0\u05d8\u05b7\u05dc\u05d5\u05b9\u05df",he:"\u05de\u05db\u05e0\u05e1\u05d9\u05d9\u05dd",ex:[]},
+  {id:"cl3",cat:"clothes",lv:2,ar:"\u0641\u0633\u062a\u0627\u0646",ph:"\u05e4\u05bb\u05e1\u05b0\u05ea\u05b8\u05bc\u05d0\u05df",he:"\u05e9\u05de\u05dc\u05d4",ex:[]},
+  {id:"cl4",cat:"clothes",lv:2,ar:"\u0643\u0646\u062f\u0631\u0629",ph:"\u05db\u05bb\u05bc\u05e0\u05b0\u05d3\u05b0\u05bc\u05e8\u05b6\u05d4",he:"\u05e0\u05e2\u05dc",ex:[]},
+  {id:"cl5",cat:"clothes",lv:2,ar:"\u062c\u0627\u0643\u064a\u062a",ph:"\u05d2\u05b8'\u05d0\u05e7\u05b5\u05d9\u05d8",he:"\u05d6'\u05e7\u05d8",ex:[]},
+  {id:"cl6",cat:"clothes",lv:2,ar:"\u062d\u0642\u064a\u0628\u0629",ph:"\u05d7\u05b0\u05e7\u05b4\u05d9\u05d1\u05b6\u05bc\u05d4",he:"\u05ea\u05d9\u05e7",ex:[]},
+  {id:"cl7",cat:"clothes",lv:3,ar:"\u0634\u0631\u0627\u0628",ph:"\u05e9\u05b0\u05c1\u05e8\u05b8\u05d0\u05d1",he:"\u05d2\u05e8\u05d1",ex:[]},
+  {id:"cl8",cat:"clothes",lv:3,ar:"\u0642\u0628\u0639\u0629",ph:"\u05e7\u05bb\u05d1\u05b7\u05bc\u05e2\u05b6\u05d4",he:"\u05db\u05d5\u05d1\u05e2",ex:[]},
+  {id:"cl9",cat:"clothes",lv:3,ar:"\u062d\u0632\u0627\u0645",ph:"\u05d7\u05b0\u05d6\u05b8\u05d0\u05dd",he:"\u05d7\u05d2\u05d5\u05e8\u05d4",ex:[]},
+  {id:"cl10",cat:"clothes",lv:3,ar:"\u062a\u064a\u0634\u064a\u0631\u062a",ph:"\u05ea\u05b4\u05bc\u05d9-\u05e9\u05b5\u05c1\u05e8\u05b0\u05d8",he:"\u05d7\u05d5\u05dc\u05e6\u05ea \u05d8\u05d9",ex:[]},
+  {id:"cl11",cat:"clothes",lv:3,ar:"\u0634\u0648\u0631\u062a",ph:"\u05e9\u05d5\u05b9\u05e8\u05b0\u05d8",he:"\u05de\u05db\u05e0\u05e1\u05d9\u05d9\u05dd \u05e7\u05e6\u05e8\u05d9\u05dd",ex:[]},
+  {id:"cl12",cat:"clothes",lv:4,ar:"\u0645\u0639\u0637\u0641",ph:"\u05de\u05b7\u05e2\u05b0\u05d8\u05b7\u05e3",he:"\u05de\u05e2\u05d9\u05dc",ex:[]},
+  {id:"cl13",cat:"clothes",lv:4,ar:"\u0648\u0634\u0627\u062d",ph:"\u05d5\u05b0\u05e9\u05b8\u05c1\u05d0\u05d7",he:"\u05e6\u05e2\u05d9\u05e3",ex:[]},
+  {id:"cl14",cat:"clothes",lv:4,ar:"\u0628\u064a\u062c\u0627\u0645\u0629",ph:"\u05d1\u05b4\u05bc\u05d9\u05d2\u05b8'\u05d0\u05de\u05b6\u05d4",he:"\u05e4\u05d9\u05d2'\u05de\u05d4",ex:[]},
+  // HEALTH
+  {id:"he1",cat:"health",lv:2,ar:"\u0645\u0631\u064a\u0636",ph:"\u05de\u05b0\u05e8\u05b4\u05d9\u05d3",he:"\u05d7\u05d5\u05dc\u05d4",ex:[]},
+  {id:"he2",cat:"health",lv:2,ar:"\u0623\u0644\u0645",ph:"\u05d0\u05b7\u05dc\u05b7\u05dd",he:"\u05db\u05d0\u05d1",ex:[]},
+  {id:"he3",cat:"health",lv:2,ar:"\u062f\u0648\u0627",ph:"\u05d3\u05b7\u05d5\u05b8\u05bc\u05d4",he:"\u05ea\u05e8\u05d5\u05e4\u05d4",ex:[]},
+  {id:"he4",cat:"health",lv:2,ar:"\u0637\u0648\u0627\u0631\u0626",ph:"\u05d8\u05b7\u05d5\u05b8\u05bc\u05d0\u05e8\u05b5\u05e2\u05b7",he:"\u05d7\u05d9\u05e8\u05d5\u05dd",ex:[]},
+  {id:"he5",cat:"health",lv:3,ar:"\u062d\u0645\u0649",ph:"\u05d7\u05bb\u05de\u05b8\u05bc\u05d4",he:"\u05d7\u05d5\u05dd (\u05de\u05d7\u05dc\u05d4)",ex:[]},
+  {id:"he6",cat:"health",lv:3,ar:"\u0633\u0639\u0627\u0644",ph:"\u05e1\u05bb\u05e2\u05b8\u05d0\u05dc",he:"\u05e9\u05d9\u05e2\u05d5\u05dc",ex:[]},
+  {id:"he7",cat:"health",lv:3,ar:"\u0632\u0643\u0627\u0645",ph:"\u05d6\u05bb\u05db\u05b8\u05bc\u05d0\u05dd",he:"\u05d4\u05e6\u05d8\u05e0\u05e0\u05d5\u05ea",ex:[]},
+  {id:"he8",cat:"health",lv:3,ar:"\u0635\u062f\u0627\u0639",ph:"\u05e6\u05bb\u05d3\u05b8\u05bc\u05d0\u05e2\u05b7",he:"\u05db\u05d0\u05d1 \u05e8\u05d0\u05e9",ex:[]},
+  {id:"he9",cat:"health",lv:3,ar:"\u0639\u064a\u0627\u062f\u0629",ph:"\u05e2\u05b4\u05d9\u05d0\u05b8\u05d3\u05b6\u05d4",he:"\u05e7\u05dc\u05d9\u05e0\u05d9\u05e7\u05d4",ex:[]},
+  {id:"he10",cat:"health",lv:4,ar:"\u0639\u0645\u0644\u064a\u0629",ph:"\u05e2\u05b7\u05de\u05b7\u05dc\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05e0\u05d9\u05ea\u05d5\u05d7",ex:[]},
+  {id:"he11",cat:"health",lv:4,ar:"\u0625\u0633\u0639\u0627\u0641",ph:"\u05d0\u05b4\u05e1\u05b0\u05e2\u05b8\u05d0\u05e3",he:"\u05d0\u05de\u05d1\u05d5\u05dc\u05e0\u05e1",ex:[]},
+  {id:"he12",cat:"health",lv:4,ar:"\u0644\u0642\u0627\u062d",ph:"\u05dc\u05b7\u05e7\u05b8\u05bc\u05d0\u05d7",he:"\u05d7\u05d9\u05e1\u05d5\u05df",ex:[]},
+  // WEATHER
+  {id:"we1",cat:"weather",lv:2,ar:"\u0637\u0642\u0633",ph:"\u05d8\u05b7\u05e7\u05b0\u05e1",he:"\u05de\u05d6\u05d2 \u05d0\u05d5\u05d5\u05d9\u05e8",ex:[]},
+  {id:"we2",cat:"weather",lv:2,ar:"\u0631\u064a\u062d",ph:"\u05e8\u05b4\u05d9\u05d7",he:"\u05e8\u05d5\u05d7",ex:[]},
+  {id:"we3",cat:"weather",lv:2,ar:"\u0633\u062d\u0627\u0628",ph:"\u05e1\u05b7\u05d7\u05b8\u05d0\u05d1",he:"\u05e2\u05e0\u05df",ex:[]},
+  {id:"we4",cat:"weather",lv:2,ar:"\u062b\u0644\u062c",ph:"\u05ea\u05b7\u05bc\u05dc\u05b0\u05d2\u05b4'",he:"\u05e9\u05dc\u05d2",ex:[]},
+  {id:"we5",cat:"weather",lv:3,ar:"\u0639\u0627\u0635\u0641\u0629",ph:"\u05e2\u05b8\u05d0\u05e6\u05b0\u05e4\u05b6\u05d4",he:"\u05e1\u05e2\u05e8\u05d4",ex:[]},
+  {id:"we6",cat:"weather",lv:3,ar:"\u0636\u0628\u0627\u0628\u064a",ph:"\u05d3\u05b7\u05bc\u05d1\u05b8\u05bc\u05d0\u05d1\u05b4\u05bc\u05d9",he:"\u05e2\u05e8\u05e4\u05d9\u05dc\u05d9",ex:[]},
+  {id:"we7",cat:"weather",lv:3,ar:"\u0631\u0637\u0648\u0628\u0629",ph:"\u05e8\u05b0\u05d8\u05d5\u05bc\u05d1\u05b6\u05bc\u05d4",he:"\u05dc\u05d7\u05d5\u05ea",ex:[]},
+  {id:"we8",cat:"weather",lv:4,ar:"\u0628\u0631\u0642",ph:"\u05d1\u05b7\u05bc\u05e8\u05b0\u05e7",he:"\u05d1\u05e8\u05e7",ex:[]},
+  {id:"we9",cat:"weather",lv:4,ar:"\u0631\u0639\u062f",ph:"\u05e8\u05b7\u05e2\u05b6\u05d3",he:"\u05e8\u05e2\u05dd",ex:[]},
+  {id:"we10",cat:"weather",lv:4,ar:"\u0641\u064a\u0636\u0627\u0646",ph:"\u05e4\u05b5\u05bc\u05d9\u05b0\u05d3\u05b8\u05d0\u05df",he:"\u05e9\u05d9\u05d8\u05e4\u05d5\u05df",ex:[]},
 ];
 
 const phrases = [
@@ -751,7 +976,8 @@ function getMasteredCount() { return vocabulary.filter(w => getWordLevel(w.id) >
 
 function getUserLevel() {
   const mastered = getMasteredCount();
-  const pct = mastered / vocabulary.length * 100;
+  const unlocked = getUnlockedVocabulary().length;
+  const pct = unlocked ? mastered / unlocked * 100 : 0;
   const levels = [
     {min:0,  name:'מתחיל',  icon:'🌱', next:'יסודי'},
     {min:15, name:'יסודי',  icon:'🌿', next:'בינוני'},
@@ -764,19 +990,20 @@ function getUserLevel() {
   return {...lvl, pct, mastered};
 }
 
-// Smart word selection: weight unmastered words higher
+// Smart word selection: weight unmastered words higher, only from unlocked pool
 function selectQuizWord() {
-  const weights = vocabulary.map(w => {
+  const pool = getUnlockedVocabulary();
+  const weights = pool.map(w => {
     const lv = getWordLevel(w.id);
     return lv === 0 ? 5 : lv === 1 ? 4 : lv === 2 ? 2 : 1;
   });
   const total = weights.reduce((a,b) => a+b, 0);
   let rand = Math.random() * total;
-  for (let i = 0; i < vocabulary.length; i++) {
+  for (let i = 0; i < pool.length; i++) {
     rand -= weights[i];
-    if (rand <= 0) return vocabulary[i];
+    if (rand <= 0) return pool[i];
   }
-  return vocabulary[vocabulary.length - 1];
+  return pool[pool.length - 1];
 }
 
 function getMasteryStars(id) {
@@ -842,15 +1069,20 @@ function showScreen(id, el) {
 
 // ===== CATEGORIES =====
 function renderCategories() {
+  const m = getMasteredCount();
   const grid = document.getElementById('categoryGrid');
   grid.innerHTML = categories.map(cat => {
-    const words = vocabulary.filter(w => w.cat === cat.id);
-    const mastered = words.filter(w => getWordLevel(w.id) >= 3).length;
-    const pct = words.length ? Math.round(mastered / words.length * 100) : 0;
+    const allInCat = vocabulary.filter(w => w.cat === cat.id);
+    const unlocked = allInCat.filter(w => (UNLOCK_AT[w.lv] || 0) <= m);
+    const locked = allInCat.length - unlocked.length;
+    const mastered = unlocked.filter(w => getWordLevel(w.id) >= 3).length;
+    const pct = unlocked.length ? Math.round(mastered / unlocked.length * 100) : 0;
+    const lockBadge = locked > 0 ? `<div class="cat-locked">🔒 +${locked}</div>` : '';
     return `<div class="category-card" onclick="showWordList('${cat.id}')">
       <span class="emoji">${cat.emoji}</span>
       <div class="name">${cat.name}</div>
-      <div class="count">${mastered}/${words.length} מילים</div>
+      <div class="count">${mastered}/${unlocked.length} מילים</div>
+      ${lockBadge}
       <div class="cat-progress"><div class="cat-progress-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
@@ -859,12 +1091,13 @@ function renderCategories() {
 function showWordList(catId) {
   const cat = categories.find(c => c.id === catId);
   currentCategory = catId;
-  filteredWords = vocabulary.filter(w => w.cat === catId);
+  const m = getMasteredCount();
+  filteredWords = vocabulary.filter(w => w.cat === catId && (UNLOCK_AT[w.lv] || 0) <= m);
   document.getElementById('category-grid-view').style.display = 'none';
   document.getElementById('word-list-view').style.display = 'block';
   document.getElementById('wordListTitle').textContent = cat.emoji + ' ' + cat.name;
   document.getElementById('wordSearch').value = '';
-  renderWordList(filteredWords);
+  renderWordList(filteredWords, catId);
 }
 
 function showCategoryGrid() {
@@ -874,16 +1107,19 @@ function showCategoryGrid() {
 
 function filterWords() {
   const q = document.getElementById('wordSearch').value.trim().toLowerCase();
-  const base = currentCategory ? vocabulary.filter(w => w.cat === currentCategory) : vocabulary;
+  const m = getMasteredCount();
+  const base = currentCategory
+    ? vocabulary.filter(w => w.cat === currentCategory && (UNLOCK_AT[w.lv] || 0) <= m)
+    : getUnlockedVocabulary();
   filteredWords = q ? base.filter(w =>
-    w.ar.includes(q) || w.ph.toLowerCase().includes(q) || w.he.includes(q)
+    w.ph.toLowerCase().includes(q) || w.he.includes(q)
   ) : base;
-  renderWordList(filteredWords);
+  renderWordList(filteredWords, currentCategory);
 }
 
-function renderWordList(words) {
+function renderWordList(words, catId) {
   document.getElementById('resultsSummary').textContent = words.length + ' מילים';
-  document.getElementById('wordList').innerHTML = words.map(w => `
+  let html = words.map(w => `
     <div class="word-card" onclick="toggleWord(this)">
       <div class="word-card-header">
         <div class="word-card-content">
@@ -894,15 +1130,18 @@ function renderWordList(words) {
         </div>
         <button class="speak-btn" onclick="speakArabic('${w.ar.replace(/'/g,"\\'")}',event)">🔊</button>
       </div>
-      ${w.ex && w.ex.length ? `<div class="word-detail">
-        ${w.ex.map(e => `<div class="word-example">
-          <div class="ar">${e.ar}</div>
-          <div class="ph">${e.ph}</div>
-          <div class="he">${e.he}</div>
-        </div>`).join('')}
-      </div>` : ''}
     </div>
   `).join('');
+  // Show locked words teaser at the bottom
+  if (catId) {
+    const m = getMasteredCount();
+    const lockedInCat = vocabulary.filter(w => w.cat === catId && (UNLOCK_AT[w.lv] || 0) > m);
+    if (lockedInCat.length > 0) {
+      const nextThreshold = Math.min(...lockedInCat.map(w => UNLOCK_AT[w.lv]));
+      html += `<div class="locked-notice">🔒 עוד ${lockedInCat.length} מילים נעולות — שלוט ב-${nextThreshold} מילים כדי לפתוח</div>`;
+    }
+  }
+  document.getElementById('wordList').innerHTML = html;
 }
 
 function toggleWord(el) {
@@ -948,7 +1187,7 @@ function toggleFCCat(id, el) {
 }
 
 function startFlashcards() {
-  const pool = vocabulary.filter(w => fcSelectedCats.has(w.cat));
+  const pool = getUnlockedVocabulary().filter(w => fcSelectedCats.has(w.cat));
   if (!pool.length) { alert('בחר לפחות קטגוריה אחת'); return; }
   fcDeck = [...pool].sort(() => Math.random() - 0.5);
   fcIndex = 0;
@@ -1018,7 +1257,7 @@ function startQuiz() {
   currentQuizWord = correct;
   currentQuizArabic = correct.ar;
 
-  const wrong = vocabulary.filter(w => w.id !== correct.id).sort(() => Math.random()-0.5).slice(0, 3);
+  const wrong = getUnlockedVocabulary().filter(w => w.id !== correct.id).sort(() => Math.random()-0.5).slice(0, 3);
   const options = [...wrong, correct].sort(() => Math.random() - 0.5);
 
   // Only spoken-relevant types: phonetic→meaning or Hebrew→phonetic
@@ -1073,11 +1312,14 @@ function renderStats() {
   const lvl = getUserLevel();
   document.getElementById('levelIcon').textContent = lvl.icon;
   document.getElementById('levelName').textContent = lvl.name;
+  const unlocked = getUnlockedVocabulary();
+  const nextUnlockAt = Object.values(UNLOCK_AT).filter(v => v > lvl.mastered).sort((a,b)=>a-b)[0];
   document.getElementById('levelSub').textContent = lvl.next
-    ? `הרמה הבאה: ${lvl.next} — עוד ${vocabulary.filter(w=>getWordLevel(w.id)<3).length} מילים לשלוט`
-    : '🏆 שלטת בכל החומר!';
+    ? `הרמה הבאה: ${lvl.next} — עוד ${unlocked.filter(w=>getWordLevel(w.id)<3).length} מילים לשלוט`
+    : '🏆 שלטת בכל החומר הנוכחי!';
   document.getElementById('levelBar').style.width = Math.min(100, lvl.pct) + '%';
-  document.getElementById('levelCount').textContent = `${lvl.mastered} / ${vocabulary.length} מילים שולטות`;
+  const lockInfo = nextUnlockAt ? ` | 🔒 ${nextUnlockAt - lvl.mastered} עד פתיחה` : '';
+  document.getElementById('levelCount').textContent = `${lvl.mastered} / ${unlocked.length} מילים שולטות${lockInfo}`;
 
   document.getElementById('statCorrect').textContent = stats.correct;
   document.getElementById('statStreak').textContent = stats.streak;
@@ -1085,7 +1327,8 @@ function renderStats() {
   document.getElementById('statMastered').textContent = lvl.mastered;
 
   const catRows = categories.map(cat => {
-    const words = vocabulary.filter(w => w.cat === cat.id);
+    const m = getMasteredCount();
+    const words = vocabulary.filter(w => w.cat === cat.id && (UNLOCK_AT[w.lv]||0) <= m);
     const mastered = words.filter(w => getWordLevel(w.id) >= 3).length;
     const pct = words.length ? Math.round(mastered / words.length * 100) : 0;
     return `<div class="cat-stat-row">
