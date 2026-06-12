@@ -38,6 +38,10 @@ jobs:
         working-directory: arabic-app
         run: npm install
 
+      - name: Sync Capacitor (generates cordova plugin files and copies assets)
+        working-directory: arabic-app
+        run: npx cap sync android
+
       - name: Set execute permission on gradlew
         working-directory: arabic-app/android
         run: chmod +x gradlew
