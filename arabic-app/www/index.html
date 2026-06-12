@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>ערבית מדוברת</title>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-dark: #1b5e20;
+      --primary-light: #a5d6a7;
+      --accent: #ff8f00;
+      --accent-light: #ffe082;
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #212121;
+      --text-muted: #757575;
+      --border: #e0e0e0;
+      --success: #43a047;
+      --error: #e53935;
+      --shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+    }
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 16px 20px 12px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.5px; }
+    .header p { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
+    /* Navigation tabs */
+    .nav-tabs {
+      display: flex;
+      background: white;
+      border-bottom: 2px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .nav-tab {
+      flex: none;
+      padding: 12px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    /* Screens */
+    .screen { display: none; padding: 16px; }
+    .screen.active { display: block; }
+    /* Category grid */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .category-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px 14px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s, box-shadow 0.15s;
+      border: 2px solid transparent;
+    }
+    .category-card:active { transform: scale(0.96); }
+    .category-card .emoji { font-size: 2.2rem; display: block; margin-bottom: 8px; }
+    .category-card .name { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .category-card .count { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+    .category-card.selected { border-color: var(--primary); background: #e8f5e9; }
+    /* Word list */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .back-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .section-title { font-size: 1.1rem; font-weight: 700; }
+    .word-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .word-card:active { background: #e8f5e9; }
+    .word-arabic {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      direction: rtl;
+      text-align: right;
+      margin-bottom: 4px;
+    }
+    .word-phonetic {
+      font-size: 1rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .word-hebrew {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .word-detail {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .word-card.expanded .word-detail { display: block; }
+    .word-example {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-top: 6px;
+    }
+    .word-example .ar { color: var(--primary-dark); font-size: 1rem; direction: rtl; }
+    .word-example .ph { color: var(--accent); font-size: 0.85rem; }
+    .word-example .he { color: var(--text-muted); font-size: 0.82rem; }
+    /* Flashcard screen */
+    .flashcard-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding-top: 10px;
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      background: var(--border);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .progress-bar { height: 100%; background: var(--primary); transition: width 0.3s; border-radius: 8px; }
+    .progress-text { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 4px; }
+    .flashcard {
+      width: 100%;
+      max-width: 380px;
+      min-height: 260px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 24px;
+      cursor: pointer;
+      transition: transform 0.15s;
+      text-align: center;
+      position: relative;
+    }
+    .flashcard:active { transform: scale(0.98); }
+    .flashcard .hint { font-size: 0.75rem; color: var(--text-muted); position: absolute; bottom: 14px; }
+    .flashcard .fc-arabic {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+      direction: rtl;
+    }
+    .flashcard .fc-phonetic {
+      font-size: 1.3rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .flashcard .fc-hebrew {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      display: none;
+    }
+    .flashcard.flipped .fc-hebrew { display: block; }
+    .flashcard .fc-category { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 14px; }
+    .card-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-wrong { background: #ffebee; color: var(--error); }
+    .btn-right { background: #e8f5e9; color: var(--success); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-accent { background: var(--accent); color: white; }
+    .fc-select-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 380px;
+      flex-wrap: wrap;
+    }
+    .fc-category-btn {
+      flex: 1;
+      min-width: calc(50% - 5px);
+      padding: 10px;
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+    }
+    .fc-category-btn.active { border-color: var(--primary); background: #e8f5e9; color: var(--primary); }
+    /* Quiz */
+    .quiz-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .quiz-question { font-size: 1.8rem; font-weight: 700; color: var(--primary-dark); direction: rtl; margin-bottom: 6px; }
+    .quiz-sub { font-size: 1rem; color: var(--accent); margin-bottom: 4px; }
+    .quiz-hint { font-size: 0.8rem; color: var(--text-muted); }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .quiz-option {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quiz-option:active { transform: scale(0.97); }
+    .quiz-option.correct { background: #e8f5e9; border-color: var(--success); color: var(--success); }
+    .quiz-option.wrong { background: #ffebee; border-color: var(--error); color: var(--error); }
+    .quiz-score { text-align: center; font-size: 1rem; color: var(--text-muted); margin-bottom: 12px; }
+    .quiz-score span { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+    /* Phrases */
+    .phrase-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+    }
+    .phrase-arabic { font-size: 1.3rem; font-weight: 700; color: var(--primary-dark); direction: rtl; text-align: right; }
+    .phrase-phonetic { font-size: 1rem; color: var(--accent); font-weight: 600; margin-top: 4px; }
+    .phrase-hebrew { font-size: 0.9rem; color: var(--text-muted); margin-top: 3px; }
+    .phrase-tag {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 18px 14px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .emoji { font-size: 3rem; display: block; margin-bottom: 12px; }
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      outline: none;
+      direction: rtl;
+      background: var(--card-bg);
+    }
+    .search-input:focus { border-color: var(--primary); }
+    .results-summary {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌙 ערבית מדוברת</h1>
+  <p>לימוד ערבית לבנטינית מעברית — אופליין</p>
+</div>
+
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showScreen('categories')">📚 אוצר מילים</div>
+  <div class="nav-tab" onclick="showScreen('phrases')">💬 ביטויים</div>
+  <div class="nav-tab" onclick="showScreen('flashcards')">🃏 כרטיסיות</div>
+  <div class="nav-tab" onclick="showScreen('quiz')">❓ חידון</div>
+  <div class="nav-tab" onclick="showScreen('stats')">📊 התקדמות</div>
+</div>
+
+<!-- VOCABULARY SCREEN -->
+<div id="screen-categories" class="screen active">
+  <div id="category-grid-view">
+    <h2 style="margin-bottom:14px;font-size:1rem;color:var(--text-muted)">בחר קטגוריה:</h2>
+    <div class="category-grid" id="categoryGrid"></div>
+  </div>
+  <div id="word-list-view" style="display:none">
+    <div class="section-header">
+      <button class="back-btn" onclick="showCategoryGrid()">→ חזרה</button>
+      <span class="section-title" id="wordListTitle"></span>
+    </div>
+    <input class="search-input" id="wordSearch" placeholder="חיפוש..." oninput="filterWords()">
+    <div class="results-summary" id="resultsSummary"></div>
+    <div id="wordList"></div>
+  </div>
+</div>
+
+<!-- PHRASES SCREEN -->
+<div id="screen-phrases" class="screen">
+  <input class="search-input" id="phraseSearch" placeholder="חיפוש ביטויים..." oninput="filterPhrases()">
+  <div id="phraseList"></div>
+</div>
+
+<!-- FLASHCARDS SCREEN -->
+<div id="screen-flashcards" class="screen">
+  <div class="flashcard-container">
+    <div style="width:100%;max-width:380px">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px">בחר קטגוריות:</p>
+      <div class="fc-select-row" id="fcCategoryRow"></div>
+    </div>
+    <div class="progress-bar-wrap" style="max-width:380px;width:100%">
+      <div class="progress-bar" id="fcProgressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-text" id="fcProgressText">0 / 0</div>
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <span class="fc-category" id="fcCategory"></span>
+      <div class="fc-arabic" id="fcArabic">לחץ על התחל</div>
+      <div class="fc-phonetic" id="fcPhonetic"></div>
+      <div class="fc-hebrew" id="fcHebrew"></div>
+      <span class="hint">לחץ לגלות תרגום</span>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-wrong" id="btnWrong" onclick="nextCard(false)" style="display:none">✗ לא ידעתי</button>
+      <button class="btn btn-right" id="btnRight" onclick="nextCard(true)" style="display:none">✓ ידעתי</button>
+    </div>
+    <button class="btn btn-primary" id="btnStart" onclick="startFlashcards()" style="max-width:380px;width:100%">▶ התחל</button>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-score">ניקוד: <span id="quizScore">0</span> | שאלות: <span id="quizTotal">0</span></div>
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-sub" id="quizSub"></div>
+    <div class="quiz-hint" id="quizHint"></div>
+  </div>
+  <div class="quiz-options" id="quizOptions"></div>
+  <button class="btn btn-primary" id="btnNextQuiz" onclick="nextQuiz()" style="margin-top:12px;display:none;width:100%">השאלה הבאה ←</button>
+  <button class="btn btn-accent" onclick="startQuiz()" style="margin-top:12px;width:100%">🔄 שאלה חדשה / התחל מחדש</button>
+</div>
+
+<!-- STATS SCREEN -->
+<div id="screen-stats" class="screen">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="statWords">0</div><div class="stat-label">מילים למדת</div></div>
+    <div class="stat-card"><div class="stat-num" id="statCorrect">0</div><div class="stat-label">תשובות נכונות</div></div>
+    <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">רצף ימים</div></div>
+    <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">סה"כ ביקורים</div></div>
+  </div>
+  <div id="masteredList"></div>
+</div>
+
+<script>
+// ===== DATA =====
+const categories = [
+  { id: 'greetings', name: 'ברכות', emoji: '👋' },
+  { id: 'numbers', name: 'מספרים', emoji: '🔢' },
+  { id: 'family', name: 'משפחה', emoji: '👨‍👩‍👧' },
+  { id: 'food', name: 'אוכל ושתייה', emoji: '🍽️' },
+  { id: 'colors', name: 'צבעים', emoji: '🎨' },
+  { id: 'time', name: 'זמן', emoji: '⏰' },
+  { id: 'body', name: 'גוף', emoji: '🧍' },
+  { id: 'home', name: 'בית', emoji: '🏠' },
+  { id: 'market', name: 'שוק וקניות', emoji: '🛒' },
+  { id: 'directions', name: 'כיוונים', emoji: '🗺️' },
+  { id: 'feelings', name: 'רגשות', emoji: '😊' },
+  { id: 'nature', name: 'טבע', emoji: '🌿' },
+  { id: 'transport', name: 'תחבורה', emoji: '🚌' },
+  { id: 'work', name: 'עבודה', emoji: '💼' },
+];
+
+const vocabulary = [
+  // Greetings
+  {id:'g1',cat:'greetings',ar:'مرحبا',ph:'מרחבא',he:'שלום / ברוך הבא',ex:[{ar:'مرحبا، كيف حالك؟',ph:'מרחבא, כיפ חָאלַק?',he:'שלום, מה שלומך?'}]},
+  {id:'g2',cat:'greetings',ar:'كيف حالك؟',ph:'כיפ חָאלַק?',he:'מה שלומך? (לגבר)',ex:[{ar:'كيف حالك اليوم؟',ph:'כיפ חָאלַק אל-יום?',he:'מה שלומך היום?'}]},
+  {id:'g3',cat:'greetings',ar:'كيف حالك؟',ph:'כיפ חָאלִך?',he:'מה שלומך? (לאישה)',ex:[]},
+  {id:'g4',cat:'greetings',ar:'منيح، شكراً',ph:'מְנִיח, שֻׁקְרַן',he:'בסדר, תודה',ex:[]},
+  {id:'g5',cat:'greetings',ar:'صباح الخير',ph:'צְבָאח אל-חֵיר',he:'בוקר טוב',ex:[{ar:'صباح الخير، كيف حالك؟',ph:"צְבָאח אל-חֵיר, כיפ חָאלַק?",he:'בוקר טוב, מה שלומך?'}]},
+  {id:'g6',cat:'greetings',ar:'صباح النور',ph:'צְבָאח אן-נוּר',he:'בוקר אור (תשובה לבוקר טוב)',ex:[]},
+  {id:'g7',cat:'greetings',ar:'مساء الخير',ph:"מַסָּא אל-חֵיר",he:'ערב טוב',ex:[]},
+  {id:'g8',cat:'greetings',ar:'مع السلامة',ph:'מע אס-סלָאמֶה',he:'להתראות',ex:[]},
+  {id:'g9',cat:'greetings',ar:'يلا باي',ph:"יַלָּה בַּאי",he:'להתראות (מדובר)',ex:[]},
+  {id:'g10',cat:'greetings',ar:'أهلاً وسهلاً',ph:'אַהְלַן וְסַהְלַן',he:'ברוכים הבאים / שמח להכיר',ex:[]},
+  {id:'g11',cat:'greetings',ar:'شو اسمك؟',ph:'שוּ אִסְמַק?',he:'מה שמך?',ex:[{ar:'شو اسمك؟ اسمي أحمد',ph:'שוּ אִסְמַק? אִסְמִי אַחְמַד',he:'מה שמך? שמי אחמד'}]},
+  {id:'g12',cat:'greetings',ar:'من وين أنت؟',ph:'מִן וֵין אַנְתְ?',he:'מאין אתה?',ex:[]},
+  {id:'g13',cat:'greetings',ar:'يلا',ph:"יַלָּה",he:'יאללה (לך, בוא, קדימה)',ex:[]},
+  {id:'g14',cat:'greetings',ar:'إن شاء الله',ph:'אִנְ שָׁא אַלְלָה',he:'אם ירצה השם (אינשאלה)',ex:[]},
+  {id:'g15',cat:'greetings',ar:'الحمد لله',ph:'אַלְחַמְדּוּ לִלָּה',he:'תודה לאל / ברוך השם',ex:[]},
+
+  // Numbers
+  {id:'n1',cat:'numbers',ar:'صفر',ph:'צִפֶר',he:'אפס',ex:[]},
+  {id:'n2',cat:'numbers',ar:'واحد',ph:'וָאחַד',he:'אחד',ex:[]},
+  {id:'n3',cat:'numbers',ar:'اثنين',ph:'אִתְנֵין',he:'שניים',ex:[]},
+  {id:'n4',cat:'numbers',ar:'ثلاثة',ph:'תְּלָאתֶה',he:'שלושה',ex:[]},
+  {id:'n5',cat:'numbers',ar:'أربعة',ph:'אַרְבַּעֶה',he:'ארבעה',ex:[]},
+  {id:'n6',cat:'numbers',ar:'خمسة',ph:'חַמְסֶה',he:'חמישה',ex:[]},
+  {id:'n7',cat:'numbers',ar:'ستة',ph:'סִתֶּה',he:'שישה',ex:[]},
+  {id:'n8',cat:'numbers',ar:'سبعة',ph:'סַבְּעֶה',he:'שבעה',ex:[]},
+  {id:'n9',cat:'numbers',ar:'ثمانية',ph:'תְּמָאנְיֶה',he:'שמונה',ex:[]},
+  {id:'n10',cat:'numbers',ar:'تسعة',ph:'תִּסְעֶה',he:'תשעה',ex:[]},
+  {id:'n11',cat:'numbers',ar:'عشرة',ph:'עַשְׁרֶה',he:'עשרה',ex:[]},
+  {id:'n12',cat:'numbers',ar:'عشرين',ph:'עִשְׁרִין',he:'עשרים',ex:[]},
+  {id:'n13',cat:'numbers',ar:'مية',ph:'מִיֶּה',he:'מאה',ex:[]},
+  {id:'n14',cat:'numbers',ar:'ألف',ph:'אַלְף',he:'אלף',ex:[]},
+  {id:'n15',cat:'numbers',ar:'بكم هذا؟',ph:'בְּכַם הָאדָה?',he:'כמה זה עולה?',ex:[]},
+
+  // Family
+  {id:'f1',cat:'family',ar:'أب',ph:'אַב',he:'אבא',ex:[]},
+  {id:'f2',cat:'family',ar:'أم',ph:'אֻמּ',he:'אמא',ex:[]},
+  {id:'f3',cat:'family',ar:'أخ',ph:'אַח',he:'אח',ex:[]},
+  {id:'f4',cat:'family',ar:'أخت',ph:'אֻחְתּ',he:'אחות',ex:[]},
+  {id:'f5',cat:'family',ar:'ابن',ph:'אִבֶּן',he:'בן',ex:[]},
+  {id:'f6',cat:'family',ar:'بنت',ph:'בִּנְתּ',he:'בת',ex:[]},
+  {id:'f7',cat:'family',ar:'جد',ph:'סִידּ / גַ'ד',he:'סבא',ex:[]},
+  {id:'f8',cat:'family',ar:'تيتا',ph:'תֵּיתָה',he:'סבתא',ex:[]},
+  {id:'f9',cat:'family',ar:'عم',ph:'עַמּ',he:'דוד (מצד אבא)',ex:[]},
+  {id:'f10',cat:'family',ar:'خال',ph:'חָאל',he:'דוד (מצד אמא)',ex:[]},
+  {id:'f11',cat:'family',ar:'عمة',ph:'עַמֶּה',he:'דודה (מצד אבא)',ex:[]},
+  {id:'f12',cat:'family',ar:'زوج',ph:'זוֹג',he:'בעל',ex:[]},
+  {id:'f13',cat:'family',ar:'زوجة',ph:'זוֹגֶ'ה',he:'אישה',ex:[]},
+  {id:'f14',cat:'family',ar:'أصحاب',ph:'אַצְחָאב',he:'חברים',ex:[]},
+  {id:'f15',cat:'family',ar:'صاحب',ph:'צָאחַב',he:'חבר',ex:[]},
+
+  // Food
+  {id:'fo1',cat:'food',ar:'أكل',ph:'אָכַל',he:'אוכל',ex:[]},
+  {id:'fo2',cat:'food',ar:'ماء',ph:'מַיָּה',he:'מים',ex:[]},
+  {id:'fo3',cat:'food',ar:'خبز',ph:'חֻבֶּז',he:'לחם',ex:[]},
+  {id:'fo4',cat:'food',ar:'حمص',ph:'חֻמֻּס',he:'חומוס',ex:[]},
+  {id:'fo5',cat:'food',ar:'فلافل',ph:'פַלָאפֵל',he:'פלאפל',ex:[]},
+  {id:'fo6',cat:'food',ar:'شاي',ph:'שַׁאיֵ',he:'תה',ex:[]},
+  {id:'fo7',cat:'food',ar:'قهوة',ph:'קַהְוֶה',he:'קפה',ex:[]},
+  {id:'fo8',cat:'food',ar:'لحمة',ph:'לַחְמֶה',he:'בשר',ex:[]},
+  {id:'fo9',cat:'food',ar:'دجاج',ph:'דְּ'גָ'אג'',he:'עוף / תרנגול',ex:[]},
+  {id:'fo10',cat:'food',ar:'خضار',ph:'חַ'ְדָּר',he:'ירקות',ex:[]},
+  {id:'fo11',cat:'food',ar:'فواكه',ph:'פַוָּאכֶּה',he:'פירות',ex:[]},
+  {id:'fo12',cat:'food',ar:'تفاح',ph:'תֻפָּאח',he:'תפוח',ex:[]},
+  {id:'fo13',cat:'food',ar:'عيش / أرز',ph:'עֵיש / אֻרֶּז',he:'אורז',ex:[]},
+  {id:'fo14',cat:'food',ar:'ملح',ph:'מִלְח',he:'מלח',ex:[]},
+  {id:'fo15',cat:'food',ar:'سكر',ph:'סֻכַּר',he:'סוכר',ex:[]},
+
+  // Colors
+  {id:'c1',cat:'colors',ar:'أحمر',ph:'אַחְמַר',he:'אדום',ex:[]},
+  {id:'c2',cat:'colors',ar:'أزرق',ph:'אַזְרַק',he:'כחול',ex:[]},
+  {id:'c3',cat:'colors',ar:'أخضر',ph:'אַח'ְצַ'ר',he:'ירוק',ex:[]},
+  {id:'c4',cat:'colors',ar:'أصفر',ph:'אַצְפַר',he:'צהוב',ex:[]},
+  {id:'c5',cat:'colors',ar:'أبيض',ph:'אַבְיַד',he:'לבן',ex:[]},
+  {id:'c6',cat:'colors',ar:'أسود',ph:'אַסְוַד',he:'שחור',ex:[]},
+  {id:'c7',cat:'colors',ar:'برتقالي',ph:'בּוּרְתֻּקָאלִי',he:'כתום',ex:[]},
+  {id:'c8',cat:'colors',ar:'بنفسجي',ph:'בַּנַפְסַ'גִ'י',he:'סגול',ex:[]},
+  {id:'c9',cat:'colors',ar:'وردي',ph:'וַרְדִּי',he:'ורוד',ex:[]},
+  {id:'c10',cat:'colors',ar:'بني',ph:'בּוּנִּי',he:'חום',ex:[]},
+
+  // Time
+  {id:'t1',cat:'time',ar:'اليوم',ph:'אַליוֹם',he:'היום',ex:[]},
+  {id:'t2',cat:'time',ar:'بكرا',ph:'בֻּכְרָה',he:'מחר',ex:[]},
+  {id:'t3',cat:'time',ar:'إمبارح',ph:'אִמְבָּארִח',he:'אתמול',ex:[]},
+  {id:'t4',cat:'time',ar:'هلق',ph:'הַלַּק',he:'עכשיו',ex:[]},
+  {id:'t5',cat:'time',ar:'بعدين',ph:'בַּעְדֵּין',he:'אחר כך',ex:[]},
+  {id:'t6',cat:'time',ar:'قبل',ph:'קַבְּל',he:'לפני',ex:[]},
+  {id:'t7',cat:'time',ar:'دقيقة',ph:'דַּקִּיקֶה',he:'דקה',ex:[]},
+  {id:'t8',cat:'time',ar:'ساعة',ph:'סָאעֶה',he:'שעה',ex:[]},
+  {id:'t9',cat:'time',ar:'يوم',ph:'יוֹם',he:'יום',ex:[]},
+  {id:'t10',cat:'time',ar:'أسبوع',ph:'אֻסְבּוּעַ',he:'שבוע',ex:[]},
+  {id:'t11',cat:'time',ar:'شهر',ph:'שַׁהְר',he:'חודש',ex:[]},
+  {id:'t12',cat:'time',ar:'سنة',ph:'סַנֶה',he:'שנה',ex:[]},
+  {id:'t13',cat:'time',ar:'صبح',ph:'צֻבּוּח',he:'בוקר',ex:[]},
+  {id:'t14',cat:'time',ar:'ضهر',ph:'דֻּהֶר',he:'צהריים',ex:[]},
+  {id:'t15',cat:'time',ar:'مسا',ph:'מַסָּה',he:'ערב',ex:[]},
+
+  // Body
+  {id:'b1',cat:'body',ar:'رأس',ph:'רָאס',he:'ראש',ex:[]},
+  {id:'b2',cat:'body',ar:'وجه',ph:'וַ'גִ'ה',he:'פנים',ex:[]},
+  {id:'b3',cat:'body',ar:'عين',ph:'עֵין',he:'עין',ex:[]},
+  {id:'b4',cat:'body',ar:'أذن',ph:'אֻדֻן',he:'אוזן',ex:[]},
+  {id:'b5',cat:'body',ar:'أنف',ph:'אַנְף',he:'אף',ex:[]},
+  {id:'b6',cat:'body',ar:'فم',ph:'פֻמּ',he:'פה',ex:[]},
+  {id:'b7',cat:'body',ar:'يد',ph:'אִיד',he:'יד',ex:[]},
+  {id:'b8',cat:'body',ar:'رجل',ph:'רִ'גִ'ל',he:'רגל',ex:[]},
+  {id:'b9',cat:'body',ar:'قلب',ph:'קַלְבּ',he:'לב',ex:[]},
+  {id:'b10',cat:'body',ar:'بطن',ph:'בַּטֶן',he:'בטן',ex:[]},
+
+  // Home
+  {id:'h1',cat:'home',ar:'بيت',ph:'בֵּית',he:'בית',ex:[]},
+  {id:'h2',cat:'home',ar:'باب',ph:'בָּאב',he:'דלת',ex:[]},
+  {id:'h3',cat:'home',ar:'شباك',ph:'שֻׁבָּאק',he:'חלון',ex:[]},
+  {id:'h4',cat:'home',ar:'غرفة',ph:"גֻ'רְפֶה",he:'חדר',ex:[]},
+  {id:'h5',cat:'home',ar:'مطبخ',ph:'מַטְבַּח',he:'מטבח',ex:[]},
+  {id:'h6',cat:'home',ar:'حمام',ph:'חַמָּאם',he:'אמבטיה / שירותים',ex:[]},
+  {id:'h7',cat:'home',ar:'سرير',ph:'סְרִיר',he:'מיטה',ex:[]},
+  {id:'h8',cat:'home',ar:'كرسي',ph:'כֻּרְסִי',he:'כיסא',ex:[]},
+  {id:'h9',cat:'home',ar:'طاولة',ph:'טָאוְלֶה',he:'שולחן',ex:[]},
+  {id:'h10',cat:'home',ar:'تلفزيون',ph:'תִּלְפִּזְיוֹן',he:'טלוויזיה',ex:[]},
+
+  // Market
+  {id:'m1',cat:'market',ar:'سوق',ph:'סוּק',he:'שוק',ex:[]},
+  {id:'m2',cat:'market',ar:'دكان',ph:'דֻּכָּאן',he:'חנות',ex:[]},
+  {id:'m3',cat:'market',ar:'بكم؟',ph:'בְּכַם?',he:'כמה עולה?',ex:[]},
+  {id:'m4',cat:'market',ar:'غالي',ph:'גָ'אלִי',he:'יקר',ex:[]},
+  {id:'m5',cat:'market',ar:'رخيص',ph:'רְחִ'יץ',he:'זול',ex:[]},
+  {id:'m6',cat:'market',ar:'اشتريت',ph:'אִשְׁתְּרֵית',he:'קניתי',ex:[]},
+  {id:'m7',cat:'market',ar:'بدي',ph:'בִּדִּי',he:'אני רוצה',ex:[]},
+  {id:'m8',cat:'market',ar:'ما بدي',ph:'מָא בִּדִּי',he:'אני לא רוצה',ex:[]},
+  {id:'m9',cat:'market',ar:'كتير',ph:'כְּתִיר',he:'הרבה',ex:[]},
+  {id:'m10',cat:'market',ar:'شوي',ph:'שְׁוֵי',he:'קצת',ex:[]},
+
+  // Directions
+  {id:'d1',cat:'directions',ar:'وين؟',ph:'וֵין?',he:'איפה?',ex:[]},
+  {id:'d2',cat:'directions',ar:'يمين',ph:'יְמִין',he:'ימין',ex:[]},
+  {id:'d3',cat:'directions',ar:'شمال',ph:'שְׁמָאל',he:'שמאל',ex:[]},
+  {id:'d4',cat:'directions',ar:'دغري',ph:'דֻּגְ'רִי',he:'ישר',ex:[]},
+  {id:'d5',cat:'directions',ar:'قريب',ph:'קַרִיב',he:'קרוב',ex:[]},
+  {id:'d6',cat:'directions',ar:'بعيد',ph:'בְּעִיד',he:'רחוק',ex:[]},
+  {id:'d7',cat:'directions',ar:'فوق',ph:'פוֹק',he:'למעלה',ex:[]},
+  {id:'d8',cat:'directions',ar:'تحت',ph:'תַחְתּ',he:'למטה',ex:[]},
+  {id:'d9',cat:'directions',ar:'جنب',ph:'גַ'נְבּ',he:'ליד',ex:[]},
+  {id:'d10',cat:'directions',ar:'قدام',ph:'קֻדָּאם',he:'מול / לפני',ex:[]},
+
+  // Feelings
+  {id:'fe1',cat:'feelings',ar:'مبسوط',ph:'מַבְסוּט',he:'שמח',ex:[]},
+  {id:'fe2',cat:'feelings',ar:'زعلان',ph:'זַעְלָאן',he:'עצוב / כועס',ex:[]},
+  {id:'fe3',cat:'feelings',ar:'تعبان',ph:'תַּעְבָּאן',he:'עייף / חולה',ex:[]},
+  {id:'fe4',cat:'feelings',ar:'خايف',ph:'חָ'איִף',he:'מפוחד',ex:[]},
+  {id:'fe5',cat:'feelings',ar:'جوعان',ph:'גַ'וְעָאן',he:'רעב',ex:[]},
+  {id:'fe6',cat:'feelings',ar:'عطشان',ph:'עַטְשָׁאן',he:'צמא',ex:[]},
+  {id:'fe7',cat:'feelings',ar:'برد',ph:'בַּרְד',he:'קר (לי קר)',ex:[]},
+  {id:'fe8',cat:'feelings',ar:'حر',ph:'חַרּ',he:'חם (לי חם)',ex:[]},
+  {id:'fe9',cat:'feelings',ar:'منيح',ph:'מְנִיח',he:'בסדר / טוב',ex:[]},
+  {id:'fe10',cat:'feelings',ar:'مش منيح',ph:'מִשׁ מְנִיח',he:'לא בסדר',ex:[]},
+
+  // Nature
+  {id:'na1',cat:'nature',ar:'شمس',ph:'שַׁמְס',he:'שמש',ex:[]},
+  {id:'na2',cat:'nature',ar:'قمر',ph:'קַמַר',he:'ירח',ex:[]},
+  {id:'na3',cat:'nature',ar:'مطر',ph:'מַטַר',he:'גשם',ex:[]},
+  {id:'na4',cat:'nature',ar:'بحر',ph:'בַּחַר',he:'ים',ex:[]},
+  {id:'na5',cat:'nature',ar:'جبل',ph:'גַ'בַּל',he:'הר',ex:[]},
+  {id:'na6',cat:'nature',ar:'شجرة',ph:'שַׁגַ'רֶה',he:'עץ',ex:[]},
+  {id:'na7',cat:'nature',ar:'وادي',ph:'וָאדִי',he:'ואדי / עמק',ex:[]},
+  {id:'na8',cat:'nature',ar:'هوا',ph:'הַוָּה',he:'אוויר / רוח',ex:[]},
+
+  // Transport
+  {id:'tr1',cat:'transport',ar:'سيارة',ph:'סַיָּארֶה',he:'מכונית',ex:[]},
+  {id:'tr2',cat:'transport',ar:'باص',ph:'בָּאץ',he:'אוטובוס',ex:[]},
+  {id:'tr3',cat:'transport',ar:'تكسي',ph:'טַקְסִי',he:'מונית',ex:[]},
+  {id:'tr4',cat:'transport',ar:'طريق',ph:'טַרִיק',he:'דרך',ex:[]},
+  {id:'tr5',cat:'transport',ar:'محطة',ph:'מַחַטָּה',he:'תחנה',ex:[]},
+
+  // Work
+  {id:'w1',cat:'work',ar:'شغل',ph:'שֻׁגִ'ל',he:'עבודה',ex:[]},
+  {id:'w2',cat:'work',ar:'مدرسة',ph:'מַדְרַסֶה',he:'בית ספר',ex:[]},
+  {id:'w3',cat:'work',ar:'دكتور',ph:'דֻּכְּתוּר',he:'רופא',ex:[]},
+  {id:'w4',cat:'work',ar:'مهندس',ph:'מֻהַנְדִּס',he:'מהנדס',ex:[]},
+  {id:'w5',cat:'work',ar:'أستاذ',ph:'אֻסְתָּאז',he:'מורה / פרופסור',ex:[]},
+];
+
+const phrases = [
+  {ar:'من فضلك',ph:'מִן פַּדְּלַק',he:'בבקשה',tag:'נימוסים'},
+  {ar:'شكراً كتير',ph:'שֻׁקְרַן כְּתִיר',he:'תודה רבה',tag:'נימוסים'},
+  {ar:'عفواً',ph:'עַפְוַן',he:'על לא דבר / סליחה',tag:'נימוסים'},
+  {ar:'آسف',ph:'אָאסִף',he:'סליחה / מצטער',tag:'נימוסים'},
+  {ar:'ما بفهم',ph:'מָא בִּפְהַם',he:'אני לא מבין',tag:'תקשורת'},
+  {ar:'بتحكي عبري؟',ph:'בִּתְחְכִּי עִבְרִי?',he:'אתה מדבר עברית?',tag:'תקשורת'},
+  {ar:'حكيلي بالعربي',ph:'חְכִּי-לִי בִּלְעַרַבִּי',he:'דבר איתי בערבית',tag:'תקשורת'},
+  {ar:'شو يعني؟',ph:'שוּ יַעְנִי?',he:'מה זה אומר?',tag:'תקשורת'},
+  {ar:'وين الحمام؟',ph:'וֵין אַל-חַמָּאם?',he:'איפה השירותים?',tag:'ניווט'},
+  {ar:'وين المحطة؟',ph:'וֵין אַל-מַחַטָּה?',he:'איפה התחנה?',tag:'ניווט'},
+  {ar:'كيف بروح على...؟',ph:'כִיפ בּרוּח עַלַ...?',he:'איך מגיעים ל...?',tag:'ניווט'},
+  {ar:'بدي آكل شي',ph:'בִּדִּי אָכֻל שִׁי',he:'אני רוצה לאכול משהו',tag:'אוכל'},
+  {ar:'الأكل زاكي',ph:'אַל-אָכַל זָאכִּי',he:'האוכל טעים',tag:'אוכל'},
+  {ar:'بدي شي حلو',ph:'בִּדִּי שִׁי חֻלְוֶה',he:'אני רוצה משהו מתוק',tag:'אוכל'},
+  {ar:'حساب من فضلك',ph:'חְסָאב מִן פַּדְּלַק',he:'חשבון בבקשה',tag:'אוכל'},
+  {ar:'بكم هذا؟',ph:'בְּכַם הָאדָה?',he:'כמה זה עולה?',tag:'קניות'},
+  {ar:'في خصم؟',ph:'פִי חַסְם?',he:'יש הנחה?',tag:'קניות'},
+  {ar:'غالي كتير',ph:'גָ'אלִי כְּתִיר',he:'יקר מדי',tag:'קניות'},
+  {ar:'رح آخده',ph:'רַח אָאחְדֶה',he:'אני אקח את זה',tag:'קניות'},
+  {ar:'بدي دكتور',ph:'בִּדִּי דֻּכְּתוּר',he:'אני צריך רופא',tag:'חירום'},
+  {ar:'ساعدني',ph:'סָאעִדְנִי',he:'עזור לי',tag:'חירום'},
+  {ar:'في مشكلة',ph:'פִי מֻשְׁכְּלֶה',he:'יש בעיה',tag:'חירום'},
+  {ar:'اتصل على البوليس',ph:'אִתַּצַּל עַל אַל-בּוּלִיס',he:'התקשר למשטרה',tag:'חירום'},
+  {ar:'مين أنت؟',ph:'מִין אַנְתְ?',he:'מי אתה?',tag:'היכרות'},
+  {ar:'كم عمرك؟',ph:'כַּם עֻמְרַק?',he:'בן כמה אתה?',tag:'היכרות'},
+  {ar:'متزوج؟',ph:'מֻתְזַוְּוִג?',he:'נשוי?',tag:'היכרות'},
+  {ar:'شو شغلتك؟',ph:"שוּ שֻׁגְ'לְתַק?",he:'מה העבודה שלך?',tag:'היכרות'},
+  {ar:'سكنت وين؟',ph:'סַכַּנְתּ וֵין?',he:'איפה אתה גר?',tag:'היכרות'},
+  {ar:'يلا نروح',ph:'יַלָּה נְרוּח',he:'יאללה נלך',tag:'יומיומי'},
+  {ar:'خلصنا',ph:'חְלַצְנָה',he:'סיימנו / גמרנו',tag:'יומיומי'},
+  {ar:'شو في؟',ph:'שוּ פִי?',he:'מה יש? מה קורה?',tag:'יומיומי'},
+  {ar:'ما في شي',ph:'מָא פִי שִׁי',he:'אין כלום',tag:'יומיומי'},
+  {ar:'طمني',ph:'טַמְּנִי',he:'הרגיע אותי / ספר לי מה שלומך',tag:'יומיומי'},
+  {ar:'كل شي تمام',ph:'כֻּל שִׁי תַּמָּאם',he:'הכל בסדר',tag:'יומיומי'},
+  {ar:'معك موبايل؟',ph:'מַעַק מוֹבַּאיִל?',he:'יש לך טלפון?',tag:'יומיומי'},
+];
+
+// ===== STATE =====
+let currentCategory = null;
+let filteredWords = [];
+let fcDeck = [];
+let fcIndex = 0;
+let fcFlipped = false;
+let fcSelectedCats = new Set(categories.map(c => c.id));
+let quizScore = 0;
+let quizTotal = 0;
+let stats = JSON.parse(localStorage.getItem('arabicStats') || '{"words":0,"correct":0,"streak":0,"total":0,"lastVisit":"","mastered":[]}');
+
+function saveStats() { localStorage.setItem('arabicStats', JSON.stringify(stats)); }
+
+// Count visits
+const today = new Date().toDateString();
+if (stats.lastVisit !== today) {
+  stats.total++;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (stats.lastVisit === yesterday) stats.streak++;
+  else if (stats.lastVisit !== today) stats.streak = 1;
+  stats.lastVisit = today;
+  saveStats();
+}
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'stats') renderStats();
+  if (id === 'phrases') renderPhrases();
+  if (id === 'flashcards') renderFCCategories();
+  if (id === 'quiz') startQuiz();
+}
+
+// ===== CATEGORIES =====
+function renderCategories() {
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = categories.map(cat => {
+    const count = vocabulary.filter(w => w.cat === cat.id).length;
+    return `<div class="category-card" onclick="showWordList('${cat.id}')">
+      <span class="emoji">${cat.emoji}</span>
+      <div class="name">${cat.name}</div>
+      <div class="count">${count} מילים</div>
+    </div>`;
+  }).join('');
+}
+
+function showWordList(catId) {
+  const cat = categories.find(c => c.id === catId);
+  currentCategory = catId;
+  filteredWords = vocabulary.filter(w => w.cat === catId);
+  document.getElementById('category-grid-view').style.display = 'none';
+  document.getElementById('word-list-view').style.display = 'block';
+  document.getElementById('wordListTitle').textContent = cat.emoji + ' ' + cat.name;
+  document.getElementById('wordSearch').value = '';
+  renderWordList(filteredWords);
+}
+
+function showCategoryGrid() {
+  document.getElementById('word-list-view').style.display = 'none';
+  document.getElementById('category-grid-view').style.display = 'block';
+}
+
+function filterWords() {
+  const q = document.getElementById('wordSearch').value.trim().toLowerCase();
+  const base = currentCategory ? vocabulary.filter(w => w.cat === currentCategory) : vocabulary;
+  filteredWords = q ? base.filter(w =>
+    w.ar.includes(q) || w.ph.toLowerCase().includes(q) || w.he.includes(q)
+  ) : base;
+  renderWordList(filteredWords);
+}
+
+function renderWordList(words) {
+  document.getElementById('resultsSummary').textContent = words.length + ' מילים';
+  document.getElementById('wordList').innerHTML = words.map(w => `
+    <div class="word-card" onclick="toggleWord(this)">
+      <div class="word-arabic">${w.ar}</div>
+      <div class="word-phonetic">${w.ph}</div>
+      <div class="word-hebrew">${w.he}</div>
+      ${w.ex && w.ex.length ? `<div class="word-detail">
+        ${w.ex.map(e => `<div class="word-example">
+          <div class="ar">${e.ar}</div>
+          <div class="ph">${e.ph}</div>
+          <div class="he">${e.he}</div>
+        </div>`).join('')}
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+function toggleWord(el) {
+  el.classList.toggle('expanded');
+  stats.words = Math.max(stats.words, parseInt(document.getElementById('resultsSummary').textContent));
+  saveStats();
+}
+
+// ===== PHRASES =====
+function renderPhrases(q) {
+  const search = (q || document.getElementById('phraseSearch')?.value || '').trim().toLowerCase();
+  const list = search ? phrases.filter(p =>
+    p.ar.includes(search) || p.ph.toLowerCase().includes(search) ||
+    p.he.includes(search) || p.tag.includes(search)
+  ) : phrases;
+  document.getElementById('phraseList').innerHTML = list.map(p => `
+    <div class="phrase-card">
+      <div class="phrase-arabic">${p.ar}</div>
+      <div class="phrase-phonetic">${p.ph}</div>
+      <div class="phrase-hebrew">${p.he}</div>
+      <span class="phrase-tag">${p.tag}</span>
+    </div>
+  `).join('');
+}
+function filterPhrases() { renderPhrases(document.getElementById('phraseSearch').value); }
+
+// ===== FLASHCARDS =====
+function renderFCCategories() {
+  document.getElementById('fcCategoryRow').innerHTML = categories.map(c => `
+    <button class="fc-category-btn ${fcSelectedCats.has(c.id)?'active':''}"
+      onclick="toggleFCCat('${c.id}',this)">${c.emoji} ${c.name}</button>
+  `).join('');
+}
+
+function toggleFCCat(id, el) {
+  if (fcSelectedCats.has(id)) { fcSelectedCats.delete(id); el.classList.remove('active'); }
+  else { fcSelectedCats.add(id); el.classList.add('active'); }
+}
+
+function startFlashcards() {
+  const pool = vocabulary.filter(w => fcSelectedCats.has(w.cat));
+  if (!pool.length) { alert('בחר לפחות קטגוריה אחת'); return; }
+  fcDeck = [...pool].sort(() => Math.random() - 0.5);
+  fcIndex = 0;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+}
+
+function showFCCard() {
+  if (fcIndex >= fcDeck.length) {
+    document.getElementById('fcArabic').textContent = '🎉 סיימת!';
+    document.getElementById('fcPhonetic').textContent = 'לחץ התחל לסבב חדש';
+    document.getElementById('fcHebrew').textContent = '';
+    document.getElementById('btnWrong').style.display = 'none';
+    document.getElementById('btnRight').style.display = 'none';
+    document.getElementById('btnStart').style.display = 'block';
+    document.getElementById('btnStart').textContent = '🔄 סבב חדש';
+    return;
+  }
+  fcFlipped = false;
+  const card = fcDeck[fcIndex];
+  const cat = categories.find(c => c.id === card.cat);
+  document.getElementById('fcCategory').textContent = cat.emoji + ' ' + cat.name;
+  document.getElementById('fcArabic').textContent = card.ar;
+  document.getElementById('fcPhonetic').textContent = card.ph;
+  document.getElementById('fcHebrew').textContent = card.he;
+  document.getElementById('flashcard').classList.remove('flipped');
+  const pct = Math.round((fcIndex / fcDeck.length) * 100);
+  document.getElementById('fcProgressBar').style.width = pct + '%';
+  document.getElementById('fcProgressText').textContent = fcIndex + ' / ' + fcDeck.length;
+}
+
+function flipCard() {
+  if (fcIndex >= fcDeck.length) return;
+  fcFlipped = !fcFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', fcFlipped);
+}
+
+function nextCard(knew) {
+  if (knew) { stats.correct++; saveStats(); }
+  fcIndex++;
+  showFCCard();
+}
+
+// ===== QUIZ =====
+let quizAnswer = null;
+function startQuiz() {
+  quizAnswer = null;
+  document.getElementById('btnNextQuiz').style.display = 'none';
+  const allWords = vocabulary;
+  const idx = Math.floor(Math.random() * allWords.length);
+  const correct = allWords[idx];
+  const wrong = allWords.filter(w => w.id !== correct.id).sort(() => Math.random()-0.5).slice(0, 3);
+  const options = [...wrong, correct].sort(() => Math.random() - 0.5);
+
+  // Alternate question types
+  const types = ['arToHe', 'heToAr', 'phToHe'];
+  const type = types[Math.floor(Math.random() * types.length)];
+
+  let q, sub, hint, optionsFn;
+  if (type === 'arToHe') {
+    q = correct.ar; sub = correct.ph; hint = 'מה המשמעות?';
+    optionsFn = o => o.he;
+    quizAnswer = correct.he;
+  } else if (type === 'heToAr') {
+    q = correct.he; sub = ''; hint = 'מה הכתיב הערבי?';
+    optionsFn = o => o.ar;
+    quizAnswer = correct.ar;
+  } else {
+    q = correct.ph; sub = correct.ar; hint = 'מה המשמעות?';
+    optionsFn = o => o.he;
+    quizAnswer = correct.he;
+  }
+
+  document.getElementById('quizQ').textContent = q;
+  document.getElementById('quizSub').textContent = sub;
+  document.getElementById('quizHint').textContent = hint;
+  document.getElementById('quizOptions').innerHTML = options.map(o => `
+    <button class="quiz-option" onclick="checkAnswer(this,'${optionsFn(o).replace(/'/g,"\\'")}','${quizAnswer.replace(/'/g,"\\'")}')">
+      ${optionsFn(o)}
+    </button>
+  `).join('');
+}
+
+function checkAnswer(btn, chosen, correct) {
+  document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+  quizTotal++;
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    quizScore++;
+    stats.correct++;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-option').forEach(b => {
+      if (b.textContent.trim() === correct) b.classList.add('correct');
+    });
+  }
+  document.getElementById('quizScore').textContent = quizScore;
+  document.getElementById('quizTotal').textContent = quizTotal;
+  document.getElementById('btnNextQuiz').style.display = 'block';
+  saveStats();
+}
+
+function nextQuiz() { startQuiz(); }
+
+// ===== STATS =====
+function renderStats() {
+  document.getElementById('statWords').textContent = vocabulary.length;
+  document.getElementById('statCorrect').textContent = stats.correct;
+  document.getElementById('statStreak').textContent = stats.streak;
+  document.getElementById('statTotal').textContent = stats.total;
+  document.getElementById('masteredList').innerHTML = `
+    <div class="stat-card" style="margin-bottom:12px">
+      <div style="font-size:1rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">📖 בנק ידע</div>
+      <div style="font-size:0.85rem;color:var(--text-muted)">
+        ${vocabulary.length} מילים • ${phrases.length} ביטויים • ${categories.length} קטגוריות<br>
+        <strong>ערבית לבנטינית מדוברת</strong> — ניב פלסטינאי/לבנוני
+      </div>
+    </div>
+    <div class="stat-card">
+      <div style="font-size:1rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">💡 טיפ</div>
+      <div style="font-size:0.85rem;color:var(--text-muted)">
+        ה-ח' הוא צליל ח' כבד (כמו ח' בעברית)<br>
+        ה-ע' הוא צליל כמו ר' צרפתית<br>
+        ה-ג' הוא צליל כמו ג' רכה<br>
+        ה-צ' הוא צ' מודגשת
+      </div>
+    </div>
+  `;
+}
+
+// ===== INIT =====
+renderCategories();
+renderPhrases();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "appId": "com.arabic.learning",
+  "appName": "ערבית מדוברת",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}
