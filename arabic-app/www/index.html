@@ -799,6 +799,14 @@ function getMasteryStars(id) {
 // ===== TTS =====
 function speakArabic(text, e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
+  // Native TTS plugin (works in Android WebView via Capacitor)
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeTTS) {
+      window.Capacitor.Plugins.NativeTTS.speak({ text: text, rate: 0.75 });
+      return;
+    }
+  } catch(err) {}
+  // Fallback: Web Speech API (works in browser)
   if (!('speechSynthesis' in window)) return;
   try {
     speechSynthesis.cancel();
