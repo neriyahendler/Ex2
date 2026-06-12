@@ -47,14 +47,9 @@
     }
     .logo { display: flex; align-items: center; gap: 12px; }
     .logo-badge {
-      width: 44px; height: 44px;
-      background: rgba(255,255,255,0.18);
-      border-radius: 14px;
+      width: 46px; height: 46px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; font-weight: 900;
-      border: 2px solid rgba(255,255,255,0.3);
-      color: white;
-      font-family: 'Arial', sans-serif;
+      flex-shrink: 0;
     }
     .logo-title { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.3px; }
     .logo-sub { font-size: 0.68rem; opacity: 0.7; margin-top: 1px; }
@@ -317,8 +312,54 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
     .quiz-option:active:not([disabled]) { transform: scale(0.96); border-color: var(--primary); background: var(--primary-light); }
-    .quiz-option.correct { background: #ecfdf5; border-color: #10b981; color: #065f46; animation: popIn 0.35s ease; }
-    .quiz-option.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; animation: shakeX 0.35s ease; }
+    .quiz-option.correct { background: #ecfdf5; border-color: #10b981; color: #065f46; animation: popIn 0.4s ease; }
+    .quiz-option.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; animation: shakeX 0.4s ease; }
+    /* Quiz result overlay */
+    .quiz-result-overlay {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      z-index: 500; pointer-events: none;
+    }
+    .quiz-result-icon {
+      font-size: 6rem; animation: resultPop 0.6s cubic-bezier(.22,.68,0,1.4) forwards;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.25));
+    }
+    @keyframes resultPop {
+      0%   { opacity: 0; transform: scale(0.3) rotate(-15deg); }
+      60%  { opacity: 1; transform: scale(1.2) rotate(5deg); }
+      80%  { transform: scale(0.95) rotate(-2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    @keyframes resultFade {
+      0%   { opacity: 1; }
+      70%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* Floating score pop */
+    .score-float {
+      position: fixed; pointer-events: none; z-index: 600;
+      font-size: 1.8rem; font-weight: 900;
+      animation: floatUp 0.9s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+    }
+    /* Confetti dots */
+    .confetti-dot {
+      position: fixed; width: 9px; height: 9px; border-radius: 2px;
+      pointer-events: none; z-index: 590;
+      animation: confettiBurst 0.8s ease-out forwards;
+    }
+    @keyframes confettiBurst {
+      0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx),var(--dy)) rotate(540deg) scale(0.5); }
+    }
+    /* Score number bounce */
+    @keyframes scoreBounce {
+      0%,100% { transform: scale(1); }
+      50%     { transform: scale(1.5); color: #10b981; }
+    }
+    .score-bounce { animation: scoreBounce 0.4s ease; }
     /* ── PHRASES ── */
     .phrase-card {
       background: white; border-radius: 18px; padding: 16px 18px;
@@ -379,7 +420,30 @@
 
 <header class="header">
   <div class="logo">
-    <div class="logo-badge">ع</div>
+    <div class="logo-badge">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="badgeGrad" x1="0" y1="0" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c4b5fd"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+          <linearGradient id="shineGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="white" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Badge background -->
+        <rect width="46" height="46" rx="14" fill="url(#badgeGrad)"/>
+        <!-- Shine overlay -->
+        <rect width="46" height="23" rx="14" fill="url(#shineGrad)"/>
+        <!-- Speech bubble shape -->
+        <path d="M10 11 H32 A4 4 0 0 1 36 15 V26 A4 4 0 0 1 32 30 H24 L20 36 L18 30 H14 A4 4 0 0 1 10 26 V15 A4 4 0 0 1 14 11 Z" fill="white" opacity="0.15"/>
+        <!-- Arabic letter ayin -->
+        <text x="23" y="31" text-anchor="middle" font-size="22" fill="white" font-weight="900" font-family="Arial, sans-serif">ع</text>
+        <!-- Star top-right decoration -->
+        <text x="34" y="13" text-anchor="middle" font-size="8" fill="white" opacity="0.7">✦</text>
+      </svg>
+    </div>
     <div class="logo-text">
       <div class="logo-title">ערבית מדוברת</div>
       <div class="logo-sub">לבנטינית • אופליין</div>
@@ -1304,18 +1368,69 @@ function checkAnswer(btn, chosen, correct) {
     btn.classList.add('correct');
     quizScore++;
     stats.correct++;
+    showQuizAnim(true, btn);
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.quiz-option').forEach(b => {
       if (b.textContent.trim() === correct) b.classList.add('correct');
     });
+    showQuizAnim(false, btn);
   }
   if (currentQuizWord) updateWordLevel(currentQuizWord.id, isCorrect);
-  document.getElementById('quizScore').textContent = quizScore;
+  // Bounce the score number
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.textContent = quizScore;
+  scoreEl.classList.remove('score-bounce');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-bounce');
   document.getElementById('quizTotal').textContent = quizTotal;
   document.getElementById('btnNextQuiz').style.display = 'block';
   updateQuizLevelDisplay();
   saveStats();
+}
+
+function showQuizAnim(isCorrect, btn) {
+  const rect = btn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // Big result icon overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'quiz-result-overlay';
+  overlay.style.animation = 'resultFade 1s ease forwards';
+  const icon = document.createElement('div');
+  icon.className = 'quiz-result-icon';
+  icon.textContent = isCorrect ? '✅' : '❌';
+  overlay.appendChild(icon);
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 1000);
+
+  if (isCorrect) {
+    // Floating +1
+    const pop = document.createElement('div');
+    pop.className = 'score-float';
+    pop.textContent = '+1';
+    pop.style.color = '#10b981';
+    pop.style.left = cx + 'px';
+    pop.style.top = cy + 'px';
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 950);
+
+    // Confetti burst
+    const colors = ['#7c3aed','#f59e0b','#10b981','#3b82f6','#f43f5e','#fbbf24'];
+    for (let i = 0; i < 22; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'confetti-dot';
+      dot.style.background = colors[i % colors.length];
+      dot.style.left = cx + 'px';
+      dot.style.top = cy + 'px';
+      dot.style.setProperty('--dx', ((Math.random() - 0.5) * 220) + 'px');
+      dot.style.setProperty('--dy', (-Math.random() * 200 - 60) + 'px');
+      dot.style.animationDelay = (i * 20) + 'ms';
+      document.body.appendChild(dot);
+      setTimeout(() => dot.remove(), 900);
+    }
+  }
 }
 
 function nextQuiz() { startQuiz(); }
