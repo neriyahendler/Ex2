@@ -4,21 +4,72 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Speech bubble body: rounded rect 18,14 -> 90,70 r=10, plus tail -->
+
+    <!-- Face circle - warm cream -->
+    <path
+        android:fillColor="#fef3c7"
+        android:pathData="M22,58 A32,32,0,1,0,86,58 A32,32,0,1,0,22,58 Z"/>
+
+    <!-- Left eye white -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M28,14 L80,14 Q90,14 90,24 L90,60 Q90,70 80,70 L38,70 L28,88 L32,70 L28,70 Q18,70 18,60 L18,24 Q18,14 28,14 Z"/>
-    <!-- Three speaking dots (purple on white bubble) -->
-    <!-- Dot 1 at (40,42) r=5 -->
+        android:pathData="M31,50 A9,11,0,1,0,49,50 A9,11,0,1,0,31,50 Z"/>
+    <!-- Left pupil -->
     <path
-        android:fillColor="#4c1d95"
-        android:pathData="M40,37 A5,5,0,1,0,40,47 A5,5,0,1,0,40,37 Z"/>
-    <!-- Dot 2 at (54,42) r=5 -->
+        android:fillColor="#1c1917"
+        android:pathData="M35,53 A5,7,0,1,0,45,53 A5,7,0,1,0,35,53 Z"/>
+    <!-- Left eye shine -->
     <path
-        android:fillColor="#4c1d95"
-        android:pathData="M54,37 A5,5,0,1,0,54,47 A5,5,0,1,0,54,37 Z"/>
-    <!-- Dot 3 at (68,42) r=5 -->
+        android:fillColor="#FFFFFF"
+        android:pathData="M34.5,48 A2.5,2.5,0,1,0,39.5,48 A2.5,2.5,0,1,0,34.5,48 Z"/>
+
+    <!-- Right eye white -->
     <path
-        android:fillColor="#4c1d95"
-        android:pathData="M68,37 A5,5,0,1,0,68,47 A5,5,0,1,0,68,37 Z"/>
+        android:fillColor="#FFFFFF"
+        android:pathData="M59,50 A9,11,0,1,0,77,50 A9,11,0,1,0,59,50 Z"/>
+    <!-- Right pupil -->
+    <path
+        android:fillColor="#1c1917"
+        android:pathData="M63,53 A5,7,0,1,0,73,53 A5,7,0,1,0,63,53 Z"/>
+    <!-- Right eye shine -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M62.5,48 A2.5,2.5,0,1,0,67.5,48 A2.5,2.5,0,1,0,62.5,48 Z"/>
+
+    <!-- Left cheek blush -->
+    <path
+        android:fillColor="#fca5a5"
+        android:fillAlpha="0.55"
+        android:pathData="M21,67 A10,5,0,1,0,41,67 A10,5,0,1,0,21,67 Z"/>
+
+    <!-- Right cheek blush -->
+    <path
+        android:fillColor="#fca5a5"
+        android:fillAlpha="0.55"
+        android:pathData="M67,67 A10,5,0,1,0,87,67 A10,5,0,1,0,67,67 Z"/>
+
+    <!-- Smile arc -->
+    <path
+        android:strokeColor="#92400e"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M42,73 Q54,84 66,73"/>
+
+    <!-- Small speech bubble at top -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,12 L65,12 Q70,12 70,17 L70,27 Q70,32 65,32 L56,32 L54,37 L52,32 L39,32 Q34,32 34,27 L34,17 Q34,12 39,12 Z"/>
+
+    <!-- Three amber dots inside bubble (ع-style) -->
+    <path
+        android:fillColor="#d97706"
+        android:pathData="M42,19 A3,3,0,1,0,42,25 A3,3,0,1,0,42,19 Z"/>
+    <path
+        android:fillColor="#d97706"
+        android:pathData="M52,19 A3,3,0,1,0,52,25 A3,3,0,1,0,52,19 Z"/>
+    <path
+        android:fillColor="#d97706"
+        android:pathData="M62,19 A3,3,0,1,0,62,25 A3,3,0,1,0,62,19 Z"/>
+
 </vector>

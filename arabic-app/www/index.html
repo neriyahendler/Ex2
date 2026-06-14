@@ -414,6 +414,44 @@
     .cat-stat-bar { flex: 2; background: var(--border); border-radius: 6px; height: 8px; overflow: hidden; }
     .cat-stat-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 6px; }
     .cat-stat-num { font-size: 0.75rem; color: var(--text-muted); min-width: 36px; text-align: left; }
+    /* ── NOTIFICATION SETTINGS ── */
+    .notif-card {
+      background: white; border-radius: 18px; padding: 20px 18px;
+      margin-top: 16px; box-shadow: var(--shadow);
+    }
+    .notif-card-title { font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 16px; }
+    .notif-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .notif-row-label { font-size: 0.88rem; color: var(--text); font-weight: 600; }
+    .toggle-wrap { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #d1d5db; border-radius: 28px; transition: 0.3s;
+    }
+    .toggle-slider:before {
+      content: ""; position: absolute;
+      height: 22px; width: 22px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-wrap input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-wrap input:checked + .toggle-slider:before { transform: translateX(22px); }
+    .notif-time-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .notif-time-label { font-size: 0.82rem; color: var(--text-muted); }
+    .notif-time-input {
+      border: 2px solid var(--border); border-radius: 10px;
+      padding: 6px 12px; font-size: 0.9rem; color: var(--text);
+      background: var(--bg); outline: none; flex: 1;
+    }
+    .notif-time-input:focus { border-color: var(--primary); }
+    .notif-save-btn {
+      width: 100%; padding: 11px; border: none; border-radius: 12px;
+      background: var(--primary); color: white; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; margin-top: 4px;
+      transition: opacity 0.15s;
+    }
+    .notif-save-btn:active { opacity: 0.8; }
+    .notif-status { font-size: 0.78rem; color: var(--success); margin-top: 8px; min-height: 18px; text-align: center; }
   </style>
 </head>
 <body>
@@ -533,6 +571,26 @@
     <div class="stat-card"><div class="stat-num" id="statMastered">0</div><div class="stat-label">מילים שולטות</div></div>
   </div>
   <div id="masteredList"></div>
+
+  <!-- Notification Settings Card -->
+  <div class="notif-card">
+    <div class="notif-card-title">🔔 התראה יומית</div>
+    <div class="notif-row">
+      <span class="notif-row-label">מילה חדשה כל יום</span>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="notifToggle" onchange="onNotifToggle(this)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div id="notifTimeRow" style="display:none">
+      <div class="notif-time-row">
+        <span class="notif-time-label">שעת התראה:</span>
+        <input type="time" id="notifTime" class="notif-time-input" value="09:00">
+      </div>
+      <button class="notif-save-btn" onclick="saveNotifSettings()">שמור שעה</button>
+    </div>
+    <div class="notif-status" id="notifStatus"></div>
+  </div>
 </div>
 
 <script>
@@ -1484,6 +1542,104 @@ function renderStats() {
   `;
 }
 
+// ===== NOTIFICATIONS =====
+function isNative() {
+  return !!(window.Capacitor?.isNativePlatform?.());
+}
+
+async function scheduleWordNotifications() {
+  if (!isNative()) return;
+  const { LocalNotifications } = Capacitor.Plugins;
+  try {
+    const perm = await LocalNotifications.requestPermissions();
+    if (perm.display !== 'granted') {
+      localStorage.setItem('notifEnabled', 'false');
+      const tog = document.getElementById('notifToggle');
+      if (tog) tog.checked = false;
+      setNotifStatus('⚠️ אין הרשאה להתראות');
+      return;
+    }
+    // Cancel old
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications?.length) {
+      await LocalNotifications.cancel({ notifications: pending.notifications });
+    }
+    // Build 7 daily notifications, each with a different word
+    const timeParts = (localStorage.getItem('notifTime') || '09:00').split(':');
+    const hour = parseInt(timeParts[0]);
+    const min  = parseInt(timeParts[1]);
+    const notifications = [];
+    const baseDay = Math.floor(Date.now() / 86400000);
+    let id = 2000;
+    for (let i = 0; i < 7; i++) {
+      const at = new Date();
+      at.setHours(hour, min, 0, 0);
+      at.setDate(at.getDate() + i);
+      if (at <= new Date()) at.setDate(at.getDate() + 1);
+      const word = vocabulary[(baseDay + i) % vocabulary.length];
+      notifications.push({
+        id: id++,
+        title: '📖 מילה יומית בערבית',
+        body: `${word.he} ← "${word.ph}"`,
+        schedule: { at },
+        smallIcon: 'ic_launcher',
+        iconColor: '#f59e0b'
+      });
+    }
+    await LocalNotifications.schedule({ notifications });
+    setNotifStatus(`✓ התראה נקבעה ל-${String(hour).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
+  } catch (e) {
+    setNotifStatus('⚠️ שגיאה: ' + e.message);
+  }
+}
+
+async function cancelNotifications() {
+  if (!isNative()) return;
+  try {
+    const { LocalNotifications } = Capacitor.Plugins;
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications?.length) {
+      await LocalNotifications.cancel({ notifications: pending.notifications });
+    }
+  } catch(e) {}
+}
+
+function setNotifStatus(msg) {
+  const el = document.getElementById('notifStatus');
+  if (el) el.textContent = msg;
+}
+
+function onNotifToggle(el) {
+  const enabled = el.checked;
+  localStorage.setItem('notifEnabled', enabled ? 'true' : 'false');
+  const row = document.getElementById('notifTimeRow');
+  if (row) row.style.display = enabled ? 'block' : 'none';
+  if (enabled) {
+    scheduleWordNotifications();
+  } else {
+    cancelNotifications();
+    setNotifStatus('התראות כבויות');
+  }
+}
+
+function saveNotifSettings() {
+  const timeEl = document.getElementById('notifTime');
+  if (timeEl) localStorage.setItem('notifTime', timeEl.value);
+  scheduleWordNotifications();
+}
+
+function initNotifUI() {
+  const enabled = localStorage.getItem('notifEnabled') === 'true';
+  const tog = document.getElementById('notifToggle');
+  const row = document.getElementById('notifTimeRow');
+  const timeEl = document.getElementById('notifTime');
+  if (tog) tog.checked = enabled;
+  if (row) row.style.display = enabled ? 'block' : 'none';
+  const savedTime = localStorage.getItem('notifTime');
+  if (timeEl && savedTime) timeEl.value = savedTime;
+  if (enabled) scheduleWordNotifications();
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
   try { renderCategories(); } catch(e) { console.error('renderCategories:', e); }
@@ -1492,11 +1648,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const el = document.getElementById('headerStreakNum');
     if (el) el.textContent = stats.streak || 0;
   } catch(e) {}
+  try { initNotifUI(); } catch(e) { console.error('initNotifUI:', e); }
 });
 // fallback if DOMContentLoaded already fired
 if (document.readyState !== 'loading') {
   try { renderCategories(); } catch(e) {}
   try { renderPhrases(); } catch(e) {}
+  try { initNotifUI(); } catch(e) {}
 }
 </script>
 
