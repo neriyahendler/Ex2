@@ -616,11 +616,11 @@
       <button class="btn btn-wrong" id="btnWrong" onclick="nextCard(false)" style="display:none">✗ לא ידעתי</button>
       <button class="btn btn-right" id="btnRight" onclick="nextCard(true)" style="display:none">✓ ידעתי</button>
     </div>
-    <div style="display:flex;gap:8px;width:100%;max-width:380px">
+    <div style="display:flex;gap:8px;max-width:380px;width:100%">
       <button class="btn btn-primary" id="btnStart" onclick="startFlashcards()" style="flex:2">▶ התחל</button>
-      <button class="btn" id="btnReview" onclick="startSRReview()" style="flex:1;background:#fef2f2;color:#dc2626;border:2px solid #fecaca;font-size:0.82rem">📅 חזרה <span id="dueBadge" class="due-badge" style="display:none">0</span></button>
+      <button class="btn btn-accent" onclick="startSRReview()" style="flex:1;font-size:0.85rem">📅 חזרה חכמה</button>
+      <button class="btn" onclick="startAudioMode()" style="flex:1;font-size:0.85rem;background:linear-gradient(135deg,#1e0a4e,#4c1d95);color:white">🎧 שמיעה</button>
     </div>
-    <button onclick="startAudioMode()" style="width:100%;max-width:380px;padding:12px;border:none;border-radius:14px;background:linear-gradient(135deg,#1e0a4e,#4c1d95);color:white;font-size:0.9rem;font-weight:700;cursor:pointer">🎧 מצב שמיעה</button>
   </div>
 </div>
 
@@ -641,29 +641,28 @@
 
 <!-- QUIZ SCREEN -->
 <div id="screen-quiz" class="screen">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div class="quiz-level-live" id="quizLevelLive" style="flex:1;margin-bottom:0">רמה: <strong id="quizLevelName">–</strong> | <strong id="quizMasteredCount">0</strong> שולטות</div>
-    <button class="speed-toggle" id="speedToggle" onclick="toggleSpeedMode(this)">⚡ מהיר</button>
-  </div>
+  <div class="quiz-level-live" id="quizLevelLive">רמה: <strong id="quizLevelName">–</strong> | <strong id="quizMasteredCount">0</strong> שולטות</div>
   <div class="quiz-score">ניקוד: <span id="quizScore">0</span> | שאלות: <span id="quizTotal">0</span></div>
-  <div id="speedTimerWrap" class="speed-timer-wrap" style="display:none">
-    <svg width="62" height="62" viewBox="0 0 62 62">
-      <circle cx="31" cy="31" r="27" fill="none" stroke="#e5e7eb" stroke-width="5"/>
-      <circle id="timerCircle" cx="31" cy="31" r="27" fill="none" stroke="#f59e0b" stroke-width="5"
-        stroke-dasharray="169.6" stroke-dashoffset="0" stroke-linecap="round"
-        transform="rotate(-90 31 31)" style="transition:stroke-dashoffset 0.1s linear"/>
-    </svg>
-    <div id="timerNum" style="font-size:1.1rem;font-weight:900;color:var(--accent);margin-top:2px">5</div>
-  </div>
   <div class="quiz-card" id="quizCard">
     <button class="speak-btn" id="quizSpeakBtn" onclick="speakCurrentQuiz(event)" style="float:left;font-size:1.4rem;display:none">🔊</button>
     <div class="quiz-question" id="quizQ"></div>
     <div class="quiz-sub" id="quizSub"></div>
     <div class="quiz-hint" id="quizHint"></div>
   </div>
+  <button id="speedModeBtn" onclick="toggleSpeedMode(this)" style="display:block;margin-bottom:10px;padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⚡ מהיר</button>
+  <style>.speed-btn-active, #speedModeBtn.active { background:var(--accent-light)!important;border-color:var(--accent)!important;color:#92400e!important; }</style>
+  <div id="speedTimerWrap" style="display:none; text-align:center; margin-bottom:10px">
+    <svg width="60" height="60" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+      <circle id="timerCircle" cx="30" cy="30" r="26" fill="none" stroke="#f59e0b" stroke-width="5"
+        stroke-dasharray="163.4" stroke-dashoffset="0" stroke-linecap="round"
+        transform="rotate(-90 30 30)" style="transition:stroke-dashoffset 0.1s linear"/>
+    </svg>
+    <div id="timerNum" style="font-size:1.1rem;font-weight:800;color:var(--accent);margin-top:4px">5</div>
+  </div>
   <div class="quiz-options" id="quizOptions"></div>
-  <button class="speech-btn" id="speechBtn" onclick="startSpeechQuiz()">🎤 אמור בערבית</button>
-  <div class="speech-feedback" id="speechFeedback"></div>
+  <button id="speechBtn" onclick="startSpeechQuiz()" style="display:none; margin:10px auto; padding:12px 24px; background:var(--accent); color:white; border:none; border-radius:14px; font-size:1rem; font-weight:700; cursor:pointer; width:100%">🎤 אמור בערבית</button>
+  <div id="speechFeedback" style="text-align:center; font-size:0.85rem; color:var(--text-muted); min-height:22px; margin-top:4px"></div>
   <button class="btn btn-primary" id="btnNextQuiz" onclick="nextQuiz()" style="margin-top:12px;display:none;width:100%">השאלה הבאה ←</button>
   <button class="btn btn-accent" onclick="startQuiz()" style="margin-top:12px;width:100%">🔄 שאלה חדשה / התחל מחדש</button>
 </div>
