@@ -1254,18 +1254,18 @@ function getWordLevel(id) { return (wordProgress[id] || {}).level || 0; }
 
 function updateWordLevel(id, correct) {
   if (!wordProgress[id]) wordProgress[id] = {level:0, correct:0, seen:0};
-  wordProgress[id].seen++;
-  const sr = wordProgress[id];
-  const interval = sr.interval || 1;
+  const wp = wordProgress[id];
+  wp.seen++;
+  if (!wp.interval) wp.interval = 1;
   if (correct) {
-    sr.correct++;
-    if (sr.level < 3) sr.level++;
-    sr.interval = Math.min(interval * 2, 30);
-    sr.nextReview = Date.now() + sr.interval * 86400000;
+    wp.correct++;
+    if (wp.level < 3) wp.level++;
+    wp.interval = Math.min(wp.interval * 2, 30);
+    wp.nextReview = Date.now() + wp.interval * 86400000;
   } else {
-    if (sr.level > 0) sr.level--;
-    sr.interval = 1;
-    sr.nextReview = Date.now() + 3600000;
+    if (wp.level > 0) wp.level--;
+    wp.interval = 1;
+    wp.nextReview = Date.now() + 3600000;
   }
   saveWordProgress();
   updateDueBadge();
@@ -1289,15 +1289,15 @@ function getUserLevel() {
   return {...lvl, pct, mastered};
 }
 
-// Smart word selection: weight unmastered words higher, only from unlocked pool
+// Smart word selection: weight unmastered words higher + 8x weight for SR due words
 function selectQuizWord() {
   const pool = getUnlockedVocabulary();
   const now = Date.now();
   const weights = pool.map(w => {
     const lv = getWordLevel(w.id);
-    const due = (getSRData(w.id).nextReview || 0) <= now;
     const base = lv === 0 ? 5 : lv === 1 ? 4 : lv === 2 ? 2 : 1;
-    return due ? base * 3 : base;
+    const isDue = (wordProgress[w.id]?.nextReview || 0) <= now;
+    return isDue ? base * 8 : base;
   });
   const total = weights.reduce((a,b) => a+b, 0);
   let rand = Math.random() * total;
@@ -1686,6 +1686,9 @@ function renderStats() {
   document.getElementById('statStreak').textContent = stats.streak;
   document.getElementById('statTotal').textContent = stats.total;
   document.getElementById('statMastered').textContent = lvl.mastered;
+  const dueCount = getDueWords().length;
+  const dueEl = document.getElementById('srDueCount');
+  if (dueEl) dueEl.textContent = dueCount + ' מילים ממתינות לחזרה';
 
   const catRows = categories.map(cat => {
     const m = getMasteredCount();
