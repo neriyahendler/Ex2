@@ -5,71 +5,23 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Face circle - warm cream -->
+    <!-- Geometric Kufic path (scaled from 100x100 to 108x108 safe zone 18-90, scale=0.72, offset=18) -->
     <path
-        android:fillColor="#fef3c7"
-        android:pathData="M22,58 A32,32,0,1,0,86,58 A32,32,0,1,0,22,58 Z"/>
-
-    <!-- Left eye white -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M31,50 A9,11,0,1,0,49,50 A9,11,0,1,0,31,50 Z"/>
-    <!-- Left pupil -->
-    <path
-        android:fillColor="#1c1917"
-        android:pathData="M35,53 A5,7,0,1,0,45,53 A5,7,0,1,0,35,53 Z"/>
-    <!-- Left eye shine -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34.5,48 A2.5,2.5,0,1,0,39.5,48 A2.5,2.5,0,1,0,34.5,48 Z"/>
-
-    <!-- Right eye white -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M59,50 A9,11,0,1,0,77,50 A9,11,0,1,0,59,50 Z"/>
-    <!-- Right pupil -->
-    <path
-        android:fillColor="#1c1917"
-        android:pathData="M63,53 A5,7,0,1,0,73,53 A5,7,0,1,0,63,53 Z"/>
-    <!-- Right eye shine -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M62.5,48 A2.5,2.5,0,1,0,67.5,48 A2.5,2.5,0,1,0,62.5,48 Z"/>
-
-    <!-- Left cheek blush -->
-    <path
-        android:fillColor="#fca5a5"
-        android:fillAlpha="0.55"
-        android:pathData="M21,67 A10,5,0,1,0,41,67 A10,5,0,1,0,21,67 Z"/>
-
-    <!-- Right cheek blush -->
-    <path
-        android:fillColor="#fca5a5"
-        android:fillAlpha="0.55"
-        android:pathData="M67,67 A10,5,0,1,0,87,67 A10,5,0,1,0,67,67 Z"/>
-
-    <!-- Smile arc -->
-    <path
-        android:strokeColor="#92400e"
-        android:strokeWidth="3.5"
-        android:strokeLineCap="round"
+        android:strokeColor="#7C3AED"
+        android:strokeWidth="5.76"
+        android:strokeLineCap="square"
+        android:strokeLineJoin="miter"
         android:fillColor="#00000000"
-        android:pathData="M42,73 Q54,84 66,73"/>
+        android:pathData="M36,36 L72,36 L72,72 L50.4,72 L50.4,50.4 L61.2,50.4 L61.2,57.6 L57.6,57.6"/>
 
-    <!-- Small speech bubble at top -->
+    <!-- Foundation base block -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M39,12 L65,12 Q70,12 70,17 L70,27 Q70,32 65,32 L56,32 L54,37 L52,32 L39,32 Q34,32 34,27 L34,17 Q34,12 39,12 Z"/>
+        android:fillColor="#7C3AED"
+        android:pathData="M36,61.2 L43.2,61.2 L43.2,72 L36,72 Z"/>
 
-    <!-- Three amber dots inside bubble (ع-style) -->
+    <!-- Gold accent dot (Nuqta) -->
     <path
-        android:fillColor="#d97706"
-        android:pathData="M42,19 A3,3,0,1,0,42,25 A3,3,0,1,0,42,19 Z"/>
-    <path
-        android:fillColor="#d97706"
-        android:pathData="M52,19 A3,3,0,1,0,52,25 A3,3,0,1,0,52,19 Z"/>
-    <path
-        android:fillColor="#d97706"
-        android:pathData="M62,19 A3,3,0,1,0,62,25 A3,3,0,1,0,62,19 Z"/>
+        android:fillColor="#F59E0B"
+        android:pathData="M72,46.8 Q73.44,46.8 73.44,48.24 L73.44,53.28 Q73.44,54.72 72,54.72 L67.44,54.72 Q66,54.72 66,53.28 L66,48.24 Q66,46.8 67.44,46.8 Z"/>
 
 </vector>
