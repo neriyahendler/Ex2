@@ -1583,7 +1583,8 @@ async function scheduleWordNotifications() {
         body: `${word.he} ← "${word.ph}"`,
         schedule: { at },
         smallIcon: 'ic_launcher',
-        iconColor: '#f59e0b'
+        iconColor: '#f59e0b',
+        extra: { wordId: word.id }
       });
     }
     await LocalNotifications.schedule({ notifications });
@@ -1628,6 +1629,27 @@ function saveNotifSettings() {
   scheduleWordNotifications();
 }
 
+function openWordFromNotif(wordId) {
+  const word = vocabulary.find(w => w.id === wordId);
+  if (!word) return;
+  // Find flashcards nav button
+  let fcNavEl = null;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.getAttribute('onclick')?.includes('flashcards')) fcNavEl = el;
+  });
+  showScreen('flashcards', fcNavEl);
+  // Set up a single-word mini-session
+  fcDeck = [word];
+  fcIndex = 0;
+  fcFlipped = false;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+  // Auto-speak the word
+  setTimeout(() => { if (word.ar) speakArabic(word.ar); }, 700);
+}
+
 function initNotifUI() {
   const enabled = localStorage.getItem('notifEnabled') === 'true';
   const tog = document.getElementById('notifToggle');
@@ -1638,6 +1660,16 @@ function initNotifUI() {
   const savedTime = localStorage.getItem('notifTime');
   if (timeEl && savedTime) timeEl.value = savedTime;
   if (enabled) scheduleWordNotifications();
+  // Listen for notification taps
+  if (isNative() && window.Capacitor?.Plugins?.LocalNotifications) {
+    Capacitor.Plugins.LocalNotifications.addListener(
+      'localNotificationActionPerformed',
+      (action) => {
+        const wordId = action.notification?.extra?.wordId;
+        if (wordId) openWordFromNotif(wordId);
+      }
+    );
+  }
 }
 
 // ===== INIT =====
