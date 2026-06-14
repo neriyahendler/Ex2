@@ -618,7 +618,7 @@
     </div>
     <div style="display:flex;gap:8px;max-width:380px;width:100%">
       <button class="btn btn-primary" id="btnStart" onclick="startFlashcards()" style="flex:2">▶ התחל</button>
-      <button class="btn btn-accent" onclick="startSRReview()" style="flex:1;font-size:0.85rem">📅 חזרה חכמה</button>
+      <button class="btn btn-accent" onclick="startSRFlashcards()" style="flex:1;font-size:0.85rem">📅 חזרה חכמה</button>
       <button class="btn" onclick="startAudioMode()" style="flex:1;font-size:0.85rem;background:linear-gradient(135deg,#1e0a4e,#4c1d95);color:white">🎧 שמיעה</button>
     </div>
   </div>
@@ -1553,8 +1553,10 @@ function startQuiz() {
   currentQuizArabic = '';
   document.getElementById('btnNextQuiz').style.display = 'none';
   document.getElementById('quizSpeakBtn').style.display = 'none';
-  document.getElementById('speechBtn').style.display = 'none';
-  document.getElementById('speechFeedback').textContent = '';
+  const speechBtn = document.getElementById('speechBtn');
+  if (speechBtn) speechBtn.style.display = 'none';
+  const sfb = document.getElementById('speechFeedback');
+  if (sfb) sfb.textContent = '';
   updateQuizLevelDisplay();
 
   const correct = selectQuizWord();
@@ -1580,14 +1582,13 @@ function startQuiz() {
   document.getElementById('quizSub').textContent = sub;
   document.getElementById('quizHint').textContent = hint;
   document.getElementById('quizSpeakBtn').style.display = showSpeak ? 'inline' : 'none';
-  document.getElementById('speechBtn').style.display = 'block';
-  document.getElementById('speechFeedback').textContent = '';
-  startSpeedTimer();
+  if (speechBtn) speechBtn.style.display = 'block';
   document.getElementById('quizOptions').innerHTML = options.map(o => `
     <button class="quiz-option" onclick="checkAnswer(this,'${optionsFn(o).replace(/'/g,"\\'")}','${quizAnswer.replace(/'/g,"\\'")}')">
       ${optionsFn(o)}
     </button>
   `).join('');
+  startSpeedTimer();
 }
 
 function checkAnswer(btn, chosen, correct) {
@@ -1702,16 +1703,13 @@ function renderStats() {
   }).join('');
 
   document.getElementById('masteredList').innerHTML = `
+    <div class="stat-card" style="margin-bottom:12px;text-align:center">
+      <div style="font-size:1.5rem;font-weight:900;color:var(--accent)">${dueCount}</div>
+      <div id="srDueCount" style="font-size:0.85rem;color:var(--text-muted);margin-top:4px">${dueCount} מילים ממתינות לחזרה</div>
+    </div>
     <div class="stat-card" style="margin-bottom:12px">
       <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:12px">📊 התקדמות לפי קטגוריה</div>
       ${catRows}
-    </div>
-    <div class="stat-card" style="margin-bottom:12px">
-      <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">📅 חזרה חכמה</div>
-      <div style="font-size:0.85rem;color:var(--text-muted)">
-        ${getDueCount()} מילים ממתינות לחזרה
-        ${getDueCount() > 0 ? '<br><span style="font-size:0.78rem;color:#ef4444">לך לכרטיסיות ← חזרה חכמה</span>' : '<br><span style="font-size:0.78rem;color:var(--success)">✓ כל המילים עודכנו!</span>'}
-      </div>
     </div>
     <div class="stat-card">
       <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">💡 מפתח צלילים</div>
@@ -1915,6 +1913,35 @@ function toggleDialogue(id) {
   document.getElementById('dlg-' + id).classList.toggle('open');
 }
 
+function startSRFlashcards() {
+  const due = getDueWords();
+  if (!due.length) {
+    showToast('✓ אין מילים לחזרה כרגע! חזור מאוחר יותר.');
+    return;
+  }
+  fcDeck = [...due].sort(() => Math.random() - 0.5);
+  fcIndex = 0;
+  showScreen('flashcards', document.querySelector('.nav-item[onclick*="flashcards"]'));
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toastMsg');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastMsg';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1e1b4b;color:white;padding:10px 20px;border-radius:12px;font-size:0.88rem;z-index:9999;transition:opacity 0.3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
 // ===== NOTIFICATIONS =====
 function isNative() {
   return !!(window.Capacitor?.isNativePlatform?.());
@@ -2048,6 +2075,7 @@ function initNotifUI() {
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
   try { renderCategories(); } catch(e) { console.error('renderCategories:', e); }
+  try { renderDialogues(); } catch(e) { console.error('renderDialogues:', e); }
   try { renderPhrases(); } catch(e) { console.error('renderPhrases:', e); }
   try {
     const el = document.getElementById('headerStreakNum');
@@ -2058,6 +2086,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // fallback if DOMContentLoaded already fired
 if (document.readyState !== 'loading') {
   try { renderCategories(); } catch(e) {}
+  try { renderDialogues(); } catch(e) {}
   try { renderPhrases(); } catch(e) {}
   try { initNotifUI(); } catch(e) {}
 }
