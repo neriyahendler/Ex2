@@ -565,6 +565,15 @@
 <!-- VOCABULARY SCREEN -->
 <div id="screen-categories" class="screen active">
   <div id="category-grid-view">
+    <div id="wotdBanner" style="margin-bottom:14px;background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:white;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:0.7rem;opacity:0.8;margin-bottom:3px">📖 מילה היום</div>
+        <div id="wotdPh" style="font-size:1.15rem;font-weight:800"></div>
+        <div id="wotdHe" style="font-size:0.85rem;opacity:0.85;margin-top:2px"></div>
+      </div>
+      <button onclick="speakArabic(window._wotdAr,event)" style="background:rgba(255,255,255,0.2);border:none;border-radius:12px;width:42px;height:42px;font-size:1.3rem;cursor:pointer;color:white">🔊</button>
+    </div>
+    <button onclick="startDailyLesson()" style="width:100%;margin-bottom:14px;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:14px;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(245,158,11,0.3)">📖 שיעור יומי</button>
     <div class="screen-title">בחר קטגוריה</div>
     <div class="category-grid" id="categoryGrid"></div>
   </div>
@@ -619,6 +628,17 @@
   </div>
 </div>
 
+<!-- LESSON OVERLAY -->
+<div id="lessonOverlay" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#1e0a4e,#4c1d95);color:white;z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <button onclick="stopLesson()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;border-radius:10px;color:white;font-size:0.9rem;padding:8px 16px;cursor:pointer">✕ סגור</button>
+  <div style="font-size:0.8rem;opacity:0.7;margin-bottom:6px">📖 שיעור יומי</div>
+  <div id="lessonProgress" style="font-size:0.85rem;opacity:0.8;margin-bottom:24px">1 / 5</div>
+  <div id="lessonPh" style="font-size:2rem;font-weight:800;text-align:center;margin-bottom:8px"></div>
+  <div id="lessonHe" style="font-size:1.1rem;opacity:0.85;text-align:center;margin-bottom:24px"></div>
+  <button onclick="speakArabic(window._lessonAr,event)" style="background:rgba(255,255,255,0.2);border:none;border-radius:14px;color:white;font-size:1.1rem;padding:12px 28px;cursor:pointer;margin-bottom:28px">🔊 השמע</button>
+  <button onclick="lessonNext()" id="lessonNextBtn" style="background:var(--accent);border:none;border-radius:14px;color:white;font-size:1.1rem;font-weight:700;padding:14px 40px;cursor:pointer">הבא ←</button>
+</div>
+
 <!-- AUDIO MODE OVERLAY -->
 <div id="audioModeOverlay">
   <button class="am-close" onclick="stopAudioMode()">✕ סגור</button>
@@ -636,6 +656,15 @@
 
 <!-- QUIZ SCREEN -->
 <div id="screen-quiz" class="screen">
+  <div id="dailyChallengeCard" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+    <div style="flex:1">
+      <div style="font-size:0.78rem;font-weight:700;color:#92400e">⚡ אתגר יומי</div>
+      <div id="dcProgress" style="font-size:0.85rem;color:#78350f;margin-top:2px">0 / 10</div>
+    </div>
+    <div style="width:80px;height:6px;background:rgba(0,0,0,0.1);border-radius:3px">
+      <div id="dcBarFill" style="height:100%;background:#f59e0b;border-radius:3px;width:0%;transition:width 0.3s"></div>
+    </div>
+  </div>
   <div class="quiz-level-live" id="quizLevelLive">רמה: <strong id="quizLevelName">–</strong> | <strong id="quizMasteredCount">0</strong> שולטות</div>
   <div class="quiz-score">ניקוד: <span id="quizScore">0</span> | שאלות: <span id="quizTotal">0</span></div>
   <div class="quiz-card" id="quizCard">
@@ -644,7 +673,10 @@
     <div class="quiz-sub" id="quizSub"></div>
     <div class="quiz-hint" id="quizHint"></div>
   </div>
-  <button id="speedModeBtn" onclick="toggleSpeedMode(this)" style="display:block;margin-bottom:10px;padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⚡ מהיר</button>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <button id="speedModeBtn" onclick="toggleSpeedMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⚡ מהיר</button>
+    <button id="typingModeBtn" onclick="toggleTypingMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⌨️ הקלד</button>
+  </div>
   <style>.speed-btn-active, #speedModeBtn.active { background:var(--accent-light)!important;border-color:var(--accent)!important;color:#92400e!important; }</style>
   <div id="speedTimerWrap" style="display:none; text-align:center; margin-bottom:10px">
     <svg width="60" height="60" viewBox="0 0 60 60">
@@ -656,6 +688,10 @@
     <div id="timerNum" style="font-size:1.1rem;font-weight:800;color:var(--accent);margin-top:4px">5</div>
   </div>
   <div class="quiz-options" id="quizOptions"></div>
+  <div id="typingInputWrap" style="display:none;margin:8px 0">
+    <input id="typingInput" type="text" placeholder="הקלד את התרגום..." style="width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-size:1rem;direction:rtl;outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')checkTypedAnswer()">
+    <button onclick="checkTypedAnswer()" style="width:100%;margin-top:8px;padding:12px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer">בדוק</button>
+  </div>
   <button id="speechBtn" onclick="startSpeechQuiz()" style="display:none; margin:10px auto; padding:12px 24px; background:var(--accent); color:white; border:none; border-radius:14px; font-size:1rem; font-weight:700; cursor:pointer; width:100%">🎤 אמור בערבית</button>
   <div id="speechFeedback" style="text-align:center; font-size:0.85rem; color:var(--text-muted); min-height:22px; margin-top:4px"></div>
   <button class="btn btn-primary" id="btnNextQuiz" onclick="nextQuiz()" style="margin-top:12px;display:none;width:100%">השאלה הבאה ←</button>
@@ -677,6 +713,7 @@
     <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">סה"כ ביקורים</div></div>
     <div class="stat-card"><div class="stat-num" id="statMastered">0</div><div class="stat-label">מילים שולטות</div></div>
   </div>
+  <div id="badgesSection" style="margin-bottom:12px"></div>
   <div id="masteredList"></div>
 
   <!-- Notification Settings Card -->
@@ -697,6 +734,15 @@
       <button class="notif-save-btn" onclick="saveNotifSettings()">שמור שעה</button>
     </div>
     <div class="notif-status" id="notifStatus"></div>
+  </div>
+  <!-- Backup/Restore Card -->
+  <div class="notif-card" style="margin-top:12px">
+    <div class="notif-card-title">💾 גיבוי התקדמות</div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="exportProgress()" style="flex:1;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📤 ייצוא</button>
+      <button onclick="document.getElementById('importFileInput').click()" style="flex:1;padding:10px;background:white;color:var(--primary);border:2px solid var(--primary);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📥 ייבוא</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importProgress(this)">
+    </div>
   </div>
 </div>
 
@@ -1173,6 +1219,30 @@ const dialogues = [
     { s:'A', ph:"שו תחבו? קהוה וולא שאי?", he:"מה תרצו? קפה או תה?", ar:"شو تحبو؟ قهوة ولا شاي؟" },
     { s:'B', ph:"שאי מן פדלך, שוכראן", he:"תה בבקשה, תודה", ar:"شاي من فضلك، شكرا" },
   ]},
+  { id:'hospital', title:'בבית חולים', emoji:'🏥', desc:'ביקור רופא', lines:[
+    { s:'A', ph:"מרחבא, שו בדך?", he:"שלום, מה תרצה?", ar:"مرحبا، شو بدك؟" },
+    { s:'B', ph:"אנא תעבאן, בדי דוכתור", he:"אני חולה, אני צריך רופא", ar:"أنا تعبان، بدي دكتور" },
+    { s:'A', ph:"שו ביאע'לק?", he:"מה כואב לך?", ar:"شو بيأذيك؟" },
+    { s:'B', ph:"ראסי ביאג'עני כתיר", he:"ראשי כואב לי מאוד", ar:"راسي بيوجعني كتير" },
+    { s:'A', ph:"מן אימטא הייק?", he:"מתי זה התחיל?", ar:"من إمتى هيك؟" },
+    { s:'B', ph:"מן אמס", he:"מאתמול", ar:"من أمس" },
+  ]},
+  { id:'supermarket', title:'בסופרמרקט', emoji:'🛍️', desc:'קניות בסופרמרקט', lines:[
+    { s:'A', ph:"ויין ראיח?", he:"לאן אתה הולך?", ar:"وين رايح؟" },
+    { s:'B', ph:"עלא-ס-סופרמרכט", he:"לסופרמרקט", ar:"على السوبرماركت" },
+    { s:'A', ph:"פי ח'ובז טאזג'?", he:"יש לחם טרי?", ar:"في خبز طازج؟" },
+    { s:'B', ph:"אה, הון קדאם", he:"כן, פה קדימה", ar:"آه، هون قدام" },
+    { s:'A', ph:"בכם הלבן?", he:"כמה עולה גבינה לבנה?", ar:"بكم اللبنة؟" },
+    { s:'B', ph:"ח'מסה שקאלים", he:"חמישה שקלים", ar:"خمسة شواقل" },
+  ]},
+  { id:'friends', title:'עם חברים', emoji:'👫', desc:'יציאה עם חברים', lines:[
+    { s:'A', ph:"שו עמלאן הלייל?", he:"מה אתה עושה הלילה?", ar:"شو عاملان هالليل؟" },
+    { s:'B', ph:"מא-לי שי. שו בדך תעמל?", he:"אין לי תוכניות. מה אתה רוצה לעשות?", ar:"ما الي شي. شو بدك تعمل؟" },
+    { s:'A', ph:"יאללה נרוח נאכול שי", he:"יאללה נלך לאכול משהו", ar:"يلا نروح ناكل شي" },
+    { s:'B', ph:"פכרה מניחה! ויין?", he:"רעיון טוב! איפה?", ar:"فكرة منيحة! وين؟" },
+    { s:'A', ph:"פי מטעם קריב מן הון", he:"יש מסעדה קרובה מכאן", ar:"في مطعم قريب من هون" },
+    { s:'B', ph:"יאללה, קדיש נלתקי?", he:"יאללה, מתי נפגש?", ar:"يلا، قديش نلتقي؟" },
+  ]},
 ];
 
 const phrases = [
@@ -1225,11 +1295,15 @@ let quizScore = 0;
 let quizTotal = 0;
 let currentQuizWord = null;
 let currentQuizArabic = '';
-let stats = {words:0,correct:0,streak:0,total:0,lastVisit:"",mastered:[]};
+let stats = {words:0,correct:0,streak:0,total:0,lastVisit:"",mastered:[],xp:0,badges:[],dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0};
 try {
   const saved = localStorage.getItem('arabicStats');
-  if (saved) stats = JSON.parse(saved);
+  if (saved) { const l = JSON.parse(saved); stats = {...stats, ...l}; }
 } catch(e) {}
+if (!stats.xp) stats.xp = 0;
+if (!stats.badges) stats.badges = [];
+if (!stats.dailyChallenge) stats.dailyChallenge = {date:'',correct:0,completed:false};
+if (!('lessonIndex' in stats)) stats.lessonIndex = 0;
 
 // Word mastery: {wordId: {level: 0-3, correct: N, seen: N}}
 let wordProgress = {};
@@ -1360,7 +1434,7 @@ function showScreen(id, el) {
   if (id === 'phrases') { renderDialogues(); renderPhrases(); }
   if (id === 'flashcards') { renderFCCategories(); updateDueBadge(); }
   if (id === 'quiz') startQuiz();
-  if (id === 'categories') renderCategories();
+  if (id === 'categories') { renderCategories(); renderWordOfDay(); }
 }
 
 // ===== CATEGORIES =====
@@ -1528,7 +1602,7 @@ function flipCard() {
 }
 
 function nextCard(knew) {
-  if (knew) { stats.correct++; saveStats(); }
+  if (knew) { stats.correct++; stats.xp = (stats.xp||0) + 1; checkBadges(); saveStats(); }
   fcIndex++;
   showFCCard();
 }
@@ -1548,6 +1622,11 @@ function startQuiz() {
   currentQuizArabic = '';
   document.getElementById('btnNextQuiz').style.display = 'none';
   document.getElementById('quizSpeakBtn').style.display = 'none';
+  renderDailyChallenge();
+  const ti = document.getElementById('typingInput');
+  if (ti) { ti.value = ''; ti.disabled = false; ti.style.borderColor = ''; ti.style.background = ''; }
+  const tiw = document.getElementById('typingInputWrap');
+  if (tiw) { const old = tiw.querySelectorAll('div[style*="color:#10b981"]'); old.forEach(el=>el.remove()); }
   const speechBtn = document.getElementById('speechBtn');
   if (speechBtn) speechBtn.style.display = 'none';
   const sfb = document.getElementById('speechFeedback');
@@ -1583,6 +1662,7 @@ function startQuiz() {
       ${optionsFn(o)}
     </button>
   `).join('');
+  showTypingOrOptions(options, optionsFn);
   startSpeedTimer();
 }
 
@@ -1605,6 +1685,7 @@ function checkAnswer(btn, chosen, correct) {
     showQuizAnim(false, btn);
   }
   if (currentQuizWord) updateWordLevel(currentQuizWord.id, isCorrect);
+  if (isCorrect) { stats.xp = (stats.xp||0) + 1; updateDailyChallenge(); checkBadges(); }
   // Bounce the score number
   const scoreEl = document.getElementById('quizScore');
   scoreEl.textContent = quizScore;
@@ -1681,6 +1762,28 @@ function renderStats() {
   document.getElementById('statStreak').textContent = stats.streak;
   document.getElementById('statTotal').textContent = stats.total;
   document.getElementById('statMastered').textContent = lvl.mastered;
+
+  const allBadges = [
+    {id:'beginner',name:'מתחיל',emoji:'🌱',xp:0},
+    {id:'curious', name:'סקרן',  emoji:'🔍',xp:100},
+    {id:'diligent',name:'שוקד',  emoji:'📚',xp:500},
+    {id:'steady',  name:'מתמיד', emoji:'💪',xp:1000},
+    {id:'expert',  name:'מומחה', emoji:'🏆',xp:3000},
+  ];
+  const earned = allBadges.filter(b => (stats.xp||0) >= b.xp);
+  const badgesEl = document.getElementById('badgesSection');
+  if (badgesEl) badgesEl.innerHTML = `<div class="stat-card" style="margin-bottom:0">
+    <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">🏅 תגים | XP: ${stats.xp||0}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${allBadges.map(b => {
+        const got = (stats.xp||0) >= b.xp;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${got?1:0.3}">
+          <span style="font-size:1.6rem">${b.emoji}</span>
+          <span style="font-size:0.65rem;font-weight:700;color:var(--text-muted)">${b.name}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
   const dueCount = getDueWords().length;
   const dueEl = document.getElementById('srDueCount');
   if (dueEl) dueEl.textContent = dueCount + ' מילים ממתינות לחזרה';
@@ -2067,11 +2170,228 @@ function initNotifUI() {
   }
 }
 
+// ===== WORD OF DAY =====
+function renderWordOfDay() {
+  const idx = Math.floor(Date.now() / 86400000) % vocabulary.length;
+  const w = vocabulary[idx];
+  if (!w) return;
+  window._wotdAr = w.ar;
+  const ph = document.getElementById('wotdPh');
+  const he = document.getElementById('wotdHe');
+  if (ph) ph.textContent = w.ph;
+  if (he) he.textContent = w.he;
+}
+
+// ===== DAILY CHALLENGE =====
+function updateDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  const dc = stats.dailyChallenge;
+  if (dc.date !== today) { dc.date = today; dc.correct = 0; dc.completed = false; }
+  if (!dc.completed) {
+    dc.correct = Math.min(10, dc.correct + 1);
+    if (dc.correct >= 10) {
+      dc.completed = true;
+      stats.xp = (stats.xp||0) + 50;
+      showToast('🎉 אתגר יומי הושלם! +50 XP');
+    }
+  }
+  saveStats();
+  renderDailyChallenge();
+}
+
+function renderDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  const dc = stats.dailyChallenge;
+  if (!dc || dc.date !== today) { dc.correct = 0; dc.completed = false; }
+  const n = dc.correct || 0;
+  const el = document.getElementById('dcProgress');
+  const bar = document.getElementById('dcBarFill');
+  if (el) el.textContent = dc.completed ? '✅ הושלם! +50 XP' : n + ' / 10';
+  if (bar) bar.style.width = Math.min(100, n * 10) + '%';
+}
+
+// ===== XP & BADGES =====
+const BADGE_DEFS = [
+  {id:'beginner',name:'מתחיל',emoji:'🌱',xp:0},
+  {id:'curious', name:'סקרן',  emoji:'🔍',xp:100},
+  {id:'diligent',name:'שוקד',  emoji:'📚',xp:500},
+  {id:'steady',  name:'מתמיד', emoji:'💪',xp:1000},
+  {id:'expert',  name:'מומחה', emoji:'🏆',xp:3000},
+];
+
+function checkBadges() {
+  const xp = stats.xp || 0;
+  if (!stats.badges) stats.badges = [];
+  BADGE_DEFS.forEach(b => {
+    if (xp >= b.xp && !stats.badges.includes(b.id)) {
+      stats.badges.push(b.id);
+      showToast(b.emoji + ' תג חדש: ' + b.name + '!');
+    }
+  });
+  saveStats();
+}
+
+// ===== TYPING MODE =====
+let typingMode = false;
+
+function toggleTypingMode(btn) {
+  typingMode = !typingMode;
+  btn.classList.toggle('active', typingMode);
+  btn.style.background = typingMode ? 'var(--primary-light)' : 'white';
+  btn.style.borderColor = typingMode ? 'var(--primary)' : 'var(--border)';
+  btn.style.color = typingMode ? 'var(--primary-dark)' : 'var(--text-muted)';
+  startQuiz();
+}
+
+function showTypingOrOptions(options, optionsFn) {
+  if (!typingMode) {
+    document.getElementById('quizOptions').style.display = '';
+    document.getElementById('typingInputWrap').style.display = 'none';
+    return;
+  }
+  document.getElementById('quizOptions').style.display = 'none';
+  const wrap = document.getElementById('typingInputWrap');
+  wrap.style.display = 'block';
+  const inp = document.getElementById('typingInput');
+  if (inp) { inp.value = ''; inp.disabled = false; setTimeout(() => inp.focus(), 150); }
+}
+
+function checkTypedAnswer() {
+  const inp = document.getElementById('typingInput');
+  if (!inp || inp.disabled) return;
+  const typed = inp.value.trim().toLowerCase();
+  const correct = (quizAnswer || '').trim().toLowerCase();
+  if (!typed) return;
+  inp.disabled = true;
+  clearSpeedTimer();
+  document.getElementById('speechBtn').style.display = 'none';
+  quizTotal++;
+  const isCorrect = typed === correct || typed.includes(correct) || correct.includes(typed);
+  inp.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
+  inp.style.background = isCorrect ? '#f0fdf4' : '#fef2f2';
+  if (isCorrect) {
+    quizScore++;
+    stats.correct++;
+    showQuizAnim(true, null);
+    stats.xp = (stats.xp||0) + 1;
+    updateDailyChallenge();
+    checkBadges();
+  } else {
+    showQuizAnim(false, null);
+    const correctEl = document.createElement('div');
+    correctEl.style.cssText = 'margin-top:6px;font-size:0.9rem;color:#10b981;font-weight:700;text-align:center';
+    correctEl.textContent = '✓ ' + quizAnswer;
+    inp.parentNode.insertBefore(correctEl, inp.nextSibling.nextSibling || null);
+  }
+  if (currentQuizWord) updateWordLevel(currentQuizWord.id, isCorrect);
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.textContent = quizScore;
+  scoreEl.classList.remove('score-bounce');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-bounce');
+  document.getElementById('quizTotal').textContent = quizTotal;
+  document.getElementById('btnNextQuiz').style.display = 'block';
+  updateQuizLevelDisplay();
+  saveStats();
+}
+
+// ===== BACKUP / RESTORE =====
+function exportProgress() {
+  const data = {
+    version: 1,
+    exported: new Date().toISOString(),
+    stats: stats,
+    wordProgress: wordProgress,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = 'arabic-progress-' + dateStr + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  showToast('📤 הגיבוי הורד בהצלחה');
+}
+
+function importProgress(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.stats || !data.wordProgress) { showToast('⚠️ קובץ לא תקין'); return; }
+      const merge = {...{words:0,correct:0,streak:0,total:0,lastVisit:'',mastered:[],xp:0,badges:[],dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0},...data.stats};
+      stats = merge;
+      wordProgress = data.wordProgress;
+      localStorage.setItem('arabicStats', JSON.stringify(stats));
+      localStorage.setItem('arabicWordProgress', JSON.stringify(wordProgress));
+      renderStats();
+      showToast('📥 ההתקדמות שוחזרה!');
+    } catch(err) { showToast('⚠️ שגיאה בייבוא: ' + err.message); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ===== DAILY LESSON =====
+let lessonDeck = [], lessonIdx = 0;
+
+function startDailyLesson() {
+  const allUnlocked = getUnlockedVocabulary();
+  const unseen = allUnlocked.filter(w => getWordLevel(w.id) === 0);
+  if (!unseen.length) { showToast('🏆 למדת את כל המילות הנוכחיות!'); return; }
+  lessonDeck = unseen.slice(0, 5);
+  lessonIdx = 0;
+  const overlay = document.getElementById('lessonOverlay');
+  overlay.style.display = 'flex';
+  lessonShowWord();
+}
+
+function lessonShowWord() {
+  if (lessonIdx >= lessonDeck.length) {
+    lessonDeck.forEach(w => {
+      if (!wordProgress[w.id]) wordProgress[w.id] = {level:0, correct:0, seen:0};
+      wordProgress[w.id].level = Math.max(1, wordProgress[w.id].level || 0);
+      wordProgress[w.id].seen = (wordProgress[w.id].seen||0) + 1;
+    });
+    saveWordProgress();
+    stats.lessonIndex = (stats.lessonIndex||0) + 1;
+    stats.xp = (stats.xp||0) + 30;
+    saveStats();
+    checkBadges();
+    stopLesson();
+    showToast('🎉 שיעור הושלם! +30 XP');
+    return;
+  }
+  const w = lessonDeck[lessonIdx];
+  window._lessonAr = w.ar;
+  const total = lessonDeck.length;
+  document.getElementById('lessonProgress').textContent = (lessonIdx + 1) + ' / ' + total;
+  document.getElementById('lessonPh').textContent = w.ph;
+  document.getElementById('lessonHe').textContent = w.he;
+  const btn = document.getElementById('lessonNextBtn');
+  btn.textContent = lessonIdx < total - 1 ? 'הבא ←' : '✓ סיים שיעור';
+  setTimeout(() => speakArabic(w.ar), 400);
+}
+
+function lessonNext() {
+  lessonIdx++;
+  lessonShowWord();
+}
+
+function stopLesson() {
+  document.getElementById('lessonOverlay').style.display = 'none';
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
   try { renderCategories(); } catch(e) { console.error('renderCategories:', e); }
+  try { renderWordOfDay(); } catch(e) {}
   try { renderDialogues(); } catch(e) { console.error('renderDialogues:', e); }
   try { renderPhrases(); } catch(e) { console.error('renderPhrases:', e); }
+  try { renderDailyChallenge(); } catch(e) {}
+  try { checkBadges(); } catch(e) {}
   try {
     const el = document.getElementById('headerStreakNum');
     if (el) el.textContent = stats.streak || 0;
@@ -2081,8 +2401,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // fallback if DOMContentLoaded already fired
 if (document.readyState !== 'loading') {
   try { renderCategories(); } catch(e) {}
+  try { renderWordOfDay(); } catch(e) {}
   try { renderDialogues(); } catch(e) {}
   try { renderPhrases(); } catch(e) {}
+  try { renderDailyChallenge(); } catch(e) {}
+  try { checkBadges(); } catch(e) {}
   try { initNotifUI(); } catch(e) {}
 }
 </script>
