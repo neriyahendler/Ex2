@@ -592,6 +592,10 @@
 <div id="screen-phrases" class="screen">
   <div class="screen-title">שיחות יומיות</div>
   <div id="dialogueList"></div>
+  <div style="margin:16px 0">
+    <button onclick="startSentenceBuilder()" style="width:100%;padding:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:14px;font-size:0.95rem;font-weight:700;cursor:pointer">🧩 בנה משפט</button>
+    <div id="sentenceBuilderArea" style="display:none;margin-top:12px"></div>
+  </div>
   <div class="screen-title" style="margin-top:20px">ביטויים שימושיים</div>
   <input class="search-input" id="phraseSearch" placeholder="חיפוש ביטויים..." oninput="filterPhrases()">
   <div id="phraseList"></div>
@@ -610,6 +614,7 @@
     <div class="progress-text" id="fcProgressText">0 / 0</div>
     <div class="flashcard" id="flashcard" onclick="flipCard()">
       <span class="fc-category" id="fcCategory"></span>
+      <div id="fcBigEmoji" style="font-size:3rem;margin-bottom:4px;line-height:1"></div>
       <div class="fc-arabic" id="fcArabic"></div>
       <div class="fc-phonetic" id="fcPhonetic">לחץ על התחל</div>
       <div class="fc-hebrew" id="fcHebrew"></div>
@@ -676,6 +681,7 @@
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <button id="speedModeBtn" onclick="toggleSpeedMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⚡ מהיר</button>
     <button id="typingModeBtn" onclick="toggleTypingMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⌨️ הקלד</button>
+    <button id="listeningModeBtn" onclick="toggleListeningMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">👂 שמיעה</button>
   </div>
   <style>.speed-btn-active, #speedModeBtn.active { background:var(--accent-light)!important;border-color:var(--accent)!important;color:#92400e!important; }</style>
   <div id="speedTimerWrap" style="display:none; text-align:center; margin-bottom:10px">
@@ -713,6 +719,7 @@
     <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">סה"כ ביקורים</div></div>
     <div class="stat-card"><div class="stat-num" id="statMastered">0</div><div class="stat-label">מילים שולטות</div></div>
   </div>
+  <div id="weeklyPlan" style="margin-bottom:12px"></div>
   <div id="badgesSection" style="margin-bottom:12px"></div>
   <div id="masteredList"></div>
 
@@ -740,8 +747,7 @@
     <div class="notif-card-title">💾 גיבוי התקדמות</div>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button onclick="exportProgress()" style="flex:1;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📤 ייצוא</button>
-      <button onclick="document.getElementById('importFileInput').click()" style="flex:1;padding:10px;background:white;color:var(--primary);border:2px solid var(--primary);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📥 ייבוא</button>
-      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importProgress(this)">
+      <button onclick="showImportModal()" style="flex:1;padding:10px;background:white;color:var(--primary);border:2px solid var(--primary);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📥 ייבוא</button>
     </div>
   </div>
 </div>
@@ -1673,6 +1679,8 @@ function showFCCard() {
   currentFCWord = card;
   const cat = categories.find(c => c.id === card.cat);
   document.getElementById('fcCategory').textContent = cat.emoji + ' ' + cat.name;
+  const emojiEl = document.getElementById('fcBigEmoji');
+  if (emojiEl) emojiEl.textContent = cat ? cat.emoji : '';
   document.getElementById('fcPhonetic').textContent = card.ph;
   document.getElementById('fcHebrew').textContent = card.he;
   document.getElementById('fcSpeakBtn').style.display = 'block';
@@ -1731,7 +1739,13 @@ function startQuiz() {
   const type = Math.random() < 0.6 ? 'phToHe' : 'heToPh';
 
   let q, sub, hint, optionsFn, showSpeak;
-  if (type === 'phToHe') {
+  if (listeningMode) {
+    q = '🔊 מה המשמעות?';
+    sub = '';
+    hint = 'הקשב לדיבור הערבי';
+    optionsFn = o => o.he; quizAnswer = correct.he; showSpeak = false;
+    setTimeout(() => speakArabic(correct.ar), 400);
+  } else if (type === 'phToHe') {
     q = correct.ph; sub = ''; hint = 'מה המשמעות בעברית?';
     optionsFn = o => o.he; quizAnswer = correct.he; showSpeak = true;
   } else {
@@ -1907,6 +1921,29 @@ function renderStats() {
       </div>
     </div>
   `;
+  renderWeeklyPlan();
+}
+
+function renderWeeklyPlan() {
+  const themes = ['ברכות','מספרים','משפחה','אוכל','כיוונים','רגשות','חזרה כללית'];
+  const catIds = ['greetings','numbers','family','food','directions','feelings',null];
+  const day = new Date().getDay(); // 0=Sun
+  const todayIdx = day === 0 ? 6 : day - 1; // Mon=0..Sun=6 → idx 0..6
+  const rows = themes.map((t,i) => {
+    const isToday = i === todayIdx;
+    const isPast = i < todayIdx;
+    const catWords = catIds[i] ? vocabulary.filter(w=>w.cat===catIds[i]) : getUnlockedVocabulary();
+    const mastered = catWords.filter(w=>getWordLevel(w.id)>=3).length;
+    const goal = Math.min(5, catWords.length);
+    const done = Math.min(mastered, goal);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${isToday?'font-weight:700;color:var(--primary)':''}${isPast?'opacity:0.55':''}">
+      <span style="font-size:1rem">${isToday?'📍':isPast?'✓':'○'}</span>
+      <span style="flex:1;font-size:0.88rem">${t}${isToday?' — היום':''}${ catIds[i]&&categories.find(c=>c.id===catIds[i]) ? ' ' + (categories.find(c=>c.id===catIds[i])?.emoji||'') : ''}</span>
+      <span style="font-size:0.78rem;color:var(--text-muted)">${done}/${goal}</span>
+    </div>`;
+  }).join('<hr style="border:none;border-top:1px solid #f0f0f0;margin:0">');
+  const el = document.getElementById('weeklyPlan');
+  if (el) el.innerHTML = `<div class="stat-card"><div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">📅 תוכנית שבועית</div>${rows}</div>`;
 }
 
 // ===== SPACED REPETITION =====
@@ -2083,6 +2120,7 @@ function renderDialogues() {
           <div class="dialogue-desc">${d.desc}</div>
         </div>
         <span class="dialogue-chevron">▼</span>
+        <button class="speak-btn" style="font-size:0.78rem;padding:4px 8px;border-radius:8px;background:rgba(124,58,237,0.12);border:none;cursor:pointer;color:var(--primary);margin-right:4px" onclick="startKaraoke('${d.id}',event)">▶ קריאוקי</button>
       </div>
       <div class="dialogue-body">
         ${d.lines.map(l => `
@@ -2101,6 +2139,93 @@ function renderDialogues() {
 
 function toggleDialogue(id) {
   document.getElementById('dlg-' + id).classList.toggle('open');
+}
+
+// ===== DIALOGUE KARAOKE =====
+let karaokeTimer = null;
+
+function startKaraoke(dialogueId, e) {
+  if (e) e.stopPropagation();
+  const dlg = dialogues.find(d => d.id === dialogueId);
+  if (!dlg) return;
+  // Open the dialogue
+  const card = document.getElementById('dlg-' + dialogueId);
+  if (card && !card.classList.contains('open')) card.classList.add('open');
+  clearTimeout(karaokeTimer);
+  playKaraokeLine(dlg, 0, card);
+}
+
+function playKaraokeLine(dlg, idx, card) {
+  const lines = card.querySelectorAll('.dl-line');
+  lines.forEach((l,i) => l.style.background = i === idx ? 'rgba(124,58,237,0.08)' : '');
+  if (idx >= dlg.lines.length) {
+    lines.forEach(l => l.style.background = '');
+    return;
+  }
+  const line = dlg.lines[idx];
+  speakArabic(line.ar);
+  const duration = Math.max(2000, line.ar.length * 120);
+  karaokeTimer = setTimeout(() => playKaraokeLine(dlg, idx + 1, card), duration);
+}
+
+// ===== SENTENCE BUILDER =====
+let sbTarget = '', sbBuilt = [];
+
+function startSentenceBuilder() {
+  // Pick a random dialogue line
+  const allLines = dialogues.flatMap(d => d.lines).filter(l => l.ph.split(/\s+/).length >= 3);
+  const line = allLines[Math.floor(Math.random() * allLines.length)];
+  sbTarget = line.ph;
+  sbBuilt = [];
+  const words = line.ph.split(/\s+/).filter(w=>w).sort(() => Math.random() - 0.5);
+  const area = document.getElementById('sentenceBuilderArea');
+  area.style.display = 'block';
+  renderSentenceBuilder(words, line.he, line.ar);
+}
+
+function renderSentenceBuilder(words, he, ar) {
+  const area = document.getElementById('sentenceBuilderArea');
+  area.innerHTML = `
+    <div style="background:white;border-radius:14px;padding:14px;box-shadow:var(--shadow-card)">
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px">בנה את המשפט:</div>
+      <div style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:10px;min-height:28px;border-bottom:2px dashed var(--border);padding-bottom:8px" id="sbBuilt" onclick="sbRemoveLast()">
+        ${sbBuilt.length ? sbBuilt.join(' ') : '<span style="opacity:0.4">לחץ על המילים למטה...</span>'}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="sbWords">
+        ${words.map((w,i) => `<button onclick="sbAddWord('${w.replace(/'/g,"\\'")}',${i},this)" style="padding:6px 12px;background:var(--primary-light);color:var(--primary-dark);border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer">${w}</button>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="sbCheck('${ar.replace(/'/g,"\\'")}','${he.replace(/'/g,"\\'")}','${sbTarget.replace(/'/g,"\\'")}',this.closest('div').parentElement)" style="flex:2;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer">✓ בדוק</button>
+        <button onclick="startSentenceBuilder()" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">דלג ←</button>
+      </div>
+    </div>`;
+}
+
+function sbAddWord(word, idx, btn) {
+  sbBuilt.push(word);
+  btn.disabled = true;
+  btn.style.opacity = '0.3';
+  const builtEl = document.getElementById('sbBuilt');
+  if (builtEl) builtEl.textContent = sbBuilt.join(' ');
+}
+
+function sbRemoveLast() {
+  if (!sbBuilt.length) return;
+  sbBuilt.pop();
+  const builtEl = document.getElementById('sbBuilt');
+  if (builtEl) builtEl.textContent = sbBuilt.length ? sbBuilt.join(' ') : '';
+  document.querySelectorAll('#sbWords button').forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+}
+
+function sbCheck(ar, he, target, container) {
+  const built = sbBuilt.join(' ');
+  const ok = built.trim() === target.trim();
+  const res = document.createElement('div');
+  res.style.cssText = `margin-top:8px;padding:10px;border-radius:10px;font-weight:700;text-align:center;background:${ok?'#d1fae5':'#fee2e2'};color:${ok?'#065f46':'#991b1b'}`;
+  res.textContent = ok ? '✓ מצוין! ' + he : '✗ הנכון: ' + target;
+  if (ok) { speakArabic(ar); stats.xp = (stats.xp||0)+1; checkBadges(); saveStats(); }
+  container.appendChild(res);
+  setTimeout(() => { if (ok) startSentenceBuilder(); }, ok ? 1800 : 3000);
 }
 
 function startSRFlashcards() {
@@ -2325,6 +2450,7 @@ function checkBadges() {
 
 // ===== TYPING MODE =====
 let typingMode = false;
+let listeningMode = false;
 
 function toggleTypingMode(btn) {
   typingMode = !typingMode;
@@ -2332,6 +2458,15 @@ function toggleTypingMode(btn) {
   btn.style.background = typingMode ? 'var(--primary-light)' : 'white';
   btn.style.borderColor = typingMode ? 'var(--primary)' : 'var(--border)';
   btn.style.color = typingMode ? 'var(--primary-dark)' : 'var(--text-muted)';
+  startQuiz();
+}
+
+function toggleListeningMode(btn) {
+  listeningMode = !listeningMode;
+  btn.classList.toggle('active', listeningMode);
+  btn.style.background = listeningMode ? '#ede9fe' : 'white';
+  btn.style.borderColor = listeningMode ? 'var(--primary)' : 'var(--border)';
+  btn.style.color = listeningMode ? 'var(--primary-dark)' : 'var(--text-muted)';
   startQuiz();
 }
 
@@ -2389,41 +2524,75 @@ function checkTypedAnswer() {
 
 // ===== BACKUP / RESTORE =====
 function exportProgress() {
-  const data = {
-    version: 1,
-    exported: new Date().toISOString(),
-    stats: stats,
-    wordProgress: wordProgress,
+  const data = {version:1, exported:new Date().toISOString(), stats:stats, wordProgress:wordProgress};
+  const json = JSON.stringify(data, null, 2);
+  if (navigator.share) {
+    navigator.share({title:'Arabic Progress Backup', text:json}).catch(() => showExportModal(json));
+    return;
+  }
+  showExportModal(json);
+}
+
+function showExportModal(json) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:16px;padding:20px;width:100%;display:flex;flex-direction:column;gap:10px;max-height:85vh';
+  box.innerHTML = `
+    <div style="font-weight:800;font-size:1rem">📤 ייצוא גיבוי</div>
+    <div style="font-size:0.78rem;color:#6b7280">העתק את הטקסט ושמור אותו כגיבוי</div>
+    <textarea readonly style="height:180px;border:1px solid #e5e7eb;border-radius:8px;padding:8px;font-size:0.7rem;font-family:monospace;resize:none;direction:ltr">${json}</textarea>
+    <button id="_copyBtn" style="padding:11px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.95rem">📋 העתק ללוח</button>
+    <button id="_closeBtn" style="padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">סגור</button>
+  `;
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  const ta = box.querySelector('textarea');
+  box.querySelector('#_copyBtn').onclick = () => {
+    ta.select(); try { document.execCommand('copy'); } catch(e) {}
+    navigator.clipboard?.writeText(json).catch(()=>{});
+    showToast('✓ הועתק ללוח!');
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const dateStr = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = 'arabic-progress-' + dateStr + '.json';
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-  showToast('📤 הגיבוי הורד בהצלחה');
+  box.querySelector('#_closeBtn').onclick = () => wrap.remove();
 }
 
 function importProgress(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
+  // Show paste modal (file input not reliable in WebView)
+  showImportModal();
+  if (input) input.value = '';
+}
+
+function showImportModal() {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:16px;padding:20px;width:100%;display:flex;flex-direction:column;gap:10px;max-height:85vh';
+  box.innerHTML = `
+    <div style="font-weight:800;font-size:1rem">📥 ייבוא גיבוי</div>
+    <div style="font-size:0.78rem;color:#6b7280">הדבק כאן את טקסט הגיבוי</div>
+    <textarea id="_pasteArea" style="height:180px;border:2px solid #e5e7eb;border-radius:8px;padding:8px;font-size:0.7rem;font-family:monospace;resize:none;direction:ltr" placeholder="הדבק JSON כאן..."></textarea>
+    <button id="_importBtn" style="padding:11px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.95rem">✓ שחזר התקדמות</button>
+    <button id="_closeBtn2" style="padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">סגור</button>
+  `;
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  box.querySelector('#_closeBtn2').onclick = () => wrap.remove();
+  box.querySelector('#_importBtn').onclick = () => {
     try {
-      const data = JSON.parse(e.target.result);
+      const text = box.querySelector('#_pasteArea').value.trim();
+      if (!text) { showToast('⚠️ אנא הדבק טקסט'); return; }
+      const data = JSON.parse(text);
       if (!data.stats || !data.wordProgress) { showToast('⚠️ קובץ לא תקין'); return; }
-      const merge = {...{words:0,correct:0,streak:0,total:0,lastVisit:'',mastered:[],xp:0,badges:[],dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0},...data.stats};
-      stats = merge;
+      const defaults = {words:0,correct:0,streak:0,total:0,lastVisit:'',mastered:[],xp:0,badges:[],dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0};
+      stats = {...defaults, ...data.stats};
       wordProgress = data.wordProgress;
       localStorage.setItem('arabicStats', JSON.stringify(stats));
       localStorage.setItem('arabicWordProgress', JSON.stringify(wordProgress));
+      wrap.remove();
       renderStats();
       showToast('📥 ההתקדמות שוחזרה!');
-    } catch(err) { showToast('⚠️ שגיאה בייבוא: ' + err.message); }
+    } catch(e) { showToast('⚠️ שגיאה: ' + e.message); }
   };
-  reader.readAsText(file);
-  input.value = '';
 }
 
 // ===== DAILY LESSON =====
@@ -2474,6 +2643,33 @@ function lessonNext() {
 
 function stopLesson() {
   document.getElementById('lessonOverlay').style.display = 'none';
+}
+
+
+// ===== DIALOGUE KARAOKE =====
+let _karaokeTimer = null;
+
+function startKaraoke(dialogueId, e) {
+  if (e) e.stopPropagation();
+  const dlg = dialogues.find(d => d.id === dialogueId);
+  if (!dlg) return;
+  const card = document.getElementById('dlg-' + dialogueId);
+  if (card && !card.classList.contains('open')) card.classList.add('open');
+  clearTimeout(_karaokeTimer);
+  _playKaraokeLine(dlg, 0, card);
+}
+
+function _playKaraokeLine(dlg, idx, card) {
+  const lines = card ? card.querySelectorAll('.dl-line') : [];
+  lines.forEach((l, i) => l.style.background = i === idx ? 'rgba(124,58,237,0.1)' : '');
+  if (idx >= dlg.lines.length) {
+    lines.forEach(l => l.style.background = '');
+    return;
+  }
+  const line = dlg.lines[idx];
+  speakArabic(line.ar);
+  const duration = Math.max(2000, line.ar.length * 110);
+  _karaokeTimer = setTimeout(() => _playKaraokeLine(dlg, idx + 1, card), duration);
 }
 
 // ===== INIT =====
