@@ -5,23 +5,27 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Geometric Kufic path (scaled from 100x100 to 108x108 safe zone 18-90, scale=0.72, offset=18) -->
-    <path
-        android:strokeColor="#7C3AED"
-        android:strokeWidth="5.76"
-        android:strokeLineCap="square"
-        android:strokeLineJoin="miter"
-        android:fillColor="#00000000"
-        android:pathData="M36,36 L72,36 L72,72 L50.4,72 L50.4,50.4 L61.2,50.4 L61.2,57.6 L57.6,57.6"/>
-
-    <!-- Foundation base block -->
+    <!-- Right yud (י) head — diamond -->
     <path
         android:fillColor="#7C3AED"
-        android:pathData="M36,61.2 L43.2,61.2 L43.2,72 L36,72 Z"/>
+        android:pathData="M66,26 L73,33 L66,40 L59,33 Z"/>
+    <!-- Right yud body -->
+    <path
+        android:fillColor="#7C3AED"
+        android:pathData="M61.5,41 Q57,53 59.5,65 L64.5,65 Q62.5,53 66.5,41 Z"/>
 
-    <!-- Gold accent dot (Nuqta) -->
+    <!-- Left yud (י) head — diamond, lighter purple -->
+    <path
+        android:fillColor="#A855F7"
+        android:pathData="M44,26 L51,33 L44,40 L37,33 Z"/>
+    <!-- Left yud body -->
+    <path
+        android:fillColor="#A855F7"
+        android:pathData="M39.5,41 Q35,53 37.5,65 L42.5,65 Q40.5,53 44.5,41 Z"/>
+
+    <!-- Gold accent bar -->
     <path
         android:fillColor="#F59E0B"
-        android:pathData="M72,46.8 Q73.44,46.8 73.44,48.24 L73.44,53.28 Q73.44,54.72 72,54.72 L67.44,54.72 Q66,54.72 66,53.28 L66,48.24 Q66,46.8 67.44,46.8 Z"/>
+        android:pathData="M32,70 Q30,70 30,72 L30,76 Q30,78 32,78 L76,78 Q78,78 78,76 L78,72 Q78,70 76,70 Z"/>
 
 </vector>
