@@ -248,6 +248,17 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 .modal-btn.primary { background: var(--primary); color: white; }
 .modal-btn.secondary { background: var(--border); color: var(--text); }
 
+/* Word list header — two-row layout */
+.list-hdr { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+.list-hdr-row1 { display: flex; align-items: center; gap: 10px; padding: 10px 16px 6px; }
+.list-hdr-row2 { display: flex; gap: 8px; padding: 4px 16px 10px; }
+.hdr-title { font-size: 17px; font-weight: 700; flex: 1; }
+.back-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 2px 6px; color: var(--text); }
+.hdr-btn { padding: 7px 0; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; }
+.hdr-btn.fc { background: var(--primary); color: white; }
+.hdr-btn.qz { background: var(--accent); color: white; }
+.hdr-counter { font-size: 13px; color: var(--muted); }
+
 /* Sections hidden */
 .hidden { display: none !important; }
 
@@ -291,31 +302,38 @@ body { display: flex; flex-direction: column; overflow: hidden; }
       <div id="dcBar"><div id="dcBarFill" style="width:0%"></div></div>
     </div>
 
-    <div class="card" style="padding:12px 16px">
+    <div class="card" id="dailyLessonCard" style="padding:12px 16px">
       <button onclick="startDailyLesson()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">📚 שיעור יומי — 5 מילים חדשות</button>
     </div>
 
-    <div class="section-label">קטגוריות מילים</div>
+    <div class="section-label" id="catSectionLabel">קטגוריות מילים</div>
     <div id="categoryGrid"></div>
 
     <!-- Word List View -->
     <div id="wordListView" class="hidden">
-      <div id="wordListHeader">
-        <button id="wordListBack" onclick="showCategoryGrid()">←</button>
-        <div id="wordListTitle">מילים</div>
-        <button onclick="startFlashcards()" style="background:var(--primary);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer">כרטיסיות</button>
-        <button onclick="startQuiz(false)" style="background:var(--accent);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer">חידון</button>
+      <div class="list-hdr">
+        <div class="list-hdr-row1">
+          <button class="back-btn" onclick="showCategoryGrid()">←</button>
+          <div class="hdr-title" id="wListTitle">מילים</div>
+        </div>
+        <div class="list-hdr-row2">
+          <button class="hdr-btn fc" onclick="startFlashcards()">📋 כרטיסיות</button>
+          <button class="hdr-btn qz" onclick="startQuiz(false)">🎯 חידון</button>
+        </div>
       </div>
       <div id="wordList"></div>
     </div>
 
     <!-- Flashcard View -->
     <div id="flashcardView" class="hidden">
-      <div id="wordListHeader">
-        <button id="wordListBack" onclick="exitFlashcards()">←</button>
-        <div id="wordListTitle">כרטיסיות</div>
-        <div id="fcCounter" style="font-size:13px;color:var(--muted)"></div>
+      <div class="list-hdr">
+        <div class="list-hdr-row1">
+          <button class="back-btn" onclick="exitFlashcards()">←</button>
+          <div class="hdr-title">כרטיסיות</div>
+          <div class="hdr-counter" id="fcCounter"></div>
+        </div>
       </div>
+      <div style="padding:16px">
       <div class="flashcard" id="flashcard" onclick="flipCard()">
         <div class="fc-yi" id="fcYi"></div>
         <div class="fc-ph" id="fcPh"></div>
@@ -327,14 +345,17 @@ body { display: flex; flex-direction: column; overflow: hidden; }
         <button onclick="speakCurrent()" style="padding:10px 16px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer">🔊</button>
         <button class="fc-btn next" onclick="nextCard()">הבא →</button>
       </div>
+      </div>
     </div>
 
     <!-- Quiz View -->
     <div id="quizView" class="hidden">
-      <div id="wordListHeader">
-        <button onclick="exitQuiz()">←</button>
-        <div id="wordListTitle">חידון</div>
-        <div id="quizScore" style="font-size:13px;color:var(--muted)"></div>
+      <div class="list-hdr">
+        <div class="list-hdr-row1">
+          <button class="back-btn" onclick="exitQuiz()">←</button>
+          <div class="hdr-title">חידון</div>
+          <div class="hdr-counter" id="quizScore"></div>
+        </div>
       </div>
       <div style="padding:16px">
         <div class="quiz-progress"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
@@ -619,6 +640,53 @@ const vocabulary = [
   {id:'p7',cat:'places',yi:'פּאַרק',ph:'park',he:'פארק'},
   {id:'p8',cat:'places',yi:'באַן',ph:'ban',he:'רכבת',lv:2},
   {id:'p9',cat:'places',yi:'לאַנד',ph:'land',he:'ארץ / מדינה',lv:2},
+  {id:'p10',cat:'places',yi:'הויז',ph:'hoyz',he:'בניין',lv:2},
+  {id:'p11',cat:'places',yi:'ברוק',ph:'brik',he:'גשר',lv:2},
+  // NATURE
+  {id:'na1',cat:'nature',yi:'בוים',ph:'boym',he:'עץ'},
+  {id:'na2',cat:'nature',yi:'בלום',ph:'blum',he:'פרח'},
+  {id:'na3',cat:'nature',yi:'וואַלד',ph:'vald',he:'יער'},
+  {id:'na4',cat:'nature',yi:'הימל',ph:'himl',he:'שמיים'},
+  {id:'na5',cat:'nature',yi:'זון',ph:'zun',he:'שמש'},
+  {id:'na6',cat:'nature',yi:'לבנה',ph:'levone',he:'ירח'},
+  {id:'na7',cat:'nature',yi:'שטערן',ph:'shtern',he:'כוכב'},
+  {id:'na8',cat:'nature',yi:'רעגן',ph:'regn',he:'גשם'},
+  {id:'na9',cat:'nature',yi:'שניי',ph:'shney',he:'שלג'},
+  {id:'na10',cat:'nature',yi:'ווינט',ph:'vint',he:'רוח'},
+  {id:'na11',cat:'nature',yi:'באַרג',ph:'barg',he:'הר',lv:2},
+  {id:'na12',cat:'nature',yi:'טייַך',ph:'taykh',he:'נהר',lv:2},
+  {id:'na13',cat:'nature',yi:'ים',ph:'yam',he:'ים',lv:2},
+  {id:'na14',cat:'nature',yi:'פֿייגל',ph:'feygl',he:'ציפור',lv:2},
+  {id:'na15',cat:'nature',yi:'הונט',ph:'hunt',he:'כלב',lv:2},
+  {id:'na16',cat:'nature',yi:'קאַץ',ph:'kats',he:'חתול',lv:2},
+  // EVERYDAY WORDS
+  {id:'ev1',cat:'everyday',yi:'יאָ',ph:'yo',he:'כן'},
+  {id:'ev2',cat:'everyday',yi:'ניין',ph:'neyn',he:'לא'},
+  {id:'ev3',cat:'everyday',yi:'וואָס?',ph:'vos?',he:'מה?'},
+  {id:'ev4',cat:'everyday',yi:'ווער?',ph:'ver?',he:'מי?'},
+  {id:'ev5',cat:'everyday',yi:'ווו?',ph:'vu?',he:'איפה?'},
+  {id:'ev6',cat:'everyday',yi:'ווען?',ph:'ven?',he:'מתי?'},
+  {id:'ev7',cat:'everyday',yi:'ווי?',ph:'vi?',he:'איך?'},
+  {id:'ev8',cat:'everyday',yi:'פֿאַרוואָס?',ph:'farvos?',he:'למה?'},
+  {id:'ev9',cat:'everyday',yi:'אָבער',ph:'ober',he:'אבל'},
+  {id:'ev10',cat:'everyday',yi:'אויך',ph:'oykh',he:'גם'},
+  {id:'ev11',cat:'everyday',yi:'שוין',ph:'shoyn',he:'כבר'},
+  {id:'ev12',cat:'everyday',yi:'נאָך',ph:'nokh',he:'עוד'},
+  {id:'ev13',cat:'everyday',yi:'מיט',ph:'mit',he:'עם',lv:2},
+  {id:'ev14',cat:'everyday',yi:'אָן',ph:'on',he:'בלי',lv:2},
+  {id:'ev15',cat:'everyday',yi:'אַלץ',ph:'alts',he:'הכל',lv:2},
+  {id:'ev16',cat:'everyday',yi:'עפּעס',ph:'epes',he:'משהו',lv:2},
+  // CLOTHING
+  {id:'cl1',cat:'clothing',yi:'העמד',ph:'hemd',he:'חולצה'},
+  {id:'cl2',cat:'clothing',yi:'הויזן',ph:'hoyzn',he:'מכנסיים'},
+  {id:'cl3',cat:'clothing',yi:'קלייד',ph:'kleyd',he:'שמלה'},
+  {id:'cl4',cat:'clothing',yi:'הוט',ph:'hut',he:'כובע'},
+  {id:'cl5',cat:'clothing',yi:'שיך',ph:'shikh',he:'נעליים'},
+  {id:'cl6',cat:'clothing',yi:'זאָקן',ph:'zokn',he:'גרביים'},
+  {id:'cl7',cat:'clothing',yi:'מאַנטל',ph:'mantl',he:'מעיל'},
+  {id:'cl8',cat:'clothing',yi:'גאַרטל',ph:'gartl',he:'חגורה'},
+  {id:'cl9',cat:'clothing',yi:'קאַפּעלוש',ph:'kapelush',he:'מגבעת',lv:2},
+  {id:'cl10',cat:'clothing',yi:'קיטל',ph:'kitl',he:'קיטל (חלוק לבן)',lv:2},
 ];
 
 const categories = [
@@ -634,6 +702,9 @@ const categories = [
   {id:'adjectives',name:'תארים',emoji:'📝'},
   {id:'body',name:'גוף',emoji:'🧍'},
   {id:'places',name:'מקומות',emoji:'🏙️'},
+  {id:'nature',name:'טבע',emoji:'🌿'},
+  {id:'everyday',name:'יומיומי',emoji:'💬'},
+  {id:'clothing',name:'בגדים',emoji:'👕'},
 ];
 
 const dialogues = [
@@ -713,7 +784,7 @@ const phrases = [
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-const UNLOCK_AT = {1:0,2:10,3:25,4:50,5:80};
+const LV_UNLOCK = {1:0, 2:100, 3:500};
 const BADGE_DEFS = [
   {id:'beginner',emoji:'🌱',name:'מתחיל',xp:0},
   {id:'reader',emoji:'📖',name:'קורא',xp:100},
@@ -776,8 +847,8 @@ function showCategoryGrid() {
   document.getElementById('quizView').classList.add('hidden');
   document.getElementById('wotdBanner').classList.remove('hidden');
   document.getElementById('dailyChallengeCard').classList.remove('hidden');
-  document.querySelector('.card button').parentElement.classList.remove('hidden');
-  document.querySelector('.section-label').classList.remove('hidden');
+  document.getElementById('dailyLessonCard').classList.remove('hidden');
+  document.getElementById('catSectionLabel').classList.remove('hidden');
   document.getElementById('categoryGrid').classList.remove('hidden');
   renderCategoryGrid();
 }
@@ -787,22 +858,39 @@ function getMastered() {
 }
 function masteredCount() { return getMastered().length; }
 
+function getUnlockLevel() {
+  if (stats.xp >= LV_UNLOCK[3]) return 3;
+  if (stats.xp >= LV_UNLOCK[2]) return 2;
+  return 1;
+}
+
+function checkUnlock() {
+  const newLv = getUnlockLevel();
+  const prev = stats.unlockLv || 1;
+  if (newLv > prev) {
+    stats.unlockLv = newLv;
+    showToast('🔓 רמה ' + newLv + ' נפתחה! מילים חדשות זמינות!');
+    saveStats();
+    renderCategoryGrid();
+  }
+}
+
 function renderCategoryGrid() {
   const grid = document.getElementById('categoryGrid');
   const mastered = getMastered();
-  const totalMastered = mastered.length;
-  const unlockLevel = Object.keys(UNLOCK_AT).reverse().find(lv => totalMastered >= UNLOCK_AT[lv]) || 1;
+  const unlockedLv = getUnlockLevel();
 
   grid.innerHTML = categories.map(cat => {
     const words = vocabulary.filter(w => w.cat === cat.id);
     const catMastered = words.filter(w => mastered.includes(w.id)).length;
     const pct = words.length ? Math.round(catMastered/words.length*100) : 0;
-    const catLv = Math.min(...words.map(w => w.lv||1));
-    const locked = catLv > parseInt(unlockLevel);
-    return `<div class="cat-card ${locked?'locked':''}" onclick="${locked?'showToast(\'🔒 המשך ללמוד כדי לפתוח!\')':'openCategory(\''+cat.id+'\')'}">
+    const minLv = Math.min(...words.map(w => w.lv||1));
+    const locked = minLv > unlockedLv;
+    const xpNeeded = locked ? LV_UNLOCK[minLv] : 0;
+    return `<div class="cat-card ${locked?'locked':''}" onclick="${locked?'showToast(\'🔒 צריך '+xpNeeded+' XP לפתיחה!\')':'openCategory(\''+cat.id+'\')'}">
       <div class="cat-emoji">${cat.emoji}</div>
       <div class="cat-name">${cat.name}</div>
-      <div class="cat-count">${catMastered}/${words.length} מילים</div>
+      <div class="cat-count">${locked?'🔒 '+xpNeeded+' XP':catMastered+'/'+words.length+' מילים'}</div>
       <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
@@ -819,12 +907,12 @@ function openCategory(catId) {
 
   document.getElementById('wotdBanner').classList.add('hidden');
   document.getElementById('dailyChallengeCard').classList.add('hidden');
-  document.querySelector('.card button').parentElement.classList.add('hidden');
-  document.querySelector('.section-label').classList.add('hidden');
+  document.getElementById('dailyLessonCard').classList.add('hidden');
+  document.getElementById('catSectionLabel').classList.add('hidden');
   document.getElementById('categoryGrid').classList.add('hidden');
   document.getElementById('wordListView').classList.remove('hidden');
 
-  document.getElementById('wordListTitle').textContent = cat.emoji+' '+cat.name;
+  document.getElementById('wListTitle').textContent = cat.emoji+' '+cat.name;
   renderWordList();
 }
 
@@ -832,15 +920,14 @@ function renderWordList() {
   const mastered = getMastered();
   document.getElementById('wordList').innerHTML = currentWords.map(w => {
     const isMastered = mastered.includes(w.id);
-    const progress = wordProgress[w.id] || {};
-    return `<div class="word-item" onclick="speakYiddish('${w.yi.replace(/'/g,"\\'")}')">
+    return `<div class="word-item" onclick="speakYiddish('${w.ph.replace(/'/g,"\\'")}')">
       <div class="word-mastered" style="background:${isMastered?'var(--success)':'var(--border)'}"></div>
       <div style="flex:1">
         <div class="word-yi">${w.yi}</div>
         <div class="word-ph">${w.ph}</div>
       </div>
       <div class="word-he">${w.he}</div>
-      <button class="word-speak" onclick="event.stopPropagation();speakYiddish('${w.yi.replace(/'/g,"\\'")}')">🔊</button>
+      <button class="word-speak" onclick="event.stopPropagation();speakYiddish('${w.ph.replace(/'/g,"\\'")}')">🔊</button>
     </div>`;
   }).join('');
 }
@@ -868,7 +955,7 @@ function speakWeb(text, lang) {
 }
 
 function speakCurrent() {
-  if (currentWords[fcIndex]) speakYiddish(currentWords[fcIndex].yi);
+  if (currentWords[fcIndex]) speakYiddish(currentWords[fcIndex].ph);
 }
 
 // ── FLASHCARDS ────────────────────────────────────────────────────────────────
@@ -898,7 +985,7 @@ function renderFlashcard() {
   document.getElementById('fcCounter').textContent = (fcIndex+1)+'/'+currentWords.length;
 }
 
-function flipCard() { fcFlipped = !fcFlipped; renderFlashcard(); speakYiddish(currentWords[fcIndex].yi); }
+function flipCard() { fcFlipped = !fcFlipped; renderFlashcard(); speakYiddish(currentWords[fcIndex].ph); }
 function nextCard() { if (fcIndex < currentWords.length-1) { fcIndex++; fcFlipped = false; renderFlashcard(); } }
 function prevCard() { if (fcIndex > 0) { fcIndex--; fcFlipped = false; renderFlashcard(); } }
 
@@ -920,8 +1007,8 @@ function startQuiz(all) {
   document.getElementById('quizView').classList.remove('hidden');
   document.getElementById('wotdBanner').classList.add('hidden');
   document.getElementById('dailyChallengeCard').classList.add('hidden');
-  document.querySelector('.card button').parentElement.classList.add('hidden');
-  document.querySelector('.section-label').classList.add('hidden');
+  document.getElementById('dailyLessonCard').classList.add('hidden');
+  document.getElementById('catSectionLabel').classList.add('hidden');
   document.getElementById('categoryGrid').classList.add('hidden');
   document.getElementById('quizResult').classList.add('hidden');
   nextQuizQ();
@@ -944,7 +1031,7 @@ function nextQuizQ() {
   let q='', sub='', optionsFn, answerFn;
   if (listeningMode) {
     q = '🔊 מה המשמעות?'; sub = 'הקשב'; answerFn = o => o.he; quizAnswer = w.he;
-    setTimeout(() => speakYiddish(w.yi), 400);
+    setTimeout(() => speakYiddish(w.ph), 400);
     optionsFn = o => o.he;
   } else if (type === 'phToHe') {
     q = w.ph; sub = 'מה המשמעות בעברית?'; quizAnswer = w.he; optionsFn = o => o.he;
@@ -1006,6 +1093,7 @@ function checkAnswer(btn, answer, correct) {
   }
 
   checkBadges();
+  checkUnlock();
   saveStats();
   quizIndex++;
   setTimeout(nextQuizQ, 1200);
@@ -1118,7 +1206,7 @@ function renderWordOfDay() {
   document.getElementById('wotdYi').textContent = w.yi;
   document.getElementById('wotdPh').textContent = w.ph;
   document.getElementById('wotdHe').textContent = w.he;
-  document.getElementById('wotdBanner').onclick = () => speakYiddish(w.yi);
+  document.getElementById('wotdBanner').onclick = () => speakYiddish(w.ph);
 }
 
 // ── DAILY LESSON ──────────────────────────────────────────────────────────────
@@ -1146,11 +1234,15 @@ function showLessonCard() {
   document.getElementById('lessonPh').textContent = w.ph;
   document.getElementById('lessonHe').textContent = w.he;
   document.getElementById('lessonBtn').textContent = lessonPos < lessonDeck.length-1 ? 'הבא →' : 'סיום ✓';
-  setTimeout(() => speakYiddish(w.yi), 500);
+  setTimeout(() => speakYiddish(w.ph), 500);
 }
 
 function lessonNext() {
   markWordProgress(lessonDeck[lessonPos].id, true);
+  stats.xp += 5;
+  checkBadges();
+  checkUnlock();
+  saveStats();
   lessonPos++;
   showLessonCard();
 }
@@ -1222,7 +1314,7 @@ function renderConversations() {
               <div class="dl-ph">${l.ph}</div>
               <div class="dl-he">${l.he}</div>
             </div>
-            <button class="dl-speak" onclick="speakYiddish('${l.yi.replace(/'/g,"\\'")}')">🔊</button>
+            <button class="dl-speak" onclick="speakYiddish('${l.ph.replace(/'/g,"\\'")}')">🔊</button>
           </div>`).join('')}
         <button class="karaoke-btn" onclick="startKaraoke('${d.id}',event)">▶ קריוקי — שמע הכל</button>
       </div>
@@ -1232,7 +1324,7 @@ function renderConversations() {
   document.getElementById('phrasesList').innerHTML = phrases.map(p => `
     <div class="phrase-item">
       <span class="phrase-tag">${p.tag}</span>
-      <button class="phrase-speak" onclick="speakYiddish('${p.yi.replace(/'/g,"\\'")}')">🔊</button>
+      <button class="phrase-speak" onclick="speakYiddish('${p.ph.replace(/'/g,"\\'")}')">🔊</button>
       <div class="phrase-yi">${p.yi}</div>
       <div class="phrase-ph">${p.ph}</div>
       <div class="phrase-he">${p.he}</div>
@@ -1259,7 +1351,7 @@ function startKaraoke(dialogueId, e) {
     document.querySelectorAll('[id^="dlLine_'+dialogueId+'_"]').forEach(el => el.classList.remove('karaoke-line'));
     const lineEl = document.getElementById('dlLine_'+dialogueId+'_'+i);
     if (lineEl) lineEl.classList.add('karaoke-line');
-    speakYiddish(d.lines[i].yi);
+    speakYiddish(d.lines[i].ph);
     i++;
     karaokeTimer = setTimeout(playLine, 2500);
   }
