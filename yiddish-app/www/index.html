@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="yi" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>יידיש לומדן</title>
+<style>
+:root {
+  --primary: #7c3aed;
+  --primary-dark: #4c1d95;
+  --accent: #f59e0b;
+  --bg: #f5f3ff;
+  --card: #ffffff;
+  --text: #1e1b4b;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --success: #059669;
+  --error: #dc2626;
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+#header {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white; padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; box-shadow: 0 2px 10px rgba(124,58,237,0.3);
+}
+#header svg { flex-shrink: 0; }
+#header h1 { font-size: 20px; font-weight: 700; flex: 1; }
+#xpBadge {
+  background: rgba(255,255,255,0.2); border-radius: 20px;
+  padding: 4px 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+
+/* Nav */
+#nav {
+  display: flex; background: white; border-top: 1px solid var(--border);
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.07);
+}
+.nav-btn {
+  flex: 1; border: none; background: none; padding: 8px 4px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--muted); cursor: pointer; transition: color 0.2s;
+}
+.nav-btn.active { color: var(--primary); }
+.nav-btn span { font-size: 22px; }
+
+/* Screens */
+#app { flex: 1; overflow-y: auto; padding-bottom: 60px; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--card); border-radius: var(--radius); margin: 12px;
+  padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+
+/* Word of Day Banner */
+#wotdBanner {
+  background: linear-gradient(135deg, #1e1b4b, var(--primary));
+  color: white; margin: 12px; border-radius: var(--radius); padding: 16px;
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+}
+#wotdBanner .wotd-icon { font-size: 32px; flex-shrink: 0; }
+#wotdBanner .wotd-yi { font-size: 22px; font-weight: 800; }
+#wotdBanner .wotd-ph { font-size: 13px; opacity: 0.85; }
+#wotdBanner .wotd-he { font-size: 13px; opacity: 0.7; }
+#wotdBanner .wotd-label { font-size: 11px; opacity: 0.6; margin-bottom: 4px; }
+
+/* Daily Challenge */
+#dailyChallengeCard { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+#dcBar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin-top: 8px; }
+#dcBarFill { background: white; border-radius: 10px; height: 8px; transition: width 0.4s; }
+
+/* Category Grid */
+#categoryGrid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px;
+}
+.cat-card {
+  background: var(--card); border-radius: var(--radius); padding: 14px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.1s, box-shadow 0.1s; text-align: center;
+}
+.cat-card:active { transform: scale(0.96); }
+.cat-card .cat-emoji { font-size: 28px; }
+.cat-card .cat-name { font-size: 14px; font-weight: 700; }
+.cat-card .cat-count { font-size: 11px; color: var(--muted); }
+.cat-card .cat-bar { width: 100%; height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px; }
+.cat-card .cat-bar-fill { height: 4px; background: var(--primary); border-radius: 2px; transition: width 0.5s; }
+.cat-card.locked { opacity: 0.45; cursor: not-allowed; }
+
+/* Word list */
+#wordListHeader { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+#wordListBack { background: none; border: none; font-size: 24px; cursor: pointer; }
+#wordListTitle { font-size: 17px; font-weight: 700; flex: 1; }
+.word-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border); background: white; cursor: pointer;
+}
+.word-item:active { background: #f5f3ff; }
+.word-yi { font-size: 20px; font-weight: 700; flex: 1; }
+.word-ph { font-size: 13px; color: var(--muted); }
+.word-he { font-size: 14px; color: var(--text); }
+.word-speak { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; color: var(--primary); }
+.word-mastered { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Flashcard */
+#flashcardView { padding: 16px; }
+.flashcard {
+  background: white; border-radius: 18px; padding: 40px 24px;
+  text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  min-height: 200px; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 12px;
+  cursor: pointer; margin-bottom: 16px;
+}
+.fc-yi { font-size: 38px; font-weight: 800; color: var(--primary); }
+.fc-ph { font-size: 18px; color: var(--muted); }
+.fc-he { font-size: 20px; font-weight: 600; color: var(--text); display: none; }
+.fc-hint { font-size: 13px; color: var(--muted); }
+.fc-nav { display: flex; gap: 10px; justify-content: center; }
+.fc-btn { padding: 10px 20px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+.fc-btn.prev { background: var(--border); color: var(--text); }
+.fc-btn.next { background: var(--primary); color: white; }
+
+/* Quiz */
+#quizView { padding: 16px; }
+.quiz-progress { background: var(--border); border-radius: 10px; height: 6px; margin-bottom: 16px; }
+.quiz-progress-fill { background: var(--primary); border-radius: 10px; height: 6px; transition: width 0.3s; }
+.quiz-q { font-size: 24px; font-weight: 800; text-align: center; margin: 20px 0 8px; color: var(--primary); }
+.quiz-sub { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 20px; }
+.quiz-opts { display: flex; flex-direction: column; gap: 10px; }
+.opt-btn {
+  padding: 14px; border-radius: 12px; border: 2px solid var(--border);
+  background: white; font-size: 16px; font-weight: 600; cursor: pointer;
+  text-align: center; transition: all 0.15s;
+}
+.opt-btn:active { transform: scale(0.97); }
+.opt-btn.correct { border-color: var(--success); background: #d1fae5; color: var(--success); }
+.opt-btn.wrong { border-color: var(--error); background: #fee2e2; color: var(--error); }
+.quiz-actions { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
+.mode-btn {
+  padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--primary);
+  background: white; color: var(--primary); font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.mode-btn.active { background: var(--primary); color: white; }
+#typingInputWrap { display: none; flex-direction: column; gap: 8px; align-items: center; }
+#typingInput { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 18px; text-align: center; font-family: inherit; }
+#typingSubmit { padding: 10px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.quiz-speak-btn { width: 70px; height: 70px; border-radius: 50%; border: none; background: var(--primary); color: white; font-size: 30px; cursor: pointer; margin: 10px auto; display: block; box-shadow: 0 4px 15px rgba(124,58,237,0.4); }
+#quizResult { text-align: center; padding: 40px 20px; }
+#quizResult .result-emoji { font-size: 60px; }
+#quizResult h2 { font-size: 22px; margin: 10px 0; }
+#quizResult p { color: var(--muted); margin-bottom: 20px; }
+.result-btn { padding: 12px 28px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+/* Conversations */
+.dialogue-card {
+  background: var(--card); border-radius: var(--radius); margin: 12px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer;
+}
+.dialogue-header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 14px 16px; }
+.dialogue-emoji { font-size: 28px; }
+.dialogue-title { font-size: 16px; font-weight: 700; margin-top: 4px; }
+.dialogue-desc { font-size: 12px; opacity: 0.8; }
+.dialogue-body { padding: 14px 16px; }
+.dialogue-line { display: flex; gap: 10px; margin-bottom: 12px; }
+.dl-speaker { font-size: 12px; font-weight: 700; color: var(--primary); width: 20px; flex-shrink: 0; }
+.dl-content { flex: 1; }
+.dl-yi { font-size: 16px; font-weight: 600; }
+.dl-ph { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.dl-he { font-size: 13px; color: #555; margin-top: 2px; }
+.dl-speak { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--primary); flex-shrink: 0; }
+.karaoke-btn { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+.karaoke-line { background: #ede9fe; border-radius: 8px; }
+
+/* Phrases */
+.phrase-item { padding: 12px 16px; border-bottom: 1px solid var(--border); background: white; }
+.phrase-tag { display: inline-block; background: #ede9fe; color: var(--primary); font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-bottom: 4px; }
+.phrase-yi { font-size: 18px; font-weight: 700; }
+.phrase-ph { font-size: 12px; color: var(--muted); }
+.phrase-he { font-size: 13px; color: var(--text); margin-top: 2px; }
+.phrase-speak { float: left; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--primary); }
+
+/* Stats */
+#statsScreen { padding: 0 0 20px; }
+.stats-hero { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 20px 16px; }
+.stats-hero h2 { font-size: 18px; margin-bottom: 4px; }
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+.stat-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; text-align: center; }
+.stat-val { font-size: 22px; font-weight: 800; }
+.stat-lbl { font-size: 11px; opacity: 0.8; }
+#levelBar { background: rgba(255,255,255,0.2); border-radius: 10px; height: 10px; margin-top: 12px; }
+#levelBarFill { background: var(--accent); border-radius: 10px; height: 10px; transition: width 0.5s; }
+#levelLabel { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+#badgesSection { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.badge-chip { background: #ede9fe; border-radius: 20px; padding: 6px 12px; font-size: 13px; }
+.badge-chip.earned { background: linear-gradient(135deg, var(--accent), #d97706); color: white; }
+#weeklyPlan { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; }
+.day-pill { background: var(--border); border-radius: 10px; padding: 8px 10px; text-align: center; min-width: 60px; flex-shrink: 0; }
+.day-pill.today { background: var(--primary); color: white; }
+.day-name { font-size: 11px; font-weight: 600; }
+.day-theme { font-size: 10px; margin-top: 2px; opacity: 0.8; }
+.backup-btns { display: flex; gap: 8px; }
+.backup-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--primary); background: white; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* Daily lesson overlay */
+#lessonOverlay {
+  position: fixed; inset: 0; background: #1e1b4b; z-index: 200; display: none;
+  flex-direction: column; align-items: center; justify-content: center; padding: 24px;
+}
+#lessonOverlay.open { display: flex; }
+.lesson-card { background: white; border-radius: 20px; padding: 32px 24px; width: 100%; max-width: 340px; text-align: center; }
+.lesson-yi { font-size: 42px; font-weight: 800; color: var(--primary); }
+.lesson-ph { font-size: 20px; color: var(--muted); margin-top: 8px; }
+.lesson-he { font-size: 18px; font-weight: 600; margin-top: 12px; }
+.lesson-counter { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.lesson-btn { padding: 14px 32px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+.lesson-skip { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 14px; cursor: pointer; margin-top: 16px; }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: #1e1b4b; color: white; padding: 10px 20px; border-radius: 20px;
+  font-size: 14px; z-index: 300; opacity: 0; transition: opacity 0.3s;
+  pointer-events: none; white-space: nowrap; max-width: 90vw; text-align: center;
+}
+#toast.show { opacity: 1; }
+
+/* Modal */
+#modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 400;
+  display: none; align-items: flex-end;
+}
+#modal.open { display: flex; }
+#modalBox { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; }
+#modalBox h3 { margin-bottom: 10px; }
+#modalTextarea { width: 100%; height: 120px; font-size: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-family: monospace; resize: none; }
+.modal-btns { display: flex; gap: 8px; margin-top: 10px; }
+.modal-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+.modal-btn.primary { background: var(--primary); color: white; }
+.modal-btn.secondary { background: var(--border); color: var(--text); }
+
+/* Word list header — two-row layout */
+.list-hdr { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+.list-hdr-row1 { display: flex; align-items: center; gap: 10px; padding: 10px 16px 6px; }
+.list-hdr-row2 { display: flex; gap: 8px; padding: 4px 16px 10px; }
+.hdr-title { font-size: 17px; font-weight: 700; flex: 1; }
+.back-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 2px 6px; color: var(--text); }
+.hdr-btn { padding: 7px 0; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; }
+.hdr-btn.fc { background: var(--primary); color: white; }
+.hdr-btn.qz { background: var(--accent); color: white; }
+.hdr-counter { font-size: 13px; color: var(--muted); }
+
+/* Sections hidden */
+.hidden { display: none !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Section headers */
+.section-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 16px 4px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <svg width="46" height="46" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="22" fill="#1E1B4B"/>
+    <text x="50" y="65" text-anchor="middle" font-size="52" fill="#7C3AED" font-family="Arial, serif" font-weight="900">יי</text>
+    <rect x="20" y="72" width="60" height="5" rx="2.5" fill="#F59E0B"/>
+  </svg>
+  <h1>יידיש לומדן</h1>
+  <div id="xpBadge">0 XP</div>
+</div>
+
+<div id="app">
+  <!-- Vocab Screen -->
+  <div id="vocabScreen" class="screen active">
+    <div id="wotdBanner">
+      <div class="wotd-icon">⭐</div>
+      <div>
+        <div class="wotd-label">מילת היום</div>
+        <div class="wotd-yi" id="wotdYi">—</div>
+        <div class="wotd-ph" id="wotdPh"></div>
+        <div class="wotd-he" id="wotdHe"></div>
+      </div>
+    </div>
+
+    <div class="card" id="dailyChallengeCard">
+      <div class="card-title" style="color:white">🎯 אתגר יומי</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.85)" id="dcText">0/10 תשובות נכונות</div>
+      <div id="dcBar"><div id="dcBarFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="card" id="dailyLessonCard" style="padding:12px 16px">
+      <button onclick="startDailyLesson()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">📚 שיעור יומי — 5 מילים חדשות</button>
+    </div>
+
+    <div class="section-label" id="catSectionLabel">קטגוריות מילים</div>
+    <div id="categoryGrid"></div>
+
+    <!-- Word List View -->
+    <div id="wordListView" class="hidden">
+      <div class="list-hdr">
+        <div class="list-hdr-row1">
+          <button class="back-btn" onclick="showCategoryGrid()">←</button>
+          <div class="hdr-title" id="wListTitle">מילים</div>
+        </div>
+        <div class="list-hdr-row2">
+          <button class="hdr-btn fc" onclick="startFlashcards()">📋 כרטיסיות</button>
+          <button class="hdr-btn qz" onclick="startQuiz(false)">🎯 חידון</button>
+        </div>
+      </div>
+      <div id="wordList"></div>
+    </div>
+
+    <!-- Flashcard View -->
+    <div id="flashcardView" class="hidden">
+      <div class="list-hdr">
+        <div class="list-hdr-row1">
+          <button class="back-btn" onclick="exitFlashcards()">←</button>
+          <div class="hdr-title">כרטיסיות</div>
+          <div class="hdr-counter" id="fcCounter"></div>
+        </div>
+      </div>
+      <div style="padding:16px">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="fc-yi" id="fcYi"></div>
+        <div class="fc-ph" id="fcPh"></div>
+        <div class="fc-he" id="fcHe"></div>
+        <div class="fc-hint" id="fcHint">לחץ לגילוי</div>
+      </div>
+      <div class="fc-nav">
+        <button class="fc-btn prev" onclick="prevCard()">← הקודם</button>
+        <button onclick="speakCurrent()" style="padding:10px 16px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer">🔊</button>
+        <button class="fc-btn next" onclick="nextCard()">הבא →</button>
+      </div>
+      </div>
+    </div>
+
+    <!-- Quiz View -->
+    <div id="quizView" class="hidden">
+      <div class="list-hdr">
+        <div class="list-hdr-row1">
+          <button class="back-btn" onclick="exitQuiz()">←</button>
+          <div class="hdr-title">חידון</div>
+          <div class="hdr-counter" id="quizScore"></div>
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div class="quiz-progress"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+        <div class="quiz-actions">
+          <button class="mode-btn" id="typingModeBtn" onclick="toggleTypingMode(this)">✏️ הקלדה</button>
+          <button class="mode-btn" id="listeningModeBtn" onclick="toggleListeningMode(this)">🎧 האזנה</button>
+          <button class="mode-btn" id="speechModeBtn" onclick="startSpeechQuiz()">🎤 דיבור</button>
+        </div>
+        <div class="quiz-q" id="quizQ"></div>
+        <div class="quiz-sub" id="quizSub"></div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div id="typingInputWrap">
+          <input id="typingInput" placeholder="הקלד את תשובתך..." onkeydown="if(event.key==='Enter')submitTyping()">
+          <button id="typingSubmit" onclick="submitTyping()">בדוק</button>
+        </div>
+        <div id="quizResult" class="hidden">
+          <div class="result-emoji" id="resultEmoji"></div>
+          <h2 id="resultTitle"></h2>
+          <p id="resultMsg"></p>
+          <button class="result-btn" onclick="startQuiz(true)">חידון נוסף</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversations Screen -->
+  <div id="convScreen" class="screen">
+    <div class="section-label">שיחות</div>
+    <div id="dialoguesList"></div>
+    <div class="section-label" style="margin-top:8px">ביטויים שימושיים</div>
+    <div id="phrasesList"></div>
+  </div>
+
+  <!-- Stats Screen -->
+  <div id="statsScreen" class="screen">
+    <div class="stats-hero">
+      <h2 id="statsLevel">🌱 מתחיל</h2>
+      <div style="font-size:13px;opacity:0.85" id="statsLevelDesc">המשך ללמוד!</div>
+      <div id="levelBar"><div id="levelBarFill" style="width:0%"></div></div>
+      <div id="levelLabel" style="font-size:12px;margin-top:4px;opacity:0.8"></div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val" id="statWords">0</div><div class="stat-lbl">מילים</div></div>
+        <div class="stat-box"><div class="stat-val" id="statStreak">0</div><div class="stat-lbl">רצף ימים</div></div>
+        <div class="stat-box"><div class="stat-val" id="statMastered">0</div><div class="stat-lbl">נרכשו</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏅 עיטורים</div>
+      <div id="badgesSection"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📅 תכנית שבועית</div>
+      <div id="weeklyPlan"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💾 גיבוי נתונים</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:10px">ייצוא ויבוא של ההתקדמות שלך</div>
+      <div class="backup-btns">
+        <button class="backup-btn" onclick="exportProgress()">📤 ייצוא</button>
+        <button class="backup-btn" onclick="showImportModal()">📥 יבוא</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ℹ️ על האפליקציה</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">
+        יידיש לומדן — ללמוד יידיש סטנדרטי (YIVO) מעברית.<br>
+        הגייה: ייצוג פונטי לטיני (YIVO).<br>
+        🔊 הגיית TTS: קירוב גרמני (קרוב ליידיש).<br>
+        v1.0
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<div id="nav">
+  <button class="nav-btn active" onclick="showScreen('vocabScreen',this)"><span>📖</span>מילים</button>
+  <button class="nav-btn" onclick="showScreen('convScreen',this)"><span>💬</span>שיחות</button>
+  <button class="nav-btn" onclick="showScreen('statsScreen',this);renderStats()"><span>📊</span>סטטיסטיקה</button>
+</div>
+
+<!-- Daily Lesson Overlay -->
+<div id="lessonOverlay">
+  <div class="lesson-card">
+    <div class="lesson-counter" id="lessonCounter"></div>
+    <div class="lesson-yi" id="lessonYi"></div>
+    <div class="lesson-ph" id="lessonPh"></div>
+    <div class="lesson-he" id="lessonHe"></div>
+    <button class="lesson-btn" id="lessonBtn" onclick="lessonNext()">הבא →</button>
+  </div>
+  <button class="lesson-skip" onclick="closeDailyLesson()">✕ סגור</button>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Modal -->
+<div id="modal" onclick="if(event.target===this)closeModal()">
+  <div id="modalBox">
+    <h3 id="modalTitle"></h3>
+    <textarea id="modalTextarea" readonly></textarea>
+    <div class="modal-btns" id="modalBtns"></div>
+  </div>
+</div>
+
+<script>
+// ── VOCABULARY ────────────────────────────────────────────────────────────────
+const vocabulary = [
+  // GREETINGS
+  {id:'g1',cat:'greetings',yi:'שלום',ph:'sholem',he:'שלום'},
+  {id:'g2',cat:'greetings',yi:'גוטן מאָרגן',ph:'gutn morgn',he:'בוקר טוב'},
+  {id:'g3',cat:'greetings',yi:'גוטן אָוונט',ph:'gutn ovnt',he:'ערב טוב'},
+  {id:'g4',cat:'greetings',yi:'גוטע נאַכט',ph:'gute nakht',he:'לילה טוב'},
+  {id:'g5',cat:'greetings',yi:'וואָס מאַכסטו?',ph:'vos makhstu?',he:'מה שלומך?'},
+  {id:'g6',cat:'greetings',yi:'גוט, אַ דאַנק',ph:'gut, a dank',he:'טוב, תודה'},
+  {id:'g7',cat:'greetings',yi:'פֿרייט מיך',ph:'freyt mikh',he:'נעים להכיר'},
+  {id:'g8',cat:'greetings',yi:'זייַ געזונט',ph:'zay gezunt',he:'היה בריא / להתראות'},
+  {id:'g9',cat:'greetings',yi:'ביטע',ph:'bite',he:'בבקשה'},
+  {id:'g10',cat:'greetings',yi:'אַ דאַנק',ph:'a dank',he:'תודה'},
+  {id:'g11',cat:'greetings',yi:'אַ שיינעם דאַנק',ph:'a sheynem dank',he:'תודה רבה'},
+  {id:'g12',cat:'greetings',yi:'ניט אַ דאַנק',ph:'nit a dank',he:'בבקשה (תגובה לתודה)'},
+  {id:'g13',cat:'greetings',yi:'וווּ וווינסטו?',ph:'vu voystu?',he:'איפה אתה גר?',lv:2},
+  {id:'g14',cat:'greetings',yi:'ווי הייסטו?',ph:'vi heystu?',he:'מה שמך?',lv:2},
+  // NUMBERS
+  {id:'n1',cat:'numbers',yi:'איינס',ph:'eyns',he:'אחד'},
+  {id:'n2',cat:'numbers',yi:'צוויי',ph:'tsvey',he:'שתיים'},
+  {id:'n3',cat:'numbers',yi:'דרייַ',ph:'dray',he:'שלוש'},
+  {id:'n4',cat:'numbers',yi:'פֿיר',ph:'fir',he:'ארבע'},
+  {id:'n5',cat:'numbers',yi:'פֿינף',ph:'finf',he:'חמישה'},
+  {id:'n6',cat:'numbers',yi:'זעקס',ph:'zeks',he:'שישה'},
+  {id:'n7',cat:'numbers',yi:'זיבן',ph:'zibn',he:'שבעה'},
+  {id:'n8',cat:'numbers',yi:'אַכט',ph:'akht',he:'שמונה'},
+  {id:'n9',cat:'numbers',yi:'נייַן',ph:'nayn',he:'תשעה'},
+  {id:'n10',cat:'numbers',yi:'צען',ph:'tsen',he:'עשרה'},
+  {id:'n11',cat:'numbers',yi:'עלף',ph:'elf',he:'אחד עשר',lv:2},
+  {id:'n12',cat:'numbers',yi:'צוועלף',ph:'tsvelf',he:'שניים עשר',lv:2},
+  {id:'n13',cat:'numbers',yi:'הונדערט',ph:'hundert',he:'מאה',lv:2},
+  {id:'n14',cat:'numbers',yi:'טויזנט',ph:'toyznt',he:'אלף',lv:2},
+  // FAMILY
+  {id:'f1',cat:'family',yi:'מאַמע',ph:'mame',he:'אמא'},
+  {id:'f2',cat:'family',yi:'טאַטע',ph:'tate',he:'אבא'},
+  {id:'f3',cat:'family',yi:'קינד',ph:'kind',he:'ילד'},
+  {id:'f4',cat:'family',yi:'קינדער',ph:'kinder',he:'ילדים'},
+  {id:'f5',cat:'family',yi:'ברודער',ph:'bruder',he:'אח'},
+  {id:'f6',cat:'family',yi:'שוועסטער',ph:'shvester',he:'אחות'},
+  {id:'f7',cat:'family',yi:'מאַן',ph:'man',he:'בעל'},
+  {id:'f8',cat:'family',yi:'פֿרוי',ph:'froy',he:'אישה'},
+  {id:'f9',cat:'family',yi:'זיידע',ph:'zeyde',he:'סבא'},
+  {id:'f10',cat:'family',yi:'באָבע',ph:'bobe',he:'סבתא'},
+  {id:'f11',cat:'family',yi:'אייניקל',ph:'eynikl',he:'נכד/ה',lv:2},
+  {id:'f12',cat:'family',yi:'עלטערן',ph:'eltern',he:'הורים',lv:2},
+  {id:'f13',cat:'family',yi:'פֿעטער',ph:'feter',he:'דוד',lv:2},
+  {id:'f14',cat:'family',yi:'מומע',ph:'mume',he:'דודה',lv:2},
+  {id:'f15',cat:'family',yi:'שוואָגער',ph:'shvoger',he:'גיס',lv:3},
+  // FOOD
+  {id:'fo1',cat:'food',yi:'עסן',ph:'esn',he:'אוכל / לאכול'},
+  {id:'fo2',cat:'food',yi:'ברויט',ph:'broyt',he:'לחם'},
+  {id:'fo3',cat:'food',yi:'פֿלייש',ph:'fleysh',he:'בשר'},
+  {id:'fo4',cat:'food',yi:'פֿיש',ph:'fish',he:'דג'},
+  {id:'fo5',cat:'food',yi:'מילך',ph:'milkh',he:'חלב'},
+  {id:'fo6',cat:'food',yi:'בוטער',ph:'buter',he:'חמאה'},
+  {id:'fo7',cat:'food',yi:'קעזע',ph:'keze',he:'גבינה'},
+  {id:'fo8',cat:'food',yi:'טיי',ph:'tey',he:'תה'},
+  {id:'fo9',cat:'food',yi:'קאַווע',ph:'kave',he:'קפה'},
+  {id:'fo10',cat:'food',yi:'וואַסער',ph:'vaser',he:'מים'},
+  {id:'fo11',cat:'food',yi:'קוגל',ph:'kugl',he:'קוגל'},
+  {id:'fo12',cat:'food',yi:'טשאָלנט',ph:'tsholnt',he:'חמין'},
+  {id:'fo13',cat:'food',yi:'בורשט',ph:'borsht',he:'מרק סלק'},
+  {id:'fo14',cat:'food',yi:'קנייש',ph:'knish',he:'קניש'},
+  {id:'fo15',cat:'food',yi:'מאַצע',ph:'matse',he:'מצה',lv:2},
+  {id:'fo16',cat:'food',yi:'הונגעריק',ph:'hungerik',he:'רעב',lv:2},
+  {id:'fo17',cat:'food',yi:'זאַט',ph:'zat',he:'שבע (לא רעב)',lv:2},
+  // FEELINGS
+  {id:'fe1',cat:'feelings',yi:'גליקלעך',ph:'gliklekh',he:'שמח'},
+  {id:'fe2',cat:'feelings',yi:'טרויעריק',ph:'troyerik',he:'עצוב'},
+  {id:'fe3',cat:'feelings',yi:'מיד',ph:'mid',he:'עייף'},
+  {id:'fe4',cat:'feelings',yi:'קראַנק',ph:'krank',he:'חולה'},
+  {id:'fe5',cat:'feelings',yi:'ליבע',ph:'libe',he:'אהבה'},
+  {id:'fe6',cat:'feelings',yi:'מורא',ph:'more',he:'פחד'},
+  {id:'fe7',cat:'feelings',yi:'כּעס',ph:'kaas',he:'כעס'},
+  {id:'fe8',cat:'feelings',yi:'שטאָלץ',ph:'shtolts',he:'גאווה'},
+  {id:'fe9',cat:'feelings',yi:'האָפֿנונג',ph:'hofnung',he:'תקווה',lv:2},
+  {id:'fe10',cat:'feelings',yi:'ווינטשן',ph:'vintshn',he:'לאחל',lv:2},
+  // HOME
+  {id:'h1',cat:'home',yi:'שטוב',ph:'shtub',he:'בית / דירה'},
+  {id:'h2',cat:'home',yi:'שלאָפֿצימער',ph:'shloftsimer',he:'חדר שינה'},
+  {id:'h3',cat:'home',yi:'קיך',ph:'kikh',he:'מטבח'},
+  {id:'h4',cat:'home',yi:'טיר',ph:'tir',he:'דלת'},
+  {id:'h5',cat:'home',yi:'פֿענצטער',ph:'fentster',he:'חלון'},
+  {id:'h6',cat:'home',yi:'בעט',ph:'bet',he:'מיטה'},
+  {id:'h7',cat:'home',yi:'טיש',ph:'tish',he:'שולחן'},
+  {id:'h8',cat:'home',yi:'שטול',ph:'shtul',he:'כיסא'},
+  {id:'h9',cat:'home',yi:'ספֿר',ph:'seyfer',he:'ספר',lv:2},
+  {id:'h10',cat:'home',yi:'ליכט',ph:'likht',he:'נר / אור',lv:2},
+  // COLORS
+  {id:'c1',cat:'colors',yi:'רויט',ph:'royt',he:'אדום'},
+  {id:'c2',cat:'colors',yi:'בלוי',ph:'bloy',he:'כחול'},
+  {id:'c3',cat:'colors',yi:'גרין',ph:'grin',he:'ירוק'},
+  {id:'c4',cat:'colors',yi:'געל',ph:'gel',he:'צהוב'},
+  {id:'c5',cat:'colors',yi:'שוואַרץ',ph:'shvarts',he:'שחור'},
+  {id:'c6',cat:'colors',yi:'ווייס',ph:'vays',he:'לבן'},
+  {id:'c7',cat:'colors',yi:'גרוי',ph:'groy',he:'אפור'},
+  {id:'c8',cat:'colors',yi:'ברוין',ph:'broyn',he:'חום'},
+  {id:'c9',cat:'colors',yi:'ראָזאָ',ph:'roze',he:'ורוד',lv:2},
+  {id:'c10',cat:'colors',yi:'אָראַנזש',ph:'orandzh',he:'כתום',lv:2},
+  // TIME
+  {id:'t1',cat:'time',yi:'הייַנט',ph:'haynt',he:'היום'},
+  {id:'t2',cat:'time',yi:'מאָרגן',ph:'morgn',he:'מחר'},
+  {id:'t3',cat:'time',yi:'נעכטן',ph:'nekhtn',he:'אתמול'},
+  {id:'t4',cat:'time',yi:'איצט',ph:'itst',he:'עכשיו'},
+  {id:'t5',cat:'time',yi:'שפּעט',ph:'shpet',he:'מאוחר'},
+  {id:'t6',cat:'time',yi:'פֿרי',ph:'fri',he:'מוקדם'},
+  {id:'t7',cat:'time',yi:'יאָר',ph:'yor',he:'שנה'},
+  {id:'t8',cat:'time',yi:'חודש',ph:'khoydesh',he:'חודש'},
+  {id:'t9',cat:'time',yi:'וואָך',ph:'vokh',he:'שבוע'},
+  {id:'t10',cat:'time',yi:'טאָג',ph:'tog',he:'יום'},
+  {id:'t11',cat:'time',yi:'נאַכט',ph:'nakht',he:'לילה'},
+  {id:'t12',cat:'time',yi:'שעה',ph:'sho',he:'שעה',lv:2},
+  // VERBS
+  {id:'v1',cat:'verbs',yi:'האָבן',ph:'hobn',he:'להיות בעל'},
+  {id:'v2',cat:'verbs',yi:'זיין',ph:'zayn',he:'להיות'},
+  {id:'v3',cat:'verbs',yi:'קומען',ph:'kumen',he:'לבוא'},
+  {id:'v4',cat:'verbs',yi:'גיין',ph:'geyn',he:'ללכת'},
+  {id:'v5',cat:'verbs',yi:'עסן',ph:'esn',he:'לאכול'},
+  {id:'v6',cat:'verbs',yi:'טרינקען',ph:'trinken',he:'לשתות'},
+  {id:'v7',cat:'verbs',yi:'שלאָפֿן',ph:'shlofn',he:'לישון'},
+  {id:'v8',cat:'verbs',yi:'רעדן',ph:'redn',he:'לדבר'},
+  {id:'v9',cat:'verbs',yi:'זינגען',ph:'zingen',he:'לשיר'},
+  {id:'v10',cat:'verbs',yi:'לאַכן',ph:'lakhn',he:'לצחוק'},
+  {id:'v11',cat:'verbs',yi:'וויינען',ph:'veynen',he:'לבכות'},
+  {id:'v12',cat:'verbs',yi:'קויפֿן',ph:'koyfn',he:'לקנות'},
+  {id:'v13',cat:'verbs',yi:'לייענען',ph:'leyenen',he:'לקרוא'},
+  {id:'v14',cat:'verbs',yi:'שרייַבן',ph:'shraybn',he:'לכתוב'},
+  {id:'v15',cat:'verbs',yi:'הערן',ph:'hern',he:'לשמוע'},
+  {id:'v16',cat:'verbs',yi:'זען',ph:'zen',he:'לראות'},
+  {id:'v17',cat:'verbs',yi:'וויסן',ph:'visn',he:'לדעת'},
+  {id:'v18',cat:'verbs',yi:'לערנען',ph:'lernen',he:'ללמוד'},
+  {id:'v19',cat:'verbs',yi:'אַרבעטן',ph:'arbetn',he:'לעבוד',lv:2},
+  {id:'v20',cat:'verbs',yi:'שפּילן',ph:'shpiln',he:'לשחק',lv:2},
+  {id:'v21',cat:'verbs',yi:'טאַנצן',ph:'tantsn',he:'לרקוד',lv:2},
+  {id:'v22',cat:'verbs',yi:'בענקען',ph:'benken',he:'להתגעגע',lv:2},
+  // ADJECTIVES
+  {id:'a1',cat:'adjectives',yi:'גרויס',ph:'groys',he:'גדול'},
+  {id:'a2',cat:'adjectives',yi:'קליין',ph:'kleyn',he:'קטן'},
+  {id:'a3',cat:'adjectives',yi:'שיין',ph:'sheyn',he:'יפה'},
+  {id:'a4',cat:'adjectives',yi:'אַלט',ph:'alt',he:'ישן / זקן'},
+  {id:'a5',cat:'adjectives',yi:'יונג',ph:'yung',he:'צעיר'},
+  {id:'a6',cat:'adjectives',yi:'גוט',ph:'gut',he:'טוב'},
+  {id:'a7',cat:'adjectives',yi:'שלעכט',ph:'shleкht',he:'רע'},
+  {id:'a8',cat:'adjectives',yi:'הייס',ph:'heys',he:'חם'},
+  {id:'a9',cat:'adjectives',yi:'קאַלט',ph:'kalt',he:'קר'},
+  {id:'a10',cat:'adjectives',yi:'שנעל',ph:'shnel',he:'מהיר'},
+  {id:'a11',cat:'adjectives',yi:'לאַנגזאַם',ph:'langzam',he:'איטי'},
+  {id:'a12',cat:'adjectives',yi:'שווער',ph:'shver',he:'קשה'},
+  {id:'a13',cat:'adjectives',yi:'גרינג',ph:'gring',he:'קל'},
+  {id:'a14',cat:'adjectives',yi:'ריך',ph:'reykh',he:'עשיר',lv:2},
+  {id:'a15',cat:'adjectives',yi:'אָרעם',ph:'orem',he:'עני',lv:2},
+  {id:'a16',cat:'adjectives',yi:'קלוג',ph:'klug',he:'חכם',lv:2},
+  {id:'a17',cat:'adjectives',yi:'נאַריש',ph:'narish',he:'טיפשי',lv:2},
+  // BODY
+  {id:'b1',cat:'body',yi:'קאָפּ',ph:'kop',he:'ראש'},
+  {id:'b2',cat:'body',yi:'האַנט',ph:'hant',he:'יד'},
+  {id:'b3',cat:'body',yi:'פֿוס',ph:'fus',he:'רגל'},
+  {id:'b4',cat:'body',yi:'אויג',ph:'oyg',he:'עין'},
+  {id:'b5',cat:'body',yi:'אויער',ph:'oyer',he:'אוזן'},
+  {id:'b6',cat:'body',yi:'נאָז',ph:'noz',he:'אנף'},
+  {id:'b7',cat:'body',yi:'מויל',ph:'moyl',he:'פה'},
+  {id:'b8',cat:'body',yi:'האַרץ',ph:'harts',he:'לב'},
+  {id:'b9',cat:'body',yi:'פּנים',ph:'punem',he:'פנים',lv:2},
+  {id:'b10',cat:'body',yi:'הויט',ph:'hoyt',he:'עור',lv:2},
+  // PLACES
+  {id:'p1',cat:'places',yi:'שטאָט',ph:'shtot',he:'עיר'},
+  {id:'p2',cat:'places',yi:'גאַס',ph:'gas',he:'רחוב'},
+  {id:'p3',cat:'places',yi:'מאַרק',ph:'mark',he:'שוק'},
+  {id:'p4',cat:'places',yi:'שול',ph:'shul',he:'בית כנסת / בית ספר'},
+  {id:'p5',cat:'places',yi:'שפּיטאָל',ph:'shpitol',he:'בית חולים'},
+  {id:'p6',cat:'places',yi:'לאָדן',ph:'lodn',he:'חנות'},
+  {id:'p7',cat:'places',yi:'פּאַרק',ph:'park',he:'פארק'},
+  {id:'p8',cat:'places',yi:'באַן',ph:'ban',he:'רכבת',lv:2},
+  {id:'p9',cat:'places',yi:'לאַנד',ph:'land',he:'ארץ / מדינה',lv:2},
+  {id:'p10',cat:'places',yi:'הויז',ph:'hoyz',he:'בניין',lv:2},
+  {id:'p11',cat:'places',yi:'ברוק',ph:'brik',he:'גשר',lv:2},
+  // NATURE
+  {id:'na1',cat:'nature',yi:'בוים',ph:'boym',he:'עץ'},
+  {id:'na2',cat:'nature',yi:'בלום',ph:'blum',he:'פרח'},
+  {id:'na3',cat:'nature',yi:'וואַלד',ph:'vald',he:'יער'},
+  {id:'na4',cat:'nature',yi:'הימל',ph:'himl',he:'שמיים'},
+  {id:'na5',cat:'nature',yi:'זון',ph:'zun',he:'שמש'},
+  {id:'na6',cat:'nature',yi:'לבנה',ph:'levone',he:'ירח'},
+  {id:'na7',cat:'nature',yi:'שטערן',ph:'shtern',he:'כוכב'},
+  {id:'na8',cat:'nature',yi:'רעגן',ph:'regn',he:'גשם'},
+  {id:'na9',cat:'nature',yi:'שניי',ph:'shney',he:'שלג'},
+  {id:'na10',cat:'nature',yi:'ווינט',ph:'vint',he:'רוח'},
+  {id:'na11',cat:'nature',yi:'באַרג',ph:'barg',he:'הר',lv:2},
+  {id:'na12',cat:'nature',yi:'טייַך',ph:'taykh',he:'נהר',lv:2},
+  {id:'na13',cat:'nature',yi:'ים',ph:'yam',he:'ים',lv:2},
+  {id:'na14',cat:'nature',yi:'פֿייגל',ph:'feygl',he:'ציפור',lv:2},
+  {id:'na15',cat:'nature',yi:'הונט',ph:'hunt',he:'כלב',lv:2},
+  {id:'na16',cat:'nature',yi:'קאַץ',ph:'kats',he:'חתול',lv:2},
+  // EVERYDAY WORDS
+  {id:'ev1',cat:'everyday',yi:'יאָ',ph:'yo',he:'כן'},
+  {id:'ev2',cat:'everyday',yi:'ניין',ph:'neyn',he:'לא'},
+  {id:'ev3',cat:'everyday',yi:'וואָס?',ph:'vos?',he:'מה?'},
+  {id:'ev4',cat:'everyday',yi:'ווער?',ph:'ver?',he:'מי?'},
+  {id:'ev5',cat:'everyday',yi:'ווו?',ph:'vu?',he:'איפה?'},
+  {id:'ev6',cat:'everyday',yi:'ווען?',ph:'ven?',he:'מתי?'},
+  {id:'ev7',cat:'everyday',yi:'ווי?',ph:'vi?',he:'איך?'},
+  {id:'ev8',cat:'everyday',yi:'פֿאַרוואָס?',ph:'farvos?',he:'למה?'},
+  {id:'ev9',cat:'everyday',yi:'אָבער',ph:'ober',he:'אבל'},
+  {id:'ev10',cat:'everyday',yi:'אויך',ph:'oykh',he:'גם'},
+  {id:'ev11',cat:'everyday',yi:'שוין',ph:'shoyn',he:'כבר'},
+  {id:'ev12',cat:'everyday',yi:'נאָך',ph:'nokh',he:'עוד'},
+  {id:'ev13',cat:'everyday',yi:'מיט',ph:'mit',he:'עם',lv:2},
+  {id:'ev14',cat:'everyday',yi:'אָן',ph:'on',he:'בלי',lv:2},
+  {id:'ev15',cat:'everyday',yi:'אַלץ',ph:'alts',he:'הכל',lv:2},
+  {id:'ev16',cat:'everyday',yi:'עפּעס',ph:'epes',he:'משהו',lv:2},
+  // CLOTHING
+  {id:'cl1',cat:'clothing',yi:'העמד',ph:'hemd',he:'חולצה'},
+  {id:'cl2',cat:'clothing',yi:'הויזן',ph:'hoyzn',he:'מכנסיים'},
+  {id:'cl3',cat:'clothing',yi:'קלייד',ph:'kleyd',he:'שמלה'},
+  {id:'cl4',cat:'clothing',yi:'הוט',ph:'hut',he:'כובע'},
+  {id:'cl5',cat:'clothing',yi:'שיך',ph:'shikh',he:'נעליים'},
+  {id:'cl6',cat:'clothing',yi:'זאָקן',ph:'zokn',he:'גרביים'},
+  {id:'cl7',cat:'clothing',yi:'מאַנטל',ph:'mantl',he:'מעיל'},
+  {id:'cl8',cat:'clothing',yi:'גאַרטל',ph:'gartl',he:'חגורה'},
+  {id:'cl9',cat:'clothing',yi:'קאַפּעלוש',ph:'kapelush',he:'מגבעת',lv:2},
+  {id:'cl10',cat:'clothing',yi:'קיטל',ph:'kitl',he:'קיטל (חלוק לבן)',lv:2},
+];
+
+const categories = [
+  {id:'greetings',name:'ברכות',emoji:'👋'},
+  {id:'numbers',name:'מספרים',emoji:'🔢'},
+  {id:'family',name:'משפחה',emoji:'👨‍👩‍👧'},
+  {id:'food',name:'אוכל',emoji:'🍽️'},
+  {id:'feelings',name:'רגשות',emoji:'❤️'},
+  {id:'home',name:'בית',emoji:'🏠'},
+  {id:'colors',name:'צבעים',emoji:'🎨'},
+  {id:'time',name:'זמן',emoji:'⏰'},
+  {id:'verbs',name:'פעלים',emoji:'🏃'},
+  {id:'adjectives',name:'תארים',emoji:'📝'},
+  {id:'body',name:'גוף',emoji:'🧍'},
+  {id:'places',name:'מקומות',emoji:'🏙️'},
+  {id:'nature',name:'טבע',emoji:'🌿'},
+  {id:'everyday',name:'יומיומי',emoji:'💬'},
+  {id:'clothing',name:'בגדים',emoji:'👕'},
+];
+
+const dialogues = [
+  {id:'intro',title:'היכרות',emoji:'🤝',desc:'הכרה ראשונה',lines:[
+    {s:'A',yi:'וואָס מאַכסטו?',ph:'vos makhstu?',he:'מה שלומך?'},
+    {s:'B',yi:'גוט, אַ דאַנק. און איר?',ph:'gut, a dank. un ir?',he:'טוב, תודה. ואתה?'},
+    {s:'A',yi:'אויך גוט. ווי הייסטו?',ph:'oykh gut. vi heystu?',he:'גם טוב. מה שמך?'},
+    {s:'B',yi:'איך הייס מרים. פֿרייט מיך.',ph:'ikh heys Miriam. freyt mikh.',he:'שמי מרים. נעים להכיר.'},
+    {s:'A',yi:'פֿרייט מיך אויך. וואו וווינסטו?',ph:'freyt mikh oykh. vu voystu?',he:'נעים גם לי. איפה אתה גר?'},
+    {s:'B',yi:'איך וווין אין ירושלים.',ph:'ikh voyn in Yerusholayim.',he:'אני גר בירושלים.'},
+  ]},
+  {id:'market',title:'אינעם מאַרק',emoji:'🛒',desc:'קנייה בשוק',lines:[
+    {s:'A',yi:'וויפֿל קאָסט דאָס?',ph:'vifil kost dos?',he:'כמה זה עולה?'},
+    {s:'B',yi:'צוואַנציק שקל.',ph:'tsvantsik shekel.',he:'עשרים שקל.'},
+    {s:'A',yi:'צו טייַער! גיט מיר אַ ביסל אַרונטער.',ph:'tsu tayer! git mir a bisl arunter.',he:'יקר מדי! תוריד לי קצת.'},
+    {s:'B',yi:'אַ גוט. פֿופֿצן שקל.',ph:'a gut. fuftsn shekel.',he:'בסדר. חמישה עשר שקל.'},
+    {s:'A',yi:'דאָס איז גוט. אַ דאַנק.',ph:'dos iz gut. a dank.',he:'זה טוב. תודה.'},
+    {s:'B',yi:'ביטע. קום ווידער!',ph:'bite. kum vider!',he:'בבקשה. בוא שוב!'},
+  ]},
+  {id:'family',title:'משפחה',emoji:'👨‍👩‍👧',desc:'שיחה על המשפחה',lines:[
+    {s:'A',yi:'האָסטו קינדער?',ph:'hostu kinder?',he:'יש לך ילדים?'},
+    {s:'B',yi:'יאָ, איך האָב צוויי קינדער.',ph:'yo, ikh hob tsvey kinder.',he:'כן, יש לי שני ילדים.'},
+    {s:'A',yi:'ווי אַלט זיינען זיי?',ph:'vi alt zaynen zey?',he:'בני כמה הם?'},
+    {s:'B',yi:'איינע איז זעקס, דער אַנדערער — נייַן.',ph:'eyne iz zeks, der anderer — nayn.',he:'אחת בת שש, השני — תשע.'},
+    {s:'A',yi:'שיינע קינדער! וואו לערנען זיי?',ph:'sheyne kinder! vu lernen zey?',he:'ילדים יפים! איפה הם לומדים?'},
+    {s:'B',yi:'אין דער ייִדישער שול.',ph:'in der yidisher shul.',he:'בבית ספר היידישאי.'},
+  ]},
+  {id:'shabbos',title:'שבת',emoji:'🕯️',desc:'ברכות שבת',lines:[
+    {s:'A',yi:'אַ גוטן שבת!',ph:'a gutn shabes!',he:'שבת שלום!'},
+    {s:'B',yi:'אַ גוטן שבת! ווי גייט עס?',ph:'a gutn shabes! vi geyt es?',he:'שבת שלום! מה שלומך?'},
+    {s:'A',yi:'אַלץ גוט, אַ דאַנק. צו דיר אויך.',ph:'alts gut, a dank. tsu dir oykh.',he:'הכל טוב, תודה. גם לך.'},
+    {s:'B',yi:'וווּ עסט איר שבת?',ph:'vu est ir shabes?',he:'איפה אתם אוכלים שבת?'},
+    {s:'A',yi:'בייַ מייַן טאַטען אין הויז.',ph:'bay mayn taten in hoyz.',he:'אצל אבי בבית.'},
+    {s:'B',yi:'שיין! זייט מיר גוט קינדער.',ph:'sheyn! zayt mir gut kinder.',he:'יפה! תהיו לי ילדים טובים.'},
+  ]},
+  {id:'street',title:'אויפֿן גאַס',emoji:'🗺️',desc:'שאלת כיוון',lines:[
+    {s:'A',yi:'זייט מוחל, וווּ איז דאָ אַ פּאָסטאַמט?',ph:'zayt moykhl, vu iz do a postamt?',he:'סליחה, איפה יש פה בית דואר?'},
+    {s:'B',yi:'גייט גלייַך, נאַכאַנאַנד לינקס.',ph:'geyt glaykh, nokhanand links.',he:'לכו ישר, אחר כך שמאלה.'},
+    {s:'A',yi:'ווייַט פֿון דאַנען?',ph:'vayt fun danen?',he:'רחוק מכאן?'},
+    {s:'B',yi:'ניין, פֿינף מינוט צו פֿוס.',ph:'neyn, finf minut tsu fus.',he:'לא, חמש דקות ברגל.'},
+    {s:'A',yi:'אַ שיינעם דאַנק!',ph:'a sheynem dank!',he:'תודה רבה!'},
+    {s:'B',yi:'ניט אַ דאַנק. אַ גוטן טאָג.',ph:'nit a dank. a gutn tog.',he:'בבקשה. יום טוב.'},
+  ]},
+];
+
+const phrases = [
+  {yi:'אַ גוטן',ph:'a gutn',he:'יום טוב (קצר)',tag:'נימוסים'},
+  {yi:'זייט אַזוי גוט',ph:'zayt azoy gut',he:'היה כל כך טוב (בבקשה)',tag:'נימוסים'},
+  {yi:'עס איז גוט',ph:'es iz gut',he:'זה טוב',tag:'יומיומי'},
+  {yi:'עס איז ניט גוט',ph:'es iz nit gut',he:'זה לא טוב',tag:'יומיומי'},
+  {yi:'איך פֿאַרשטיי ניט',ph:'ikh farshtey nit',he:'אני לא מבין',tag:'תקשורת'},
+  {yi:'רעדט עפּעס לאַנגזאַמער',ph:'redt epes langzamer',he:'דברו קצת יותר לאט',tag:'תקשורת'},
+  {yi:'ווי זאָגט מען...?',ph:'vi zogt men...?',he:'איך אומרים...?',tag:'תקשורת'},
+  {yi:'וואָס הייסט דאָס?',ph:'vos heyst dos?',he:'מה זה אומר?',tag:'תקשורת'},
+  {yi:'איך ווייס ניט',ph:'ikh veys nit',he:'אני לא יודע',tag:'יומיומי'},
+  {yi:'יאָ, נאַטירלעך',ph:'yo, natirлikh',he:'כן, כמובן',tag:'יומיומי'},
+  {yi:'ממש ניין',ph:'mamesh neyn',he:'ממש לא',tag:'יומיומי'},
+  {yi:'אַ ביסל',ph:'a bisl',he:'קצת',tag:'יומיומי'},
+  {yi:'אַ סך',ph:'a sakh',he:'הרבה',tag:'יומיומי'},
+  {yi:'שיין!',ph:'sheyn!',he:'יפה! מצוין!',tag:'שבחים'},
+  {yi:'מאָדנע',ph:'modne',he:'מוזר',tag:'יומיומי'},
+  {yi:'נישקשה',ph:'nishkoshe',he:'לא נורא / בסדר',tag:'יומיומי'},
+  {yi:'מזל טובֿ',ph:'mazl tov',he:'מזל טוב',tag:'שמחות'},
+  {yi:'לחיים!',ph:'l\'khayim!',he:'לחיים!',tag:'שמחות'},
+  {yi:'אַ לאַנג לעבן',ph:'a lang lebn',he:'חיים ארוכים',tag:'ברכות'},
+  {yi:'זייַ מיר שטאַרק',ph:'zay mir shtark',he:'תהיה חזק',tag:'ברכות'},
+  {yi:'גוט שבת',ph:'gut shabes',he:'שבת שלום',tag:'שמחות'},
+  {yi:'גוט יום-טוב',ph:'gut yontef',he:'חג שמח',tag:'שמחות'},
+  {yi:'אַ כּשרן פּסח',ph:'a koshern peysekh',he:'פסח כשר',tag:'שמחות'},
+  {yi:'גיב אַ קוק!',ph:'gib a kuk!',he:'תסתכל!',tag:'ביטויים'},
+  {yi:'הייַנט ניט, מאָרגן',ph:'haynt nit, morgn',he:'היום לא, מחר',tag:'ביטויים'},
+  {yi:'אַלץ גוט',ph:'alts gut',he:'הכל טוב',tag:'יומיומי'},
+  {yi:'וואָג זיך!',ph:'vog zikh!',he:'שים לב לעצמך!',tag:'ביטויים'},
+  {yi:'כּוח',ph:'koyekh',he:'כוח / אנרגיה',tag:'יומיומי'},
+  {yi:'דאָס קומט',ph:'dos kumt',he:'זה מגיע',tag:'ביטויים'},
+  {yi:'אַ כּבֿוד',ph:'a koved',he:'כבוד',tag:'נימוסים'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const LV_UNLOCK = {1:0, 2:100, 3:500};
+const BADGE_DEFS = [
+  {id:'beginner',emoji:'🌱',name:'מתחיל',xp:0},
+  {id:'reader',emoji:'📖',name:'קורא',xp:100},
+  {id:'speaker',emoji:'🗣️',name:'מדבר',xp:500},
+  {id:'master',emoji:'🏆',name:'מייַסטער',xp:1000},
+  {id:'legend',emoji:'⭐',name:'אגדה',xp:3000},
+];
+const LEVELS = [
+  {name:'🌱 מתחיל',min:0},
+  {name:'📖 לומד',min:0.15},
+  {name:'🗣️ מדבר',min:0.35},
+  {name:'⭐ בקי',min:0.55},
+  {name:'🏆 מייַסטער',min:0.75},
+];
+const WEEKLY_THEMES = ['ברכות','מספרים','משפחה','אוכל','רגשות','פעלים','מקומות'];
+
+let stats = {words:0,correct:0,streak:0,total:0,lastVisit:'',mastered:[],xp:0,badges:[],
+  dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0};
+let wordProgress = {};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('yiddishStats');
+    if (s) stats = {...stats,...JSON.parse(s)};
+    const wp = localStorage.getItem('yiddishWordProgress');
+    if (wp) wordProgress = JSON.parse(wp);
+  } catch(e){}
+  updateStreak();
+}
+function saveStats() { localStorage.setItem('yiddishStats',JSON.stringify(stats)); }
+function saveWordProgress() { localStorage.setItem('yiddishWordProgress',JSON.stringify(wordProgress)); }
+
+function updateStreak() {
+  const today = new Date().toISOString().slice(0,10);
+  if (stats.lastVisit === today) return;
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if (stats.lastVisit === yesterday) { stats.streak++; }
+  else if (stats.lastVisit !== today) { stats.streak = 1; }
+  stats.lastVisit = today;
+  saveStats();
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (id === 'vocabScreen') {
+    showCategoryGrid();
+    renderWordOfDay();
+    renderDailyChallenge();
+  }
+}
+
+// ── CATEGORY GRID ─────────────────────────────────────────────────────────────
+function showCategoryGrid() {
+  document.getElementById('wordListView').classList.add('hidden');
+  document.getElementById('flashcardView').classList.add('hidden');
+  document.getElementById('quizView').classList.add('hidden');
+  document.getElementById('wotdBanner').classList.remove('hidden');
+  document.getElementById('dailyChallengeCard').classList.remove('hidden');
+  document.getElementById('dailyLessonCard').classList.remove('hidden');
+  document.getElementById('catSectionLabel').classList.remove('hidden');
+  document.getElementById('categoryGrid').classList.remove('hidden');
+  renderCategoryGrid();
+}
+
+function getMastered() {
+  return Object.keys(wordProgress).filter(id => (wordProgress[id]||{}).mastered);
+}
+function masteredCount() { return getMastered().length; }
+
+function getUnlockLevel() {
+  if (stats.xp >= LV_UNLOCK[3]) return 3;
+  if (stats.xp >= LV_UNLOCK[2]) return 2;
+  return 1;
+}
+
+function checkUnlock() {
+  const newLv = getUnlockLevel();
+  const prev = stats.unlockLv || 1;
+  if (newLv > prev) {
+    stats.unlockLv = newLv;
+    showToast('🔓 רמה ' + newLv + ' נפתחה! מילים חדשות זמינות!');
+    saveStats();
+    renderCategoryGrid();
+  }
+}
+
+function renderCategoryGrid() {
+  const grid = document.getElementById('categoryGrid');
+  const mastered = getMastered();
+  const unlockedLv = getUnlockLevel();
+
+  grid.innerHTML = categories.map(cat => {
+    const words = vocabulary.filter(w => w.cat === cat.id);
+    const unlocked = words.filter(w => (w.lv||1) <= unlockedLv);
+    const catMastered = words.filter(w => mastered.includes(w.id)).length;
+    const pct = unlocked.length ? Math.round(catMastered/unlocked.length*100) : 0;
+    const lockedCount = words.length - unlocked.length;
+    const countLabel = lockedCount > 0
+      ? `${catMastered}/${unlocked.length} <span style="color:#9ca3af;font-size:10px">(+${lockedCount}🔒)</span>`
+      : `${catMastered}/${unlocked.length} מילים`;
+    return `<div class="cat-card" onclick="openCategory('${cat.id}')">
+      <div class="cat-emoji">${cat.emoji}</div>
+      <div class="cat-name">${cat.name}</div>
+      <div class="cat-count">${countLabel}</div>
+      <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── WORD LIST ─────────────────────────────────────────────────────────────────
+let currentCat = '';
+let currentWords = [];
+
+function openCategory(catId) {
+  currentCat = catId;
+  currentWords = vocabulary.filter(w => w.cat === catId);
+  const cat = categories.find(c => c.id === catId);
+
+  document.getElementById('wotdBanner').classList.add('hidden');
+  document.getElementById('dailyChallengeCard').classList.add('hidden');
+  document.getElementById('dailyLessonCard').classList.add('hidden');
+  document.getElementById('catSectionLabel').classList.add('hidden');
+  document.getElementById('categoryGrid').classList.add('hidden');
+  document.getElementById('wordListView').classList.remove('hidden');
+
+  document.getElementById('wListTitle').textContent = cat.emoji+' '+cat.name;
+  renderWordList();
+}
+
+function renderWordList() {
+  const mastered = getMastered();
+  const unlockedLv = getUnlockLevel();
+  document.getElementById('wordList').innerHTML = currentWords.map(w => {
+    const wordLv = w.lv || 1;
+    const isLocked = wordLv > unlockedLv;
+    if (isLocked) {
+      return `<div class="word-item" style="opacity:0.45;cursor:default" onclick="showToast('🔒 צריך ${LV_UNLOCK[wordLv]} XP לפתיחה!')">
+        <div class="word-mastered" style="background:var(--border)"></div>
+        <div style="flex:1">
+          <div class="word-yi">${w.yi}</div>
+          <div class="word-ph" style="color:#f59e0b;font-size:11px">🔒 ${LV_UNLOCK[wordLv]} XP נדרש</div>
+        </div>
+        <div class="word-he" style="color:var(--muted)">${w.he}</div>
+      </div>`;
+    }
+    const isMastered = mastered.includes(w.id);
+    return `<div class="word-item" onclick="speakYiddish('${w.ph.replace(/'/g,"\\'")}')">
+      <div class="word-mastered" style="background:${isMastered?'var(--success)':'var(--border)'}"></div>
+      <div style="flex:1">
+        <div class="word-yi">${w.yi}</div>
+        <div class="word-ph">${w.ph}</div>
+      </div>
+      <div class="word-he">${w.he}</div>
+      <button class="word-speak" onclick="event.stopPropagation();speakYiddish('${w.ph.replace(/'/g,"\\'")}')">🔊</button>
+    </div>`;
+  }).join('');
+}
+
+// ── TTS ───────────────────────────────────────────────────────────────────────
+function speakYiddish(text) {
+  if (!text) return;
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeTTS) {
+    window.Capacitor.Plugins.NativeTTS.speak({text, rate: 0.7, lang: 'de'}).catch(()=>speakWeb(text));
+  } else {
+    speakWeb(text, 'de');
+  }
+}
+
+function speakWeb(text, lang) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang || 'de';
+  utt.rate = 0.7;
+  const voices = speechSynthesis.getVoices();
+  const deVoice = voices.find(v => v.lang.startsWith('de'));
+  if (deVoice) utt.voice = deVoice;
+  speechSynthesis.speak(utt);
+}
+
+function speakCurrent() {
+  if (fcWords[fcIndex]) speakYiddish(fcWords[fcIndex].ph);
+}
+
+// ── FLASHCARDS ────────────────────────────────────────────────────────────────
+let fcWords = [];
+let fcIndex = 0;
+let fcFlipped = false;
+
+function startFlashcards() {
+  const unlockedLv = getUnlockLevel();
+  fcWords = currentWords.filter(w => (w.lv||1) <= unlockedLv);
+  if (fcWords.length === 0) {
+    showToast('אין מילים פתוחות בקטגוריה זו');
+    return;
+  }
+  fcIndex = 0; fcFlipped = false;
+  document.getElementById('wordListView').classList.add('hidden');
+  document.getElementById('flashcardView').classList.remove('hidden');
+  renderFlashcard();
+}
+
+function exitFlashcards() {
+  document.getElementById('flashcardView').classList.add('hidden');
+  document.getElementById('wordListView').classList.remove('hidden');
+}
+
+function renderFlashcard() {
+  const w = fcWords[fcIndex];
+  if (!w) return;
+  document.getElementById('fcYi').textContent = w.yi;
+  document.getElementById('fcPh').textContent = w.ph;
+  document.getElementById('fcHe').textContent = w.he;
+  document.getElementById('fcHe').style.display = fcFlipped ? 'block' : 'none';
+  document.getElementById('fcHint').style.display = fcFlipped ? 'none' : 'block';
+  document.getElementById('fcCounter').textContent = (fcIndex+1)+'/'+fcWords.length;
+}
+
+function flipCard() { fcFlipped = !fcFlipped; renderFlashcard(); speakYiddish(fcWords[fcIndex].ph); }
+function nextCard() { if (fcIndex < fcWords.length-1) { fcIndex++; fcFlipped = false; renderFlashcard(); } }
+function prevCard() { if (fcIndex > 0) { fcIndex--; fcFlipped = false; renderFlashcard(); } }
+
+// ── QUIZ ──────────────────────────────────────────────────────────────────────
+let quizWords = [];
+let quizIndex = 0;
+let quizCorrect = 0;
+let quizAnswer = '';
+let typingMode = false;
+let listeningMode = false;
+let quizAllWords = false;
+
+function startQuiz(all) {
+  quizAllWords = all;
+  const unlockedLv = getUnlockLevel();
+  const pool = (all ? [...vocabulary] : [...currentWords]).filter(w => (w.lv||1) <= unlockedLv);
+  if (pool.length < 2) {
+    showToast('אין מספיק מילים פתוחות — למד עוד!');
+    return;
+  }
+  quizWords = pool.sort(() => Math.random()-0.5).slice(0,15);
+  quizIndex = 0; quizCorrect = 0;
+  document.getElementById('wordListView').classList.add('hidden');
+  document.getElementById('flashcardView').classList.add('hidden');
+  document.getElementById('quizView').classList.remove('hidden');
+  document.getElementById('wotdBanner').classList.add('hidden');
+  document.getElementById('dailyChallengeCard').classList.add('hidden');
+  document.getElementById('dailyLessonCard').classList.add('hidden');
+  document.getElementById('catSectionLabel').classList.add('hidden');
+  document.getElementById('categoryGrid').classList.add('hidden');
+  document.getElementById('quizResult').classList.add('hidden');
+  nextQuizQ();
+}
+
+function exitQuiz() {
+  document.getElementById('quizView').classList.add('hidden');
+  showCategoryGrid();
+}
+
+function nextQuizQ() {
+  if (quizIndex >= quizWords.length) { showQuizResult(); return; }
+  const w = quizWords[quizIndex];
+  document.getElementById('quizProgressFill').style.width = (quizIndex/quizWords.length*100)+'%';
+  document.getElementById('quizScore').textContent = quizCorrect+'/'+quizIndex;
+
+  const types = ['phToHe','yiToHe','heToPh'];
+  const type = types[Math.floor(Math.random()*types.length)];
+
+  let q='', sub='', optionsFn, answerFn;
+  if (listeningMode) {
+    q = '🔊 מה המשמעות?'; sub = 'הקשב'; answerFn = o => o.he; quizAnswer = w.he;
+    setTimeout(() => speakYiddish(w.ph), 400);
+    optionsFn = o => o.he;
+  } else if (type === 'phToHe') {
+    q = w.ph; sub = 'מה המשמעות בעברית?'; quizAnswer = w.he; optionsFn = o => o.he;
+  } else if (type === 'yiToHe') {
+    q = w.yi; sub = 'מה המשמעות בעברית?'; quizAnswer = w.he; optionsFn = o => o.he;
+  } else {
+    q = w.he; sub = 'מה ההגייה ביידיש?'; quizAnswer = w.ph; optionsFn = o => o.ph;
+  }
+
+  document.getElementById('quizQ').textContent = q;
+  document.getElementById('quizSub').textContent = sub;
+
+  const pool = vocabulary.filter(x => x.id !== w.id).sort(() => Math.random()-0.5).slice(0,3);
+  const opts = [w, ...pool].sort(() => Math.random()-0.5);
+
+  const optsEl = document.getElementById('quizOpts');
+  const inputWrap = document.getElementById('typingInputWrap');
+
+  if (typingMode) {
+    optsEl.innerHTML = '';
+    inputWrap.style.display = 'flex';
+    document.getElementById('typingInput').value = '';
+    document.getElementById('typingInput').focus();
+  } else {
+    inputWrap.style.display = 'none';
+    optsEl.innerHTML = opts.map(o =>
+      `<button class="opt-btn" onclick="checkAnswer(this,'${optionsFn(o).replace(/'/g,"\\'")}','${quizAnswer.replace(/'/g,"\\'")}')">
+        ${optionsFn(o)}
+      </button>`
+    ).join('');
+  }
+}
+
+function submitTyping() {
+  const val = document.getElementById('typingInput').value.trim();
+  checkAnswer(null, val, quizAnswer);
+}
+
+function checkAnswer(btn, answer, correct) {
+  const isCorrect = answer.toLowerCase().trim() === correct.toLowerCase().trim();
+  const optsEl = document.getElementById('quizOpts');
+  document.querySelectorAll('#quizOpts .opt-btn').forEach(b => b.disabled = true);
+
+  if (isCorrect) {
+    if (btn) btn.classList.add('correct');
+    quizCorrect++;
+    stats.xp += 10;
+    updateDailyChallenge();
+    markWordProgress(quizWords[quizIndex].id, true);
+    showToast('+10 XP ✓');
+  } else {
+    if (btn) btn.classList.add('wrong');
+    // highlight correct
+    document.querySelectorAll('#quizOpts .opt-btn').forEach(b => {
+      if (b.textContent.trim() === correct) b.classList.add('correct');
+    });
+    markWordProgress(quizWords[quizIndex].id, false);
+    showToast('✗ התשובה: '+correct);
+  }
+
+  checkBadges();
+  checkUnlock();
+  saveStats();
+  quizIndex++;
+  setTimeout(nextQuizQ, 1200);
+}
+
+function markWordProgress(id, correct) {
+  if (!wordProgress[id]) wordProgress[id] = {correct:0,wrong:0,interval:1,nextReview:0,mastered:false};
+  const p = wordProgress[id];
+  if (correct) {
+    p.correct++;
+    p.interval = Math.min(p.interval*2, 43200);
+    p.nextReview = Date.now() + p.interval*60000;
+    if (p.correct >= 5) p.mastered = true;
+  } else {
+    p.wrong++;
+    p.interval = 1;
+    p.nextReview = Date.now() + 60000;
+  }
+  saveWordProgress();
+}
+
+function showQuizResult() {
+  const pct = Math.round(quizCorrect/quizWords.length*100);
+  document.getElementById('quizResult').classList.remove('hidden');
+  document.getElementById('quizOpts').innerHTML = '';
+  document.getElementById('typingInputWrap').style.display = 'none';
+  document.getElementById('resultEmoji').textContent = pct >= 80 ? '🌟' : pct >= 60 ? '👍' : '💪';
+  document.getElementById('resultTitle').textContent = quizCorrect+'/'+quizWords.length+' נכונות';
+  document.getElementById('resultMsg').textContent = pct >= 80 ? 'מצוין! המשך כך!' : pct >= 60 ? 'יפה! תמשיך להתאמן!' : 'אל תוותר! תתרגל שוב!';
+}
+
+function toggleTypingMode(btn) {
+  typingMode = !typingMode; listeningMode = false;
+  btn.classList.toggle('active', typingMode);
+  document.getElementById('listeningModeBtn').classList.remove('active');
+}
+
+function toggleListeningMode(btn) {
+  listeningMode = !listeningMode; typingMode = false;
+  btn.classList.toggle('active', listeningMode);
+  document.getElementById('typingModeBtn').classList.remove('active');
+}
+
+function startSpeechQuiz() {
+  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+    showToast('זיהוי דיבור אינו נתמך במכשיר זה');
+    return;
+  }
+  const w = quizWords[quizIndex];
+  speakYiddish(w.ph);
+  showToast('🎤 אמור: '+w.ph);
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = 'de-DE';
+  rec.onresult = e => {
+    const said = e.results[0][0].transcript.toLowerCase().trim();
+    const expected = w.ph.toLowerCase().replace(/[^a-zא-ת\s]/g,'');
+    const ok = said.includes(expected.split(' ')[0]) || levenshtein(said, expected) <= 3;
+    if (ok) {
+      const matchBtn = document.querySelector('#quizOpts .opt-btn');
+      checkAnswer(matchBtn, quizAnswer, quizAnswer);
+    } else {
+      checkAnswer(null, '', quizAnswer);
+    }
+  };
+  rec.onerror = () => checkAnswer(null, '', quizAnswer);
+  rec.start();
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => i===0?j:j===0?i:0));
+  for (let i=1;i<=m;i++) for (let j=1;j<=n;j++)
+    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+// ── DAILY CHALLENGE ───────────────────────────────────────────────────────────
+function updateDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  if (stats.dailyChallenge.date !== today) {
+    stats.dailyChallenge = {date:today, correct:0, completed:false};
+  }
+  if (!stats.dailyChallenge.completed) {
+    stats.dailyChallenge.correct = Math.min(stats.dailyChallenge.correct+1, 10);
+    if (stats.dailyChallenge.correct >= 10) {
+      stats.dailyChallenge.completed = true;
+      stats.xp += 50;
+      showToast('🎉 אתגר יומי הושלם! +50 XP');
+    }
+  }
+  renderDailyChallenge();
+}
+
+function renderDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  if (stats.dailyChallenge.date !== today) {
+    stats.dailyChallenge = {date:today, correct:0, completed:false};
+  }
+  const dc = stats.dailyChallenge;
+  document.getElementById('dcText').textContent = dc.correct+'/10 תשובות נכונות';
+  document.getElementById('dcBarFill').style.width = (dc.correct/10*100)+'%';
+}
+
+// ── WORD OF DAY ───────────────────────────────────────────────────────────────
+function renderWordOfDay() {
+  const idx = Math.floor(Date.now()/86400000) % vocabulary.length;
+  const w = vocabulary[idx];
+  document.getElementById('wotdYi').textContent = w.yi;
+  document.getElementById('wotdPh').textContent = w.ph;
+  document.getElementById('wotdHe').textContent = w.he;
+  document.getElementById('wotdBanner').onclick = () => speakYiddish(w.ph);
+}
+
+// ── DAILY LESSON ──────────────────────────────────────────────────────────────
+let lessonDeck = [];
+let lessonPos = 0;
+
+function startDailyLesson() {
+  const mastered = getMastered();
+  const unlockedLv = getUnlockLevel();
+  const unseen = vocabulary.filter(w => !mastered.includes(w.id) && (w.lv||1) <= unlockedLv);
+  if (unseen.length === 0) {
+    showToast('למדת את כל המילים! 🎉');
+    return;
+  }
+  lessonDeck = unseen.sort(() => Math.random()-0.5).slice(0,5);
+  lessonPos = 0;
+  showLessonCard();
+  document.getElementById('lessonOverlay').classList.add('open');
+}
+
+function showLessonCard() {
+  if (lessonPos >= lessonDeck.length) { closeDailyLesson(); showToast('השיעור הסתיים! 🎓'); return; }
+  const w = lessonDeck[lessonPos];
+  document.getElementById('lessonCounter').textContent = (lessonPos+1)+'/'+lessonDeck.length;
+  document.getElementById('lessonYi').textContent = w.yi;
+  document.getElementById('lessonPh').textContent = w.ph;
+  document.getElementById('lessonHe').textContent = w.he;
+  document.getElementById('lessonBtn').textContent = lessonPos < lessonDeck.length-1 ? 'הבא →' : 'סיום ✓';
+  setTimeout(() => speakYiddish(w.ph), 500);
+}
+
+function lessonNext() {
+  markWordProgress(lessonDeck[lessonPos].id, true);
+  stats.xp += 5;
+  checkBadges();
+  checkUnlock();
+  saveStats();
+  lessonPos++;
+  showLessonCard();
+}
+
+function closeDailyLesson() {
+  document.getElementById('lessonOverlay').classList.remove('open');
+}
+
+// ── BADGES ────────────────────────────────────────────────────────────────────
+function checkBadges() {
+  document.getElementById('xpBadge').textContent = stats.xp+' XP';
+  BADGE_DEFS.forEach(b => {
+    if (stats.xp >= b.xp && !stats.badges.includes(b.id)) {
+      stats.badges.push(b.id);
+      showToast(b.emoji+' עיטור חדש: '+b.name+'!');
+    }
+  });
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const mastered = masteredCount();
+  const total = vocabulary.length;
+  const pct = total ? mastered/total : 0;
+  const level = [...LEVELS].reverse().find(l => pct >= l.min) || LEVELS[0];
+
+  document.getElementById('statsLevel').textContent = level.name;
+  document.getElementById('levelBarFill').style.width = (pct*100)+'%';
+  document.getElementById('levelLabel').textContent = mastered+'/'+total+' מילים נרכשו';
+  document.getElementById('statWords').textContent = stats.xp;
+  document.getElementById('statStreak').textContent = stats.streak;
+  document.getElementById('statMastered').textContent = mastered;
+
+  // Badges
+  const bs = document.getElementById('badgesSection');
+  bs.innerHTML = BADGE_DEFS.map(b =>
+    `<div class="badge-chip ${stats.badges.includes(b.id)?'earned':''}">
+      ${b.emoji} ${b.name}${stats.badges.includes(b.id)?'':' 🔒'}
+    </div>`
+  ).join('');
+
+  // Weekly plan
+  const days = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+  const today = new Date().getDay();
+  const wp = document.getElementById('weeklyPlan');
+  wp.innerHTML = days.map((d,i) =>
+    `<div class="day-pill ${i===today?'today':''}">
+      <div class="day-name">${d}</div>
+      <div class="day-theme" style="font-size:9px">${WEEKLY_THEMES[i]}</div>
+    </div>`
+  ).join('');
+}
+
+// ── CONVERSATIONS ─────────────────────────────────────────────────────────────
+function renderConversations() {
+  document.getElementById('dialoguesList').innerHTML = dialogues.map(d => `
+    <div class="dialogue-card">
+      <div class="dialogue-header" onclick="toggleDialogue('${d.id}')">
+        <div class="dialogue-emoji">${d.emoji}</div>
+        <div class="dialogue-title">${d.title}</div>
+        <div class="dialogue-desc">${d.desc}</div>
+      </div>
+      <div class="dialogue-body" id="dlBody_${d.id}" style="display:none">
+        ${d.lines.map((l,i) => `
+          <div class="dialogue-line" id="dlLine_${d.id}_${i}">
+            <div class="dl-speaker">${l.s}</div>
+            <div class="dl-content">
+              <div class="dl-yi">${l.yi}</div>
+              <div class="dl-ph">${l.ph}</div>
+              <div class="dl-he">${l.he}</div>
+            </div>
+            <button class="dl-speak" onclick="speakYiddish('${l.ph.replace(/'/g,"\\'")}')">🔊</button>
+          </div>`).join('')}
+        <button class="karaoke-btn" onclick="startKaraoke('${d.id}',event)">▶ קריוקי — שמע הכל</button>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('phrasesList').innerHTML = phrases.map(p => `
+    <div class="phrase-item">
+      <span class="phrase-tag">${p.tag}</span>
+      <button class="phrase-speak" onclick="speakYiddish('${p.ph.replace(/'/g,"\\'")}')">🔊</button>
+      <div class="phrase-yi">${p.yi}</div>
+      <div class="phrase-ph">${p.ph}</div>
+      <div class="phrase-he">${p.he}</div>
+    </div>
+  `).join('');
+}
+
+function toggleDialogue(id) {
+  const body = document.getElementById('dlBody_'+id);
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+let karaokeTimer = null;
+function startKaraoke(dialogueId, e) {
+  if (karaokeTimer) clearTimeout(karaokeTimer);
+  const d = dialogues.find(x => x.id === dialogueId);
+  if (!d) return;
+  const body = document.getElementById('dlBody_'+dialogueId);
+  body.style.display = 'block';
+
+  let i = 0;
+  function playLine() {
+    if (i >= d.lines.length) return;
+    document.querySelectorAll('[id^="dlLine_'+dialogueId+'_"]').forEach(el => el.classList.remove('karaoke-line'));
+    const lineEl = document.getElementById('dlLine_'+dialogueId+'_'+i);
+    if (lineEl) lineEl.classList.add('karaoke-line');
+    speakYiddish(d.lines[i].ph);
+    i++;
+    karaokeTimer = setTimeout(playLine, 2500);
+  }
+  playLine();
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
+function exportProgress() {
+  const data = JSON.stringify({stats, wordProgress}, null, 2);
+  if (navigator.share) {
+    navigator.share({title:'גיבוי יידיש', text:data}).catch(()=>showExportModal(data));
+  } else {
+    showExportModal(data);
+  }
+}
+
+function showExportModal(data) {
+  document.getElementById('modalTitle').textContent = '📤 ייצוא — העתק את הנתונים';
+  const ta = document.getElementById('modalTextarea');
+  ta.value = data;
+  ta.removeAttribute('readonly');
+  ta.readOnly = true;
+  document.getElementById('modalBtns').innerHTML = `
+    <button class="modal-btn primary" onclick="copyToClipboard()">📋 העתק</button>
+    <button class="modal-btn secondary" onclick="closeModal()">סגור</button>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function copyToClipboard() {
+  const ta = document.getElementById('modalTextarea');
+  ta.select();
+  document.execCommand('copy');
+  showToast('הועתק ✓');
+}
+
+function showImportModal() {
+  document.getElementById('modalTitle').textContent = '📥 יבוא — הדבק נתונים';
+  const ta = document.getElementById('modalTextarea');
+  ta.value = '';
+  ta.readOnly = false;
+  ta.placeholder = 'הדבק כאן את הנתונים המיוצאים...';
+  document.getElementById('modalBtns').innerHTML = `
+    <button class="modal-btn primary" onclick="importProgress()">יבא</button>
+    <button class="modal-btn secondary" onclick="closeModal()">ביטול</button>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function importProgress() {
+  try {
+    const data = JSON.parse(document.getElementById('modalTextarea').value);
+    if (data.stats) stats = {...stats, ...data.stats};
+    if (data.wordProgress) wordProgress = {...wordProgress, ...data.wordProgress};
+    saveStats(); saveWordProgress();
+    closeModal();
+    showToast('הנתונים יובאו בהצלחה ✓');
+    renderCategoryGrid();
+  } catch(e) {
+    showToast('שגיאה: נתונים לא תקינים');
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+async function scheduleNotification() {
+  try {
+    if (!window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.LocalNotifications) return;
+    const {LocalNotifications} = window.Capacitor.Plugins;
+    const perm = await LocalNotifications.requestPermissions();
+    if (perm.display !== 'granted') return;
+    const today = new Date().toISOString().slice(0,10);
+    const wotd = vocabulary[Math.floor(Date.now()/86400000) % vocabulary.length];
+    const tomorrow = new Date(Date.now()+86400000);
+    tomorrow.setHours(9,0,0,0);
+    await LocalNotifications.schedule({notifications:[{
+      title:'יידיש לומדן — מילת היום',
+      body:'מילת היום: '+wotd.yi+' ('+wotd.ph+') = '+wotd.he,
+      id: 1,
+      schedule: {at: tomorrow},
+    }]});
+  } catch(e){}
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadState();
+renderCategoryGrid();
+renderWordOfDay();
+renderDailyChallenge();
+renderConversations();
+checkBadges();
+scheduleNotification();
+
+// Load voices async
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+</script>
+</body>
+</html>

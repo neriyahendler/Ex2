@@ -1,0 +1,18 @@
+{
+  "name": "arabic-learning",
+  "version": "1.0.0",
+  "description": "אפליקציה ללימוד ערבית מדוברת",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build needed - static files'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/local-notifications": "^6.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

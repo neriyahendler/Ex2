@@ -1,0 +1,2724 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>ערבית מדוברת</title>
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #4c1d95;
+      --primary-light: #ede9fe;
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --bg: #f5f3ff;
+      --card-bg: #ffffff;
+      --text: #1e1b4b;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --error: #ef4444;
+      --shadow: 0 2px 12px rgba(124,58,237,0.08);
+      --shadow-card: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+      padding-bottom: 72px;
+    }
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1e0a4e 0%, #4c1d95 55%, #7c3aed 100%);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 24px rgba(124,58,237,0.35);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      width: 46px; height: 46px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-title { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.3px; }
+    .logo-sub { font-size: 0.68rem; opacity: 0.7; margin-top: 1px; }
+    .streak-badge {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      cursor: default;
+    }
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 6px 0 8px;
+      box-shadow: 0 -2px 20px rgba(0,0,0,0.08);
+      z-index: 100;
+      border-top: 1px solid #f0f0f0;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 6px 14px; border-radius: 14px; cursor: pointer;
+      transition: all 0.18s; color: #9ca3af; min-width: 56px;
+    }
+    .nav-item.active { color: var(--primary); background: var(--primary-light); }
+    .nav-icon { font-size: 1.35rem; line-height: 1; }
+    .nav-label { font-size: 0.6rem; font-weight: 700; }
+    /* ── SCREENS ── */
+    .screen { display: none; padding: 16px; animation: fadeUp 0.22s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shakeX {
+      0%,100% { transform: translateX(0); }
+      25%     { transform: translateX(-6px); }
+      75%     { transform: translateX(6px); }
+    }
+    /* ── CATEGORY GRID ── */
+    .screen-title {
+      font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+    }
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .category-card {
+      border-radius: 22px;
+      padding: 22px 14px 16px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .category-card::after {
+      content: '';
+      position: absolute;
+      top: -24px; left: -24px;
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+    }
+    .category-card:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .category-card .emoji { font-size: 2.4rem; display: block; margin-bottom: 10px; position: relative; z-index:1; }
+    .category-card .name { font-size: 0.92rem; font-weight: 800; color: white; position: relative; z-index:1; }
+    .category-card .count { font-size: 0.7rem; color: rgba(255,255,255,0.82); margin-top: 4px; position: relative; z-index:1; }
+    .cat-locked { font-size: 0.65rem; color: rgba(255,255,255,0.65); margin-top: 2px; position: relative; z-index:1; }
+    .cat-progress { height: 5px; background: rgba(255,255,255,0.25); border-radius: 6px; margin-top: 10px; overflow: hidden; position: relative; z-index:1; }
+    .cat-progress-fill { height: 100%; background: white; border-radius: 6px; transition: width 0.5s ease; }
+    /* ── WORD LIST ── */
+    .section-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .back-btn {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .section-title { font-size: 1.05rem; font-weight: 800; }
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      outline: none;
+      direction: rtl;
+      background: white;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+    .results-summary { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; }
+    .word-card {
+      background: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: all 0.15s;
+      border-right: 4px solid var(--primary);
+    }
+    .word-card:active { background: #faf5ff; }
+    .word-arabic { display: none; }
+    .word-phonetic { font-size: 1.45rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .word-hebrew { font-size: 0.88rem; color: var(--text-muted); }
+    .word-detail {
+      display: none; margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .word-card.expanded .word-detail { display: block; }
+    .word-example { font-size: 0.85rem; color: var(--text); margin-top: 6px; }
+    .word-example .ar { display: none; }
+    .word-example .ph { color: var(--accent); font-size: 0.85rem; }
+    .word-example .he { color: var(--text-muted); font-size: 0.82rem; }
+    .word-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+    .word-card-content { flex: 1; min-width: 0; }
+    .mastery-stars { font-size: 0.72rem; margin-top: 4px; letter-spacing: 1px; }
+    .locked-notice {
+      text-align: center; padding: 18px 12px; margin-top: 10px;
+      border: 2px dashed var(--border); border-radius: 16px;
+      color: var(--text-muted); font-size: 0.85rem; background: white;
+    }
+    /* ── SPEAKER ── */
+    .speak-btn {
+      background: none; border: none; font-size: 1.3rem; cursor: pointer;
+      padding: 6px 8px; border-radius: 10px; flex-shrink: 0; opacity: 0.65;
+      transition: all 0.15s;
+    }
+    .speak-btn:active { background: var(--primary-light); opacity: 1; transform: scale(1.15); }
+    /* ── FLASHCARD ── */
+    .flashcard-container {
+      display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 4px;
+    }
+    .progress-bar-wrap {
+      width: 100%; background: var(--border); border-radius: 8px; height: 8px; overflow: hidden;
+    }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s; border-radius: 8px; }
+    .progress-text { font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 4px; }
+    .fc-select-row { display: flex; gap: 8px; width: 100%; max-width: 420px; flex-wrap: wrap; }
+    .fc-category-btn {
+      flex: 1; min-width: calc(50% - 4px);
+      padding: 10px; background: white; border: 2px solid var(--border);
+      border-radius: 12px; font-size: 0.82rem; cursor: pointer; text-align: center; font-weight: 600;
+      transition: all 0.15s;
+    }
+    .fc-category-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    .flashcard {
+      width: 100%; max-width: 400px; min-height: 280px;
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 10px 50px rgba(124,58,237,0.2);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 36px 28px 28px;
+      cursor: pointer;
+      transition: transform 0.15s;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .flashcard::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+    .flashcard:active { transform: scale(0.97); }
+    .flashcard .hint { font-size: 0.72rem; color: var(--text-muted); position: absolute; bottom: 14px; }
+    .flashcard .fc-arabic { display: none; }
+    .flashcard .fc-phonetic {
+      font-size: 2.1rem; font-weight: 800; color: var(--text); margin-bottom: 12px; line-height: 1.3;
+    }
+    .flashcard .fc-hebrew {
+      font-size: 1.25rem; color: var(--text-muted); display: none;
+      background: var(--primary-light); border-radius: 12px; padding: 8px 20px;
+    }
+    .flashcard.flipped .fc-hebrew { display: block; }
+    .flashcard .fc-category {
+      font-size: 0.72rem; color: var(--text-muted); margin-bottom: 16px;
+      background: var(--bg); border-radius: 8px; padding: 3px 10px;
+    }
+    .card-actions { display: flex; gap: 12px; width: 100%; max-width: 400px; }
+    /* ── BUTTONS ── */
+    .btn {
+      flex: 1; padding: 15px; border: none; border-radius: 16px;
+      font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.15s;
+    }
+    .btn:active { transform: scale(0.97); opacity: 0.9; }
+    .btn-wrong { background: #fef2f2; color: #dc2626; border: 2px solid #fecaca; }
+    .btn-right { background: #ecfdf5; color: #059669; border: 2px solid #a7f3d0; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), #9333ea); color: white; box-shadow: 0 4px 15px rgba(124,58,237,0.35); }
+    .btn-accent { background: linear-gradient(135deg, var(--accent), #d97706); color: white; box-shadow: 0 4px 15px rgba(245,158,11,0.35); }
+    /* ── QUIZ ── */
+    .quiz-level-live {
+      text-align: center; margin-bottom: 12px; padding: 10px 16px;
+      background: white; border-radius: 14px; box-shadow: var(--shadow);
+      font-size: 0.85rem; color: var(--text-muted);
+    }
+    .quiz-level-live strong { color: var(--primary); font-size: 1rem; }
+    .quiz-score {
+      text-align: center; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 14px;
+      font-weight: 600;
+    }
+    .quiz-score span { font-weight: 800; color: var(--primary); font-size: 1.15rem; }
+    .quiz-card {
+      background: white;
+      border-radius: 24px;
+      padding: 28px 22px 22px;
+      box-shadow: var(--shadow-card);
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .quiz-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+    .quiz-question { font-size: 2rem; font-weight: 800; color: var(--text); direction: rtl; margin-bottom: 8px; line-height: 1.2; }
+    .quiz-sub { font-size: 1rem; color: var(--accent); margin-bottom: 6px; font-weight: 600; }
+    .quiz-hint { font-size: 0.8rem; color: var(--text-muted); }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .quiz-option {
+      background: white;
+      border: 2.5px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .quiz-option:active:not([disabled]) { transform: scale(0.96); border-color: var(--primary); background: var(--primary-light); }
+    .quiz-option.correct { background: #ecfdf5; border-color: #10b981; color: #065f46; animation: popIn 0.4s ease; }
+    .quiz-option.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; animation: shakeX 0.4s ease; }
+    /* Quiz result overlay */
+    .quiz-result-overlay {
+      position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      z-index: 500; pointer-events: none;
+    }
+    .quiz-result-icon {
+      font-size: 6rem; animation: resultPop 0.6s cubic-bezier(.22,.68,0,1.4) forwards;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.25));
+    }
+    @keyframes resultPop {
+      0%   { opacity: 0; transform: scale(0.3) rotate(-15deg); }
+      60%  { opacity: 1; transform: scale(1.2) rotate(5deg); }
+      80%  { transform: scale(0.95) rotate(-2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    @keyframes resultFade {
+      0%   { opacity: 1; }
+      70%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* Floating score pop */
+    .score-float {
+      position: fixed; pointer-events: none; z-index: 600;
+      font-size: 1.8rem; font-weight: 900;
+      animation: floatUp 0.9s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+    }
+    /* Confetti dots */
+    .confetti-dot {
+      position: fixed; width: 9px; height: 9px; border-radius: 2px;
+      pointer-events: none; z-index: 590;
+      animation: confettiBurst 0.8s ease-out forwards;
+    }
+    @keyframes confettiBurst {
+      0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--dx),var(--dy)) rotate(540deg) scale(0.5); }
+    }
+    /* Score number bounce */
+    @keyframes scoreBounce {
+      0%,100% { transform: scale(1); }
+      50%     { transform: scale(1.5); color: #10b981; }
+    }
+    .score-bounce { animation: scoreBounce 0.4s ease; }
+    /* ── PHRASES ── */
+    .phrase-card {
+      background: white; border-radius: 18px; padding: 16px 18px;
+      margin-bottom: 10px; box-shadow: var(--shadow);
+      border-right: 4px solid var(--accent);
+    }
+    .phrase-arabic { display: none; }
+    .phrase-phonetic { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+    .phrase-hebrew { font-size: 0.88rem; color: var(--text-muted); margin-top: 4px; }
+    .phrase-tag {
+      display: inline-block;
+      background: var(--accent-light);
+      color: #92400e;
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    /* ── STATS ── */
+    .level-card {
+      background: linear-gradient(135deg, #1e0a4e, #7c3aed);
+      border-radius: 24px; padding: 24px 20px; color: white;
+      text-align: center; margin-bottom: 16px;
+      box-shadow: 0 8px 30px rgba(124,58,237,0.35);
+      position: relative; overflow: hidden;
+    }
+    .level-card::before {
+      content: ''; position: absolute;
+      top: -40px; right: -40px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .level-icon { font-size: 3rem; display: block; margin-bottom: 8px; }
+    .level-name { font-size: 1.6rem; font-weight: 900; margin-bottom: 4px; }
+    .level-sub { font-size: 0.82rem; opacity: 0.82; margin-bottom: 16px; }
+    .level-bar-wrap { background: rgba(255,255,255,0.2); border-radius: 10px; height: 12px; overflow: hidden; margin-bottom: 8px; }
+    .level-bar { height: 100%; background: linear-gradient(90deg, #a78bfa, #fbbf24); border-radius: 10px; transition: width 0.8s cubic-bezier(.22,.68,0,1.2); }
+    .level-count { font-size: 0.82rem; opacity: 0.9; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card {
+      background: white; border-radius: 18px; padding: 20px 14px;
+      text-align: center; box-shadow: var(--shadow);
+    }
+    .stat-num { font-size: 2.1rem; font-weight: 900; color: var(--primary); }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-state .emoji { font-size: 3rem; display: block; margin-bottom: 12px; }
+    .cat-stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .cat-stat-label { font-size: 0.82rem; color: var(--text); flex: 1; }
+    .cat-stat-bar { flex: 2; background: var(--border); border-radius: 6px; height: 8px; overflow: hidden; }
+    .cat-stat-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 6px; }
+    .cat-stat-num { font-size: 0.75rem; color: var(--text-muted); min-width: 36px; text-align: left; }
+    /* ── NOTIFICATION SETTINGS ── */
+    .notif-card {
+      background: white; border-radius: 18px; padding: 20px 18px;
+      margin-top: 16px; box-shadow: var(--shadow);
+    }
+    .notif-card-title { font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 16px; }
+    .notif-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .notif-row-label { font-size: 0.88rem; color: var(--text); font-weight: 600; }
+    .toggle-wrap { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #d1d5db; border-radius: 28px; transition: 0.3s;
+    }
+    .toggle-slider:before {
+      content: ""; position: absolute;
+      height: 22px; width: 22px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-wrap input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-wrap input:checked + .toggle-slider:before { transform: translateX(22px); }
+    .notif-time-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .notif-time-label { font-size: 0.82rem; color: var(--text-muted); }
+    .notif-time-input {
+      border: 2px solid var(--border); border-radius: 10px;
+      padding: 6px 12px; font-size: 0.9rem; color: var(--text);
+      background: var(--bg); outline: none; flex: 1;
+    }
+    .notif-time-input:focus { border-color: var(--primary); }
+    .notif-save-btn {
+      width: 100%; padding: 11px; border: none; border-radius: 12px;
+      background: var(--primary); color: white; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; margin-top: 4px;
+      transition: opacity 0.15s;
+    }
+    .notif-save-btn:active { opacity: 0.8; }
+    .notif-status { font-size: 0.78rem; color: var(--success); margin-top: 8px; min-height: 18px; text-align: center; }
+    /* ── DIALOGUE / CONVERSATIONS ── */
+    .dialogue-card {
+      background: white; border-radius: 18px; margin-bottom: 10px;
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .dialogue-header {
+      display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer;
+    }
+    .dialogue-emoji { font-size: 1.8rem; flex-shrink: 0; }
+    .dialogue-title { font-size: 0.98rem; font-weight: 800; color: var(--text); }
+    .dialogue-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; }
+    .dialogue-chevron { margin-right: auto; color: var(--text-muted); transition: transform 0.2s; }
+    .dialogue-card.open .dialogue-chevron { transform: rotate(180deg); }
+    .dialogue-body { display: none; padding: 0 14px 14px; }
+    .dialogue-card.open .dialogue-body { display: block; }
+    .dl-line { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+    .dl-side {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 800; margin-top: 3px;
+    }
+    .dl-side.A { background: var(--primary); color: white; }
+    .dl-side.B { background: var(--accent); color: white; }
+    .dl-ph { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .dl-he { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    /* ── SPEED QUIZ TIMER ── */
+    .speed-toggle {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+      background: white; border: 2px solid var(--border); border-radius: 20px;
+      cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
+      margin-bottom: 12px; transition: all 0.15s;
+    }
+    .speed-toggle.active { border-color: var(--accent); background: #fef3c7; color: #92400e; }
+    .speed-timer-wrap { text-align: center; margin-bottom: 10px; }
+    /* ── SPEECH BUTTON ── */
+    .speech-btn {
+      width: 100%; padding: 13px; border: none; border-radius: 14px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white; font-size: 0.95rem; font-weight: 800; cursor: pointer;
+      margin-top: 8px; display: none; transition: opacity 0.15s;
+    }
+    .speech-btn:active { opacity: 0.8; }
+    .speech-feedback { text-align: center; font-size: 0.82rem; color: var(--text-muted); min-height: 20px; margin-top: 4px; }
+    /* ── AUDIO MODE OVERLAY ── */
+    #audioModeOverlay {
+      display: none; position: fixed; inset: 0;
+      background: linear-gradient(135deg, #0f0524 0%, #1e0a4e 50%, #2d1b69 100%);
+      z-index: 999; flex-direction: column; align-items: center; justify-content: center;
+      color: white; text-align: center; padding: 40px 30px;
+    }
+    .am-label { font-size: 0.75rem; opacity: 0.5; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 24px; }
+    .am-progress { font-size: 0.78rem; opacity: 0.45; margin-bottom: 16px; }
+    .am-phonetic { font-size: 2.8rem; font-weight: 900; line-height: 1.3; margin-bottom: 18px; }
+    .am-hebrew {
+      font-size: 1.3rem; background: rgba(255,255,255,0.12); border-radius: 14px;
+      padding: 10px 28px; min-height: 52px; transition: opacity 0.4s; opacity: 0;
+    }
+    .am-category { font-size: 0.75rem; opacity: 0.4; margin-top: 14px; }
+    .am-controls { display: flex; gap: 18px; margin-top: 48px; align-items: center; }
+    .am-btn {
+      background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+      color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; width: 52px; height: 52px; transition: background 0.15s;
+    }
+    .am-btn:active { background: rgba(255,255,255,0.25); }
+    .am-btn.large { width: 64px; height: 64px; font-size: 1.7rem; background: rgba(255,255,255,0.18); }
+    .am-close {
+      position: absolute; top: 18px; left: 18px;
+      background: rgba(255,255,255,0.12); border: none; border-radius: 10px;
+      padding: 8px 16px; color: white; cursor: pointer; font-size: 0.85rem;
+    }
+    /* ── SR REVIEW BADGE ── */
+    .due-badge {
+      display: inline-block; background: #ef4444; color: white;
+      border-radius: 10px; padding: 1px 7px; font-size: 0.68rem;
+      font-weight: 800; margin-right: 6px; vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-badge">
+      <svg width="46" height="46" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="purpleGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="100%" stop-color="#4C1D95"/>
+          </linearGradient>
+          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#F59E0B"/>
+            <stop offset="100%" stop-color="#D97706"/>
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" rx="24" fill="#1E1B4B"/>
+        <path d="M25,25 L75,25 L75,75 L45,75 L45,45 L60,45 L60,55 L55,55"
+          stroke="url(#purpleGrad)" stroke-width="8" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+        <rect x="25" y="60" width="10" height="15" fill="url(#purpleGrad)"/>
+        <rect x="75" y="40" width="9" height="9" rx="2" fill="url(#goldGrad)"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-title">ערבית מדוברת</div>
+      <div class="logo-sub">לבנטינית • אופליין</div>
+    </div>
+  </div>
+  <div class="streak-badge" id="streakBadge">🔥 <span id="headerStreakNum">0</span></div>
+</header>
+
+<!-- VOCABULARY SCREEN -->
+<div id="screen-categories" class="screen active">
+  <div id="category-grid-view">
+    <div id="wotdBanner" style="margin-bottom:14px;background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:white;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:0.7rem;opacity:0.8;margin-bottom:3px">📖 מילה היום</div>
+        <div id="wotdPh" style="font-size:1.15rem;font-weight:800"></div>
+        <div id="wotdHe" style="font-size:0.85rem;opacity:0.85;margin-top:2px"></div>
+      </div>
+      <button onclick="speakArabic(window._wotdAr,event)" style="background:rgba(255,255,255,0.2);border:none;border-radius:12px;width:42px;height:42px;font-size:1.3rem;cursor:pointer;color:white">🔊</button>
+    </div>
+    <button onclick="startDailyLesson()" style="width:100%;margin-bottom:14px;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:14px;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(245,158,11,0.3)">📖 שיעור יומי</button>
+    <div class="screen-title">בחר קטגוריה</div>
+    <div class="category-grid" id="categoryGrid"></div>
+  </div>
+  <div id="word-list-view" style="display:none">
+    <div class="section-header">
+      <button class="back-btn" onclick="showCategoryGrid()">→ חזרה</button>
+      <span class="section-title" id="wordListTitle"></span>
+    </div>
+    <input class="search-input" id="wordSearch" placeholder="חיפוש..." oninput="filterWords()">
+    <div class="results-summary" id="resultsSummary"></div>
+    <div id="wordList"></div>
+  </div>
+</div>
+
+<!-- CONVERSATIONS SCREEN -->
+<div id="screen-phrases" class="screen">
+  <div class="screen-title">שיחות יומיות</div>
+  <div id="dialogueList"></div>
+  <div style="margin:16px 0">
+    <button onclick="startSentenceBuilder()" style="width:100%;padding:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:14px;font-size:0.95rem;font-weight:700;cursor:pointer">🧩 בנה משפט</button>
+    <div id="sentenceBuilderArea" style="display:none;margin-top:12px"></div>
+  </div>
+  <div class="screen-title" style="margin-top:20px">ביטויים שימושיים</div>
+  <input class="search-input" id="phraseSearch" placeholder="חיפוש ביטויים..." oninput="filterPhrases()">
+  <div id="phraseList"></div>
+</div>
+
+<!-- FLASHCARDS SCREEN -->
+<div id="screen-flashcards" class="screen">
+  <div class="flashcard-container">
+    <div style="width:100%;max-width:380px">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px">בחר קטגוריות:</p>
+      <div class="fc-select-row" id="fcCategoryRow"></div>
+    </div>
+    <div class="progress-bar-wrap" style="max-width:380px;width:100%">
+      <div class="progress-bar" id="fcProgressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-text" id="fcProgressText">0 / 0</div>
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <span class="fc-category" id="fcCategory"></span>
+      <div id="fcBigEmoji" style="font-size:3rem;margin-bottom:4px;line-height:1"></div>
+      <div class="fc-arabic" id="fcArabic"></div>
+      <div class="fc-phonetic" id="fcPhonetic">לחץ על התחל</div>
+      <div class="fc-hebrew" id="fcHebrew"></div>
+      <button class="speak-btn" id="fcSpeakBtn" onclick="speakCurrentFC(event)" style="position:absolute;top:10px;left:10px;font-size:1.5rem;display:none">🔊</button>
+      <span class="hint">לחץ לגלות תרגום</span>
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-wrong" id="btnWrong" onclick="nextCard(false)" style="display:none">✗ לא ידעתי</button>
+      <button class="btn btn-right" id="btnRight" onclick="nextCard(true)" style="display:none">✓ ידעתי</button>
+    </div>
+    <div style="display:flex;gap:8px;max-width:380px;width:100%">
+      <button class="btn btn-primary" id="btnStart" onclick="startFlashcards()" style="flex:2">▶ התחל</button>
+      <button class="btn btn-accent" onclick="startSRFlashcards()" style="flex:1;font-size:0.85rem">📅 חזרה חכמה</button>
+      <button class="btn" onclick="startAudioMode()" style="flex:1;font-size:0.85rem;background:linear-gradient(135deg,#1e0a4e,#4c1d95);color:white">🎧 שמיעה</button>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON OVERLAY -->
+<div id="lessonOverlay" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#1e0a4e,#4c1d95);color:white;z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <button onclick="stopLesson()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;border-radius:10px;color:white;font-size:0.9rem;padding:8px 16px;cursor:pointer">✕ סגור</button>
+  <div style="font-size:0.8rem;opacity:0.7;margin-bottom:6px">📖 שיעור יומי</div>
+  <div id="lessonProgress" style="font-size:0.85rem;opacity:0.8;margin-bottom:24px">1 / 5</div>
+  <div id="lessonPh" style="font-size:2rem;font-weight:800;text-align:center;margin-bottom:8px"></div>
+  <div id="lessonHe" style="font-size:1.1rem;opacity:0.85;text-align:center;margin-bottom:24px"></div>
+  <button onclick="speakArabic(window._lessonAr,event)" style="background:rgba(255,255,255,0.2);border:none;border-radius:14px;color:white;font-size:1.1rem;padding:12px 28px;cursor:pointer;margin-bottom:28px">🔊 השמע</button>
+  <button onclick="lessonNext()" id="lessonNextBtn" style="background:var(--accent);border:none;border-radius:14px;color:white;font-size:1.1rem;font-weight:700;padding:14px 40px;cursor:pointer">הבא ←</button>
+</div>
+
+<!-- AUDIO MODE OVERLAY -->
+<div id="audioModeOverlay">
+  <button class="am-close" onclick="stopAudioMode()">✕ סגור</button>
+  <div class="am-label">מצב שמיעה</div>
+  <div class="am-progress" id="amProgress">1 / 0</div>
+  <div class="am-phonetic" id="amPhonetic"></div>
+  <div class="am-hebrew" id="amHebrew"></div>
+  <div class="am-category" id="amCategory"></div>
+  <div class="am-controls">
+    <button class="am-btn" onclick="amPrev()">⏮</button>
+    <button class="am-btn large" id="amPauseBtn" onclick="amTogglePause()">⏸</button>
+    <button class="am-btn" onclick="amNext()">⏭</button>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="screen-quiz" class="screen">
+  <div id="dailyChallengeCard" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+    <div style="flex:1">
+      <div style="font-size:0.78rem;font-weight:700;color:#92400e">⚡ אתגר יומי</div>
+      <div id="dcProgress" style="font-size:0.85rem;color:#78350f;margin-top:2px">0 / 10</div>
+    </div>
+    <div style="width:80px;height:6px;background:rgba(0,0,0,0.1);border-radius:3px">
+      <div id="dcBarFill" style="height:100%;background:#f59e0b;border-radius:3px;width:0%;transition:width 0.3s"></div>
+    </div>
+  </div>
+  <div class="quiz-level-live" id="quizLevelLive">רמה: <strong id="quizLevelName">–</strong> | <strong id="quizMasteredCount">0</strong> שולטות</div>
+  <div class="quiz-score">ניקוד: <span id="quizScore">0</span> | שאלות: <span id="quizTotal">0</span></div>
+  <div class="quiz-card" id="quizCard">
+    <button class="speak-btn" id="quizSpeakBtn" onclick="speakCurrentQuiz(event)" style="float:left;font-size:1.4rem;display:none">🔊</button>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-sub" id="quizSub"></div>
+    <div class="quiz-hint" id="quizHint"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px">
+    <button id="speedModeBtn" onclick="toggleSpeedMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⚡ מהיר</button>
+    <button id="typingModeBtn" onclick="toggleTypingMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">⌨️ הקלד</button>
+    <button id="listeningModeBtn" onclick="toggleListeningMode(this)" style="padding:8px 18px;background:white;border:2px solid var(--border);border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;color:var(--text-muted)">👂 שמיעה</button>
+  </div>
+  <style>.speed-btn-active, #speedModeBtn.active { background:var(--accent-light)!important;border-color:var(--accent)!important;color:#92400e!important; }</style>
+  <div id="speedTimerWrap" style="display:none; text-align:center; margin-bottom:10px">
+    <svg width="60" height="60" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="26" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+      <circle id="timerCircle" cx="30" cy="30" r="26" fill="none" stroke="#f59e0b" stroke-width="5"
+        stroke-dasharray="163.4" stroke-dashoffset="0" stroke-linecap="round"
+        transform="rotate(-90 30 30)" style="transition:stroke-dashoffset 0.1s linear"/>
+    </svg>
+    <div id="timerNum" style="font-size:1.1rem;font-weight:800;color:var(--accent);margin-top:4px">5</div>
+  </div>
+  <div class="quiz-options" id="quizOptions"></div>
+  <div id="typingInputWrap" style="display:none;margin:8px 0">
+    <input id="typingInput" type="text" placeholder="הקלד את התרגום..." style="width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-size:1rem;direction:rtl;outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')checkTypedAnswer()">
+    <button onclick="checkTypedAnswer()" style="width:100%;margin-top:8px;padding:12px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer">בדוק</button>
+  </div>
+  <button id="speechBtn" onclick="startSpeechQuiz()" style="display:none; margin:10px auto; padding:12px 24px; background:var(--accent); color:white; border:none; border-radius:14px; font-size:1rem; font-weight:700; cursor:pointer; width:100%">🎤 אמור בערבית</button>
+  <div id="speechFeedback" style="text-align:center; font-size:0.85rem; color:var(--text-muted); min-height:22px; margin-top:4px"></div>
+  <button class="btn btn-primary" id="btnNextQuiz" onclick="nextQuiz()" style="margin-top:12px;display:none;width:100%">השאלה הבאה ←</button>
+  <button class="btn btn-accent" onclick="startQuiz()" style="margin-top:12px;width:100%">🔄 שאלה חדשה / התחל מחדש</button>
+</div>
+
+<!-- STATS SCREEN -->
+<div id="screen-stats" class="screen">
+  <div id="levelCard" class="level-card">
+    <span class="level-icon" id="levelIcon">🌱</span>
+    <div class="level-name" id="levelName">מתחיל</div>
+    <div class="level-sub" id="levelSub">התחל לענות על חידונים כדי להתקדם</div>
+    <div class="level-bar-wrap"><div class="level-bar" id="levelBar" style="width:0%"></div></div>
+    <div class="level-count" id="levelCount">0 / 0 מילים שולטות</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="statCorrect">0</div><div class="stat-label">תשובות נכונות</div></div>
+    <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">רצף ימים</div></div>
+    <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">סה"כ ביקורים</div></div>
+    <div class="stat-card"><div class="stat-num" id="statMastered">0</div><div class="stat-label">מילים שולטות</div></div>
+  </div>
+  <div id="weeklyPlan" style="margin-bottom:12px"></div>
+  <div id="badgesSection" style="margin-bottom:12px"></div>
+  <div id="masteredList"></div>
+
+  <!-- Notification Settings Card -->
+  <div class="notif-card">
+    <div class="notif-card-title">🔔 התראה יומית</div>
+    <div class="notif-row">
+      <span class="notif-row-label">מילה חדשה כל יום</span>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="notifToggle" onchange="onNotifToggle(this)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div id="notifTimeRow" style="display:none">
+      <div class="notif-time-row">
+        <span class="notif-time-label">שעת התראה:</span>
+        <input type="time" id="notifTime" class="notif-time-input" value="09:00">
+      </div>
+      <button class="notif-save-btn" onclick="saveNotifSettings()">שמור שעה</button>
+    </div>
+    <div class="notif-status" id="notifStatus"></div>
+  </div>
+  <!-- Backup/Restore Card -->
+  <div class="notif-card" style="margin-top:12px">
+    <div class="notif-card-title">💾 גיבוי התקדמות</div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="exportProgress()" style="flex:1;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📤 ייצוא</button>
+      <button onclick="showImportModal()" style="flex:1;padding:10px;background:white;color:var(--primary);border:2px solid var(--primary);border-radius:10px;font-weight:700;cursor:pointer;font-size:0.9rem">📥 ייבוא</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const CAT_COLORS = {
+  greetings:['#667eea','#764ba2'], numbers:['#f093fb','#f5576c'],
+  family:['#4facfe','#00f2fe'],    food:['#43e97b','#38f9d7'],
+  colors:['#fa709a','#fee140'],    time:['#a18cd1','#fbc2eb'],
+  body:['#ff9a9e','#fecfef'],      home:['#a1c4fd','#6dd5fa'],
+  market:['#fd7043','#ffa726'],    directions:['#11998e','#38ef7d'],
+  feelings:['#ee0979','#ff6a00'],  nature:['#56ab2f','#a8e063'],
+  transport:['#2980b9','#6dd5fa'], work:['#373b44','#4286f4'],
+  verbs:['#6a11cb','#2575fc'],     adjectives:['#f7971e','#ffd200'],
+  places:['#396afc','#2948ff'],    clothes:['#e96c82','#ffb6c1'],
+  health:['#43e97b','#38f9d7'],    weather:['#4ca1af','#c4e0e5'],
+};
+
+const categories = [
+  { id: 'greetings',  name: 'ברכות',       emoji: '👋' },
+  { id: 'numbers',    name: 'מספרים',      emoji: '🔢' },
+  { id: 'family',     name: 'משפחה',       emoji: '👨‍👩‍👧' },
+  { id: 'food',       name: 'אוכל ושתייה', emoji: '🍽️' },
+  { id: 'colors',     name: 'צבעים',       emoji: '🎨' },
+  { id: 'time',       name: 'זמן',         emoji: '⏰' },
+  { id: 'body',       name: 'גוף',         emoji: '🧍' },
+  { id: 'home',       name: 'בית',         emoji: '🏠' },
+  { id: 'market',     name: 'שוק וקניות',  emoji: '🛒' },
+  { id: 'directions', name: 'כיוונים',     emoji: '🗺️' },
+  { id: 'feelings',   name: 'רגשות',       emoji: '😊' },
+  { id: 'nature',     name: 'טבע',         emoji: '🌿' },
+  { id: 'transport',  name: 'תחבורה',      emoji: '🚌' },
+  { id: 'work',       name: 'עבודה',       emoji: '💼' },
+  { id: 'verbs',      name: 'פעלים',       emoji: '🏃' },
+  { id: 'adjectives', name: 'תארים',       emoji: '📝' },
+  { id: 'places',     name: 'מקומות',      emoji: '🏙️' },
+  { id: 'clothes',    name: 'בגדים',       emoji: '👕' },
+  { id: 'health',     name: 'בריאות',      emoji: '🏥' },
+  { id: 'weather',    name: 'מזג אוויר',   emoji: '🌤️' },
+];
+
+const UNLOCK_AT = {1:0, 2:12, 3:30, 4:70, 5:130};
+
+function getUnlockedVocabulary() {
+  const m = getMasteredCount();
+  return vocabulary.filter(w => (UNLOCK_AT[w.lv] || 0) <= m);
+}
+
+const vocabulary = [
+  // GREETINGS
+  {id:"g1",cat:"greetings",lv:1,ar:"\u0645\u0631\u062d\u0628\u0627",ph:"\u05de\u05e8\u05d7\u05d1\u05d0",he:"\u05e9\u05dc\u05d5\u05dd",ex:[]},
+  {id:"g2",cat:"greetings",lv:1,ar:"\u0643\u064a\u0641 \u062d\u0627\u0644\u0643\u061f",ph:"\u05db\u05d9\u05e4 \u05d7\u05b8\u05d0\u05dc\u05b7\u05e7?",he:"\u05de\u05d4 \u05e9\u05dc\u05d5\u05de\u05da? (\u05dc\u05d2\u05d1\u05e8)",ex:[]},
+  {id:"g3",cat:"greetings",lv:1,ar:"\u0643\u064a\u0641 \u062d\u0627\u0644\u0643\u061f",ph:"\u05db\u05d9\u05e4 \u05d7\u05b8\u05d0\u05dc\u05b4\u05da?",he:"\u05de\u05d4 \u05e9\u05dc\u05d5\u05de\u05da? (\u05dc\u05d0\u05d9\u05e9\u05d4)",ex:[]},
+  {id:"g4",cat:"greetings",lv:1,ar:"\u0645\u0646\u064a\u062d\u060c \u0634\u0643\u0631\u0627\u064b",ph:"\u05de\u05b0\u05e0\u05b4\u05d9\u05d7, \u05e9\u05bb\u05c1\u05e7\u05b0\u05e8\u05b7\u05df",he:"\u05d1\u05e1\u05d3\u05e8, \u05ea\u05d5\u05d3\u05d4",ex:[]},
+  {id:"g5",cat:"greetings",lv:1,ar:"\u0635\u0628\u0627\u062d \u0627\u0644\u062e\u064a\u0631",ph:"\u05e6\u05b0\u05d1\u05b8\u05d0\u05d7 \u05d0\u05dc-\u05d7\u05b5\u05d9\u05e8",he:"\u05d1\u05d5\u05e7\u05e8 \u05d8\u05d5\u05d1",ex:[]},
+  {id:"g6",cat:"greetings",lv:1,ar:"\u0635\u0628\u0627\u062d \u0627\u0644\u0646\u0648\u0631",ph:"\u05e6\u05b0\u05d1\u05b8\u05d0\u05d7 \u05d0\u05df-\u05e0\u05d5\u05bc\u05e8",he:"\u05d1\u05d5\u05e7\u05e8 \u05d0\u05d5\u05e8",ex:[]},
+  {id:"g7",cat:"greetings",lv:1,ar:"\u0645\u0633\u0627\u0621 \u0627\u0644\u062e\u064a\u0631",ph:"\u05de\u05b7\u05e1\u05b8\u05bc\u05d0 \u05d0\u05dc-\u05d7\u05b5\u05d9\u05e8",he:"\u05e2\u05e8\u05d1 \u05d8\u05d5\u05d1",ex:[]},
+  {id:"g8",cat:"greetings",lv:1,ar:"\u0645\u0639 \u0627\u0644\u0633\u0644\u0627\u0645\u0629",ph:"\u05de\u05e2 \u05d0\u05e1-\u05e1\u05dc\u05b8\u05d0\u05de\u05b6\u05d4",he:"\u05dc\u05d4\u05ea\u05e8\u05d0\u05d5\u05ea",ex:[]},
+  {id:"g9",cat:"greetings",lv:1,ar:"\u064a\u0644\u0627 \u0628\u0627\u064a",ph:"\u05d9\u05b7\u05dc\u05b8\u05bc\u05d4 \u05d1\u05b7\u05bc\u05d0\u05d9",he:"\u05dc\u05d4\u05ea\u05e8\u05d0\u05d5\u05ea (\u05d3\u05d9\u05d1\u05d5\u05e8\u05d9)",ex:[]},
+  {id:"g10",cat:"greetings",lv:1,ar:"\u0623\u0647\u0644\u0627\u064b \u0648\u0633\u0647\u0644\u0627\u064b",ph:"\u05d0\u05b7\u05d4\u05b0\u05dc\u05b7\u05df \u05d5\u05b0\u05e1\u05b7\u05d4\u05b0\u05dc\u05b7\u05df",he:"\u05d1\u05e8\u05d5\u05db\u05d9\u05dd \u05d4\u05d1\u05d0\u05d9\u05dd",ex:[]},
+  {id:"g11",cat:"greetings",lv:1,ar:"\u0634\u0648 \u0627\u0633\u0645\u0643\u061f",ph:"\u05e9\u05d5\u05bc \u05d0\u05b4\u05e1\u05b0\u05de\u05b7\u05e7?",he:"\u05de\u05d4 \u05e9\u05de\u05da?",ex:[]},
+  {id:"g12",cat:"greetings",lv:1,ar:"\u0645\u0646 \u0648\u064a\u0646 \u0623\u0646\u062a\u061f",ph:"\u05de\u05b4\u05df \u05d5\u05b5\u05d9\u05df \u05d0\u05b7\u05e0\u05b0\u05ea\u05b0?",he:"\u05de\u05d0\u05d9\u05df \u05d0\u05ea\u05d4?",ex:[]},
+  {id:"g13",cat:"greetings",lv:1,ar:"\u064a\u0644\u0627",ph:"\u05d9\u05b7\u05dc\u05b8\u05bc\u05d4",he:"\u05d9\u05d0\u05dc\u05dc\u05d4 (\u05e7\u05d3\u05d9\u05de\u05d4)",ex:[]},
+  {id:"g14",cat:"greetings",lv:1,ar:"\u0625\u0646 \u0634\u0627\u0621 \u0627\u0644\u0644\u0647",ph:"\u05d0\u05b4\u05e0\u05b0 \u05e9\u05b8\u05c1\u05d0 \u05d0\u05b7\u05dc\u05b0\u05dc\u05b8\u05d4",he:"\u05d0\u05d9\u05e0\u05e9\u05d0\u05dc\u05d4",ex:[]},
+  {id:"g15",cat:"greetings",lv:1,ar:"\u0627\u0644\u062d\u0645\u062f \u0644\u0644\u0647",ph:"\u05d0\u05b7\u05dc\u05b0\u05d7\u05b7\u05de\u05b0\u05d3\u05bc\u05d5\u05bc \u05dc\u05b4\u05dc\u05b8\u05bc\u05d4",he:"\u05d1\u05e8\u05d5\u05da \u05d4\u05e9\u05dd",ex:[]},
+  {id:"g16",cat:"greetings",lv:2,ar:"\u062a\u0634\u0631\u0641\u0646\u0627",ph:"\u05ea\u05b0\u05bc\u05e9\u05b7\u05c1\u05e8\u05b7\u05bc\u05e4\u05b0\u05e0\u05b8\u05d4",he:"\u05e9\u05de\u05d7 \u05dc\u05d4\u05db\u05d9\u05e8",ex:[]},
+  {id:"g17",cat:"greetings",lv:2,ar:"\u062a\u0645\u0627\u0645",ph:"\u05ea\u05b0\u05bc\u05de\u05b8\u05d0\u05dd",he:"\u05de\u05e2\u05d5\u05dc\u05d4 / \u05ea\u05de\u05d0\u05dd",ex:[]},
+  {id:"g18",cat:"greetings",lv:2,ar:"\u0634\u0648 \u0641\u064a\u061f",ph:"\u05e9\u05d5\u05bc \u05e4\u05b4\u05d9?",he:"\u05de\u05d4 \u05e7\u05d5\u05e8\u05d4?",ex:[]},
+  {id:"g19",cat:"greetings",lv:2,ar:"\u0648\u0627\u0644\u0644\u0647",ph:"\u05d5\u05b7\u05dc\u05b0\u05dc\u05b8\u05d4",he:"\u05d1\u05d0\u05de\u05ea?",ex:[]},
+  {id:"g20",cat:"greetings",lv:3,ar:"\u0631\u0628\u0646\u0627 \u064a\u0633\u0644\u0645\u0643",ph:"\u05e8\u05b7\u05d1\u05b6\u05bc\u05e0\u05b8\u05bc\u05d4 \u05d9\u05b0\u05e1\u05b7\u05dc\u05b0\u05bc\u05de\u05b7\u05e7",he:"\u05d0\u05dc\u05d5\u05d4\u05d9\u05dd \u05d9\u05e9\u05de\u05d5\u05e8 \u05d0\u05d5\u05ea\u05da",ex:[]},
+  // NUMBERS
+  {id:"n1",cat:"numbers",lv:1,ar:"\u0635\u0641\u0631",ph:"\u05e6\u05b4\u05e4\u05b6\u05e8",he:"\u05d0\u05e4\u05e1",ex:[]},
+  {id:"n2",cat:"numbers",lv:1,ar:"\u0648\u0627\u062d\u062f",ph:"\u05d5\u05b8\u05d0\u05d7\u05b7\u05d3",he:"\u05d0\u05d7\u05d3",ex:[]},
+  {id:"n3",cat:"numbers",lv:1,ar:"\u0627\u062b\u0646\u064a\u0646",ph:"\u05d0\u05b4\u05ea\u05b0\u05e0\u05b5\u05d9\u05df",he:"\u05e9\u05e0\u05d9\u05d9\u05dd",ex:[]},
+  {id:"n4",cat:"numbers",lv:1,ar:"\u062b\u0644\u0627\u062b\u0629",ph:"\u05ea\u05b0\u05bc\u05dc\u05b8\u05d0\u05ea\u05b6\u05d4",he:"\u05e9\u05dc\u05d5\u05e9\u05d4",ex:[]},
+  {id:"n5",cat:"numbers",lv:1,ar:"\u0623\u0631\u0628\u0639\u0629",ph:"\u05d0\u05b7\u05e8\u05b0\u05d1\u05b7\u05bc\u05e2\u05b6\u05d4",he:"\u05d0\u05e8\u05d1\u05e2\u05d4",ex:[]},
+  {id:"n6",cat:"numbers",lv:1,ar:"\u062e\u0645\u0633\u0629",ph:"\u05d7\u05b7\u05de\u05b0\u05e1\u05b6\u05d4",he:"\u05d7\u05de\u05d9\u05e9\u05d4",ex:[]},
+  {id:"n7",cat:"numbers",lv:1,ar:"\u0633\u062a\u0629",ph:"\u05e1\u05b4\u05ea\u05b6\u05bc\u05d4",he:"\u05e9\u05d9\u05e9\u05d4",ex:[]},
+  {id:"n8",cat:"numbers",lv:1,ar:"\u0633\u0628\u0639\u0629",ph:"\u05e1\u05b7\u05d1\u05b0\u05bc\u05e2\u05b6\u05d4",he:"\u05e9\u05d1\u05e2\u05d4",ex:[]},
+  {id:"n9",cat:"numbers",lv:1,ar:"\u062b\u0645\u0627\u0646\u064a\u0629",ph:"\u05ea\u05b0\u05bc\u05de\u05b8\u05d0\u05e0\u05b0\u05d9\u05b6\u05d4",he:"\u05e9\u05de\u05d5\u05e0\u05d4",ex:[]},
+  {id:"n10",cat:"numbers",lv:1,ar:"\u062a\u0633\u0639\u0629",ph:"\u05ea\u05b4\u05bc\u05e1\u05b0\u05e2\u05b6\u05d4",he:"\u05ea\u05e9\u05e2\u05d4",ex:[]},
+  {id:"n11",cat:"numbers",lv:1,ar:"\u0639\u0634\u0631\u0629",ph:"\u05e2\u05b7\u05e9\u05b0\u05c1\u05e8\u05b6\u05d4",he:"\u05e2\u05e9\u05e8\u05d4",ex:[]},
+  {id:"n12",cat:"numbers",lv:1,ar:"\u0639\u0634\u0631\u064a\u0646",ph:"\u05e2\u05b4\u05e9\u05b0\u05c1\u05e8\u05b4\u05d9\u05df",he:"\u05e2\u05e9\u05e8\u05d9\u05dd",ex:[]},
+  {id:"n13",cat:"numbers",lv:1,ar:"\u0645\u064a\u0629",ph:"\u05de\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05de\u05d0\u05d4",ex:[]},
+  {id:"n14",cat:"numbers",lv:1,ar:"\u0623\u0644\u0641",ph:"\u05d0\u05b7\u05dc\u05b0\u05e3",he:"\u05d0\u05dc\u05e3",ex:[]},
+  {id:"n15",cat:"numbers",lv:1,ar:"\u0628\u0643\u0645 \u0647\u0630\u0627\u061f",ph:"\u05d1\u05b0\u05bc\u05db\u05b7\u05dd \u05d4\u05b8\u05d0\u05d3\u05b8\u05d4?",he:"\u05db\u05de\u05d4 \u05d6\u05d4 \u05e2\u05d5\u05dc\u05d4?",ex:[]},
+  {id:"n16",cat:"numbers",lv:2,ar:"\u0625\u062d\u062f\u0639\u0634",ph:"\u05d0\u05b4\u05d7\u05b0\u05d3\u05b7\u05bc\u05e2\u05b5\u05e9\u05c1",he:"\u05d0\u05d7\u05d3 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n17",cat:"numbers",lv:2,ar:"\u0625\u062a\u0646\u0627\u0639\u0634",ph:"\u05d0\u05b4\u05ea\u05b0\u05e0\u05b7\u05d0\u05e2\u05b5\u05e9\u05c1",he:"\u05e9\u05e0\u05d9\u05d9\u05dd \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n18",cat:"numbers",lv:2,ar:"\u062a\u0644\u062a\u0627\u0634\u0631",ph:"\u05ea\u05b7\u05bc\u05dc\u05b0\u05d8\u05b8\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05dc\u05d5\u05e9\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n19",cat:"numbers",lv:2,ar:"\u0623\u0631\u0628\u0639\u062a\u0627\u0634\u0631",ph:"\u05d0\u05b7\u05e8\u05b0\u05d1\u05b7\u05bc\u05e2\u05b0\u05ea\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05d0\u05e8\u05d1\u05e2\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n20",cat:"numbers",lv:2,ar:"\u062e\u0645\u0633\u062a\u0627\u0634\u0631",ph:"\u05d7\u05b7\u05de\u05b0\u05e1\u05b7\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05d7\u05de\u05d9\u05e9\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n21",cat:"numbers",lv:2,ar:"\u0633\u062a\u0627\u0634\u0631",ph:"\u05e1\u05b4\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05d9\u05e9\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n22",cat:"numbers",lv:2,ar:"\u0633\u0628\u0639\u062a\u0627\u0634\u0631",ph:"\u05e1\u05b7\u05d1\u05b0\u05bc\u05e2\u05b7\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05d1\u05e2\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n23",cat:"numbers",lv:2,ar:"\u062a\u0645\u0627\u0646\u062a\u0627\u0634\u0631",ph:"\u05ea\u05b0\u05bc\u05de\u05b7\u05d0\u05e0\u05b0\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05e9\u05de\u05d5\u05e0\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n24",cat:"numbers",lv:2,ar:"\u062a\u0633\u0639\u062a\u0627\u0634\u0631",ph:"\u05ea\u05b4\u05bc\u05e1\u05b0\u05e2\u05b7\u05d8\u05b8\u05bc\u05d0\u05e9\u05b5\u05c1\u05e8",he:"\u05ea\u05e9\u05e2\u05d4 \u05e2\u05e9\u05e8",ex:[]},
+  {id:"n25",cat:"numbers",lv:2,ar:"\u062a\u0644\u0627\u062a\u064a\u0646",ph:"\u05ea\u05b0\u05bc\u05dc\u05b8\u05d0\u05ea\u05b4\u05d9\u05df",he:"\u05e9\u05dc\u05d5\u05e9\u05d9\u05dd",ex:[]},
+  {id:"n26",cat:"numbers",lv:2,ar:"\u0623\u0631\u0628\u0639\u064a\u0646",ph:"\u05d0\u05b7\u05e8\u05b0\u05d1\u05b0\u05bc\u05e2\u05b4\u05d9\u05df",he:"\u05d0\u05e8\u05d1\u05e2\u05d9\u05dd",ex:[]},
+  {id:"n27",cat:"numbers",lv:2,ar:"\u062e\u0645\u0633\u064a\u0646",ph:"\u05d7\u05b7\u05de\u05b0\u05e1\u05b4\u05d9\u05df",he:"\u05d7\u05de\u05d9\u05e9\u05d9\u05dd",ex:[]},
+  {id:"n28",cat:"numbers",lv:3,ar:"\u0633\u062a\u064a\u0646",ph:"\u05e1\u05b4\u05ea\u05b4\u05bc\u05d9\u05df",he:"\u05e9\u05d9\u05e9\u05d9\u05dd",ex:[]},
+  {id:"n29",cat:"numbers",lv:3,ar:"\u0633\u0628\u0639\u064a\u0646",ph:"\u05e1\u05b7\u05d1\u05b0\u05bc\u05e2\u05b4\u05d9\u05df",he:"\u05e9\u05d1\u05e2\u05d9\u05dd",ex:[]},
+  {id:"n30",cat:"numbers",lv:3,ar:"\u062a\u0645\u0627\u0646\u064a\u0646",ph:"\u05ea\u05b0\u05bc\u05de\u05b7\u05d0\u05e0\u05b4\u05d9\u05df",he:"\u05e9\u05de\u05d5\u05e0\u05d9\u05dd",ex:[]},
+  {id:"n31",cat:"numbers",lv:3,ar:"\u062a\u0633\u0639\u064a\u0646",ph:"\u05ea\u05b4\u05bc\u05e1\u05b0\u05e2\u05b4\u05d9\u05df",he:"\u05ea\u05e9\u05e2\u05d9\u05dd",ex:[]},
+  // FAMILY
+  {id:"f1",cat:"family",lv:1,ar:"\u0623\u0628",ph:"\u05d0\u05b7\u05d1",he:"\u05d0\u05d1\u05d0",ex:[]},
+  {id:"f2",cat:"family",lv:1,ar:"\u0623\u0645",ph:"\u05d0\u05bb\u05de\u05bc",he:"\u05d0\u05de\u05d0",ex:[]},
+  {id:"f3",cat:"family",lv:1,ar:"\u0623\u062e",ph:"\u05d0\u05b7\u05d7",he:"\u05d0\u05d7",ex:[]},
+  {id:"f4",cat:"family",lv:1,ar:"\u0623\u062e\u062a",ph:"\u05d0\u05bb\u05d7\u05b0\u05ea\u05bc",he:"\u05d0\u05d7\u05d5\u05ea",ex:[]},
+  {id:"f5",cat:"family",lv:1,ar:"\u0627\u0628\u0646",ph:"\u05d0\u05b4\u05d1\u05b6\u05bc\u05df",he:"\u05d1\u05df",ex:[]},
+  {id:"f6",cat:"family",lv:1,ar:"\u0628\u0646\u062a",ph:"\u05d1\u05b4\u05bc\u05e0\u05b0\u05ea\u05bc",he:"\u05d1\u05ea",ex:[]},
+  {id:"f7",cat:"family",lv:1,ar:"\u062c\u062f",ph:"\u05e1\u05b4\u05d9\u05d3\u05bc",he:"\u05e1\u05d1\u05d0",ex:[]},
+  {id:"f8",cat:"family",lv:1,ar:"\u062a\u064a\u062a\u0627",ph:"\u05ea\u05b5\u05bc\u05d9\u05ea\u05b8\u05d4",he:"\u05e1\u05d1\u05ea\u05d0",ex:[]},
+  {id:"f9",cat:"family",lv:1,ar:"\u0639\u0645",ph:"\u05e2\u05b7\u05de\u05bc",he:"\u05d3\u05d5\u05d3 (\u05de\u05e6\u05d3 \u05d0\u05d1\u05d0)",ex:[]},
+  {id:"f10",cat:"family",lv:1,ar:"\u062e\u0627\u0644",ph:"\u05d7\u05b8\u05d0\u05dc",he:"\u05d3\u05d5\u05d3 (\u05de\u05e6\u05d3 \u05d0\u05de\u05d0)",ex:[]},
+  {id:"f11",cat:"family",lv:2,ar:"\u0639\u0645\u0629",ph:"\u05e2\u05b7\u05de\u05b6\u05bc\u05d4",he:"\u05d3\u05d5\u05d3\u05d4 (\u05de\u05e6\u05d3 \u05d0\u05d1\u05d0)",ex:[]},
+  {id:"f12",cat:"family",lv:2,ar:"\u0632\u0648\u062c",ph:"\u05d6\u05d5\u05b9\u05d2",he:"\u05d1\u05e2\u05dc",ex:[]},
+  {id:"f13",cat:"family",lv:2,ar:"\u0632\u0648\u062c\u0629",ph:"\u05d6\u05d5\u05b9\u05d2\u05b6\u05d4",he:"\u05d0\u05d9\u05e9\u05d4",ex:[]},
+  {id:"f14",cat:"family",lv:2,ar:"\u0623\u0635\u062d\u0627\u0628",ph:"\u05d0\u05b7\u05e6\u05b0\u05d7\u05b8\u05d0\u05d1",he:"\u05d7\u05d1\u05e8\u05d9\u05dd",ex:[]},
+  {id:"f15",cat:"family",lv:2,ar:"\u0635\u0627\u062d\u0628",ph:"\u05e6\u05b8\u05d0\u05d7\u05b7\u05d1",he:"\u05d7\u05d1\u05e8",ex:[]},
+  {id:"f16",cat:"family",lv:2,ar:"\u0623\u0648\u0644\u0627\u062f",ph:"\u05d0\u05b7\u05d5\u05b0\u05dc\u05b8\u05d0\u05d3",he:"\u05d9\u05dc\u05d3\u05d9\u05dd",ex:[]},
+  {id:"f17",cat:"family",lv:2,ar:"\u062e\u0627\u0644\u0629",ph:"\u05d7\u05b8\u05d0\u05dc\u05b6\u05d4",he:"\u05d3\u05d5\u05d3\u05d4 (\u05de\u05e6\u05d3 \u05d0\u05de\u05d0)",ex:[]},
+  {id:"f18",cat:"family",lv:2,ar:"\u062c\u0627\u0631",ph:"\u05d2\u05b8'\u05d0\u05e8",he:"\u05e9\u05db\u05df",ex:[]},
+  {id:"f19",cat:"family",lv:3,ar:"\u062d\u0641\u064a\u062f",ph:"\u05d7\u05b0\u05e4\u05b4\u05d9\u05d3",he:"\u05e0\u05db\u05d3",ex:[]},
+  {id:"f20",cat:"family",lv:3,ar:"\u0627\u0628\u0646 \u0639\u0645",ph:"\u05d0\u05b4\u05d1\u05b6\u05bc\u05df \u05e2\u05b7\u05de\u05bc",he:"\u05d1\u05df \u05d3\u05d5\u05d3",ex:[]},
+  // FOOD
+  {id:"fo1",cat:"food",lv:1,ar:"\u0623\u0643\u0644",ph:"\u05d0\u05b8\u05db\u05b7\u05dc",he:"\u05d0\u05d5\u05db\u05dc",ex:[]},
+  {id:"fo2",cat:"food",lv:1,ar:"\u0645\u064a / \u0645\u0627\u0621",ph:"\u05de\u05b7\u05d9\u05b8\u05bc\u05d4",he:"\u05de\u05d9\u05dd",ex:[]},
+  {id:"fo3",cat:"food",lv:1,ar:"\u062e\u0628\u0632",ph:"\u05d7\u05bb\u05d1\u05b6\u05bc\u05d6",he:"\u05dc\u05d7\u05dd",ex:[]},
+  {id:"fo4",cat:"food",lv:1,ar:"\u062d\u0645\u0635",ph:"\u05d7\u05bb\u05de\u05bb\u05bc\u05e1",he:"\u05d7\u05d5\u05de\u05d5\u05e1",ex:[]},
+  {id:"fo5",cat:"food",lv:1,ar:"\u0641\u0644\u0627\u0641\u0644",ph:"\u05e4\u05b7\u05dc\u05b8\u05d0\u05e4\u05b5\u05dc",he:"\u05e4\u05dc\u05d0\u05e4\u05dc",ex:[]},
+  {id:"fo6",cat:"food",lv:1,ar:"\u0634\u0627\u064a",ph:"\u05e9\u05b7\u05c1\u05d0\u05d9\u05b5",he:"\u05ea\u05d4",ex:[]},
+  {id:"fo7",cat:"food",lv:1,ar:"\u0642\u0647\u0648\u0629",ph:"\u05e7\u05b7\u05d4\u05b0\u05d5\u05b6\u05d4",he:"\u05e7\u05e4\u05d4",ex:[]},
+  {id:"fo8",cat:"food",lv:1,ar:"\u0644\u062d\u0645\u0629",ph:"\u05dc\u05b7\u05d7\u05b0\u05de\u05b6\u05d4",he:"\u05d1\u05e9\u05e8",ex:[]},
+  {id:"fo9",cat:"food",lv:1,ar:"\u062f\u062c\u0627\u062c",ph:"\u05d3\u05b0\u05bc\u05d2\u05b8'\u05d0\u05d2",he:"\u05e2\u05d5\u05e3",ex:[]},
+  {id:"fo10",cat:"food",lv:1,ar:"\u062e\u0636\u0627\u0631",ph:"\u05d7\u05b7'\u05d3\u05b8\u05bc\u05e8",he:"\u05d9\u05e8\u05e7\u05d5\u05ea",ex:[]},
+  {id:"fo11",cat:"food",lv:2,ar:"\u0641\u0648\u0627\u0643\u0647",ph:"\u05e4\u05b7\u05d5\u05b8\u05bc\u05d0\u05db\u05b6\u05bc\u05d4",he:"\u05e4\u05d9\u05e8\u05d5\u05ea",ex:[]},
+  {id:"fo12",cat:"food",lv:2,ar:"\u062a\u0641\u0627\u062d",ph:"\u05ea\u05bb\u05e4\u05b8\u05bc\u05d0\u05d7",he:"\u05ea\u05e4\u05d5\u05d7",ex:[]},
+  {id:"fo13",cat:"food",lv:2,ar:"\u0639\u064a\u0634",ph:"\u05e2\u05b5\u05d9\u05e9",he:"\u05d0\u05d5\u05e8\u05d6",ex:[]},
+  {id:"fo14",cat:"food",lv:2,ar:"\u0645\u0644\u062d",ph:"\u05de\u05b4\u05dc\u05b0\u05d7",he:"\u05de\u05dc\u05d7",ex:[]},
+  {id:"fo15",cat:"food",lv:2,ar:"\u0633\u0643\u0631",ph:"\u05e1\u05bb\u05db\u05b7\u05bc\u05e8",he:"\u05e1\u05d5\u05db\u05e8",ex:[]},
+  {id:"fo16",cat:"food",lv:2,ar:"\u0628\u064a\u0636",ph:"\u05d1\u05b5\u05bc\u05d9\u05d3",he:"\u05d1\u05d9\u05e6\u05d4",ex:[]},
+  {id:"fo17",cat:"food",lv:2,ar:"\u062c\u0628\u0646\u0629",ph:"\u05d2\u05bb'\u05d1\u05b0\u05bc\u05e0\u05b6\u05d4",he:"\u05d2\u05d1\u05d9\u05e0\u05d4",ex:[]},
+  {id:"fo18",cat:"food",lv:2,ar:"\u0632\u064a\u062a",ph:"\u05d6\u05b5\u05d9\u05ea",he:"\u05e9\u05de\u05df",ex:[]},
+  {id:"fo19",cat:"food",lv:2,ar:"\u0628\u0646\u062f\u0648\u0631\u0629",ph:"\u05d1\u05b7\u05bc\u05e0\u05b0\u05d3\u05bc\u05d5\u05bc\u05e8\u05b6\u05d4",he:"\u05e2\u05d2\u05d1\u05e0\u05d9\u05d9\u05d4",ex:[]},
+  {id:"fo20",cat:"food",lv:2,ar:"\u062e\u064a\u0627\u0631",ph:"\u05d7\u05b0\u05d9\u05b8\u05d0\u05e8",he:"\u05de\u05dc\u05e4\u05e4\u05d5\u05df",ex:[]},
+  {id:"fo21",cat:"food",lv:2,ar:"\u0628\u0635\u0644",ph:"\u05d1\u05b7\u05bc\u05e6\u05b7\u05bc\u05dc",he:"\u05d1\u05e6\u05dc",ex:[]},
+  {id:"fo22",cat:"food",lv:2,ar:"\u0633\u0645\u0643",ph:"\u05e1\u05b7\u05de\u05b7\u05bc\u05e7",he:"\u05d3\u05d2",ex:[]},
+  {id:"fo23",cat:"food",lv:2,ar:"\u062d\u0644\u064a\u0628",ph:"\u05d7\u05b0\u05dc\u05b4\u05d9\u05d1",he:"\u05d7\u05dc\u05d1",ex:[]},
+  {id:"fo24",cat:"food",lv:2,ar:"\u0639\u0635\u064a\u0631",ph:"\u05e2\u05b7\u05e6\u05b4\u05bc\u05d9\u05e8",he:"\u05de\u05d9\u05e5",ex:[]},
+  {id:"fo25",cat:"food",lv:2,ar:"\u0632\u064a\u062a\u0648\u0646",ph:"\u05d6\u05b5\u05d9\u05ea\u05d5\u05bc\u05df",he:"\u05d6\u05d9\u05ea\u05d9\u05dd",ex:[]},
+  {id:"fo26",cat:"food",lv:3,ar:"\u0628\u0637\u0627\u0637\u0627",ph:"\u05d1\u05b7\u05bc\u05d8\u05b8\u05bc\u05d0\u05d8\u05b8\u05d4",he:"\u05ea\u05e4\u05d5\u05d7 \u05d0\u05d3\u05de\u05d4",ex:[]},
+  {id:"fo27",cat:"food",lv:3,ar:"\u062b\u0648\u0645",ph:"\u05ea\u05bc\u05d5\u05bc\u05dd",he:"\u05e9\u05d5\u05dd",ex:[]},
+  {id:"fo28",cat:"food",lv:3,ar:"\u0631\u0645\u0627\u0646",ph:"\u05e8\u05bb\u05de\u05b8\u05bc\u05d0\u05df",he:"\u05e8\u05d9\u05de\u05d5\u05df",ex:[]},
+  {id:"fo29",cat:"food",lv:3,ar:"\u0641\u0644\u0641\u0644",ph:"\u05e4\u05b4\u05bc\u05dc\u05b0\u05e4\u05b5\u05bc\u05dc",he:"\u05e4\u05dc\u05e4\u05dc",ex:[]},
+  {id:"fo30",cat:"food",lv:4,ar:"\u062a\u064a\u0646",ph:"\u05ea\u05b4\u05bc\u05d9\u05df",he:"\u05ea\u05d0\u05e0\u05d4",ex:[]},
+  {id:"fo31",cat:"food",lv:4,ar:"\u0646\u0628\u064a\u062a",ph:"\u05e0\u05b0\u05d1\u05b4\u05bc\u05d9\u05ea",he:"\u05d9\u05d9\u05df",ex:[]},
+  // COLORS
+  {id:"c1",cat:"colors",lv:1,ar:"\u0623\u062d\u0645\u0631",ph:"\u05d0\u05b7\u05d7\u05b0\u05de\u05b7\u05e8",he:"\u05d0\u05d3\u05d5\u05dd",ex:[]},
+  {id:"c2",cat:"colors",lv:1,ar:"\u0623\u0632\u0631\u0642",ph:"\u05d0\u05b7\u05d6\u05b0\u05e8\u05b7\u05e7",he:"\u05db\u05d7\u05d5\u05dc",ex:[]},
+  {id:"c3",cat:"colors",lv:1,ar:"\u0623\u062e\u0636\u0631",ph:"\u05d0\u05b7\u05d7'\u05b0\u05e6\u05b7'\u05e8",he:"\u05d9\u05e8\u05d5\u05e7",ex:[]},
+  {id:"c4",cat:"colors",lv:1,ar:"\u0623\u0635\u0641\u0631",ph:"\u05d0\u05b7\u05e6\u05b0\u05e4\u05b7\u05e8",he:"\u05e6\u05d4\u05d5\u05d1",ex:[]},
+  {id:"c5",cat:"colors",lv:1,ar:"\u0623\u0628\u064a\u0636",ph:"\u05d0\u05b7\u05d1\u05b0\u05d9\u05b7\u05d3",he:"\u05dc\u05d1\u05df",ex:[]},
+  {id:"c6",cat:"colors",lv:1,ar:"\u0623\u0633\u0648\u062f",ph:"\u05d0\u05b7\u05e1\u05b0\u05d5\u05b7\u05d3",he:"\u05e9\u05d7\u05d5\u05e8",ex:[]},
+  {id:"c7",cat:"colors",lv:1,ar:"\u0628\u0631\u062a\u0642\u0627\u0644\u064a",ph:"\u05d1\u05bc\u05d5\u05bc\u05e8\u05b0\u05ea\u05bb\u05bc\u05e7\u05b8\u05d0\u05dc\u05b4\u05d9",he:"\u05db\u05ea\u05d5\u05dd",ex:[]},
+  {id:"c8",cat:"colors",lv:2,ar:"\u0628\u0646\u0641\u0633\u062c\u064a",ph:"\u05d1\u05b7\u05bc\u05e0\u05b7\u05e4\u05b0\u05e1\u05b7\u05d2\u05b4'\u05d9",he:"\u05e1\u05d2\u05d5\u05dc",ex:[]},
+  {id:"c9",cat:"colors",lv:2,ar:"\u0648\u0631\u062f\u064a",ph:"\u05d5\u05b7\u05e8\u05b0\u05d3\u05b4\u05bc\u05d9",he:"\u05d5\u05e8\u05d5\u05d3",ex:[]},
+  {id:"c10",cat:"colors",lv:2,ar:"\u0628\u0646\u064a",ph:"\u05d1\u05bc\u05d5\u05bc\u05e0\u05b4\u05bc\u05d9",he:"\u05d7\u05d5\u05dd",ex:[]},
+  {id:"c11",cat:"colors",lv:2,ar:"\u0631\u0645\u0627\u062f\u064a",ph:"\u05e8\u05b0\u05de\u05b8\u05d0\u05d3\u05b4\u05d9",he:"\u05d0\u05e4\u05d5\u05e8",ex:[]},
+  {id:"c12",cat:"colors",lv:3,ar:"\u0630\u0647\u0628\u064a",ph:"\u05d3\u05b7\u05d4\u05b7\u05d1\u05b4\u05bc\u05d9",he:"\u05d6\u05d4\u05d5\u05d1",ex:[]},
+  {id:"c13",cat:"colors",lv:3,ar:"\u0641\u0636\u064a",ph:"\u05e4\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05db\u05e1\u05d5\u05e3",ex:[]},
+  // TIME
+  {id:"t1",cat:"time",lv:1,ar:"\u0627\u0644\u064a\u0648\u0645",ph:"\u05d0\u05b7\u05dc\u05d9\u05d5\u05b9\u05dd",he:"\u05d4\u05d9\u05d5\u05dd",ex:[]},
+  {id:"t2",cat:"time",lv:1,ar:"\u0628\u0643\u0631\u0627",ph:"\u05d1\u05bb\u05bc\u05db\u05b0\u05e8\u05b8\u05d4",he:"\u05de\u05d7\u05e8",ex:[]},
+  {id:"t3",cat:"time",lv:1,ar:"\u0625\u0645\u0628\u0627\u0631\u062d",ph:"\u05d0\u05b4\u05de\u05b0\u05d1\u05b8\u05bc\u05d0\u05e8\u05b4\u05d7",he:"\u05d0\u05ea\u05de\u05d5\u05dc",ex:[]},
+  {id:"t4",cat:"time",lv:1,ar:"\u0647\u0644\u0642",ph:"\u05d4\u05b7\u05dc\u05b7\u05bc\u05e7",he:"\u05e2\u05db\u05e9\u05d9\u05d5",ex:[]},
+  {id:"t5",cat:"time",lv:1,ar:"\u0628\u0639\u062f\u064a\u0646",ph:"\u05d1\u05b7\u05bc\u05e2\u05b0\u05d3\u05b5\u05bc\u05d9\u05df",he:"\u05d0\u05d7\u05e8 \u05db\u05da",ex:[]},
+  {id:"t6",cat:"time",lv:1,ar:"\u0642\u0628\u0644",ph:"\u05e7\u05b7\u05d1\u05b0\u05bc\u05dc",he:"\u05dc\u05e4\u05e0\u05d9",ex:[]},
+  {id:"t7",cat:"time",lv:1,ar:"\u062f\u0642\u064a\u0642\u0629",ph:"\u05d3\u05b7\u05bc\u05e7\u05b4\u05bc\u05d9\u05e7\u05b6\u05d4",he:"\u05d3\u05e7\u05d4",ex:[]},
+  {id:"t8",cat:"time",lv:1,ar:"\u0633\u0627\u0639\u0629",ph:"\u05e1\u05b8\u05d0\u05e2\u05b6\u05d4",he:"\u05e9\u05e2\u05d4",ex:[]},
+  {id:"t9",cat:"time",lv:1,ar:"\u064a\u0648\u0645",ph:"\u05d9\u05d5\u05b9\u05dd",he:"\u05d9\u05d5\u05dd",ex:[]},
+  {id:"t10",cat:"time",lv:1,ar:"\u0623\u0633\u0628\u0648\u0639",ph:"\u05d0\u05bb\u05e1\u05b0\u05d1\u05bc\u05d5\u05bc\u05e2\u05b7",he:"\u05e9\u05d1\u05d5\u05e2",ex:[]},
+  {id:"t11",cat:"time",lv:2,ar:"\u0634\u0647\u0631",ph:"\u05e9\u05b7\u05c1\u05d4\u05b0\u05e8",he:"\u05d7\u05d5\u05d3\u05e9",ex:[]},
+  {id:"t12",cat:"time",lv:2,ar:"\u0633\u0646\u0629",ph:"\u05e1\u05b7\u05e0\u05b6\u05d4",he:"\u05e9\u05e0\u05d4",ex:[]},
+  {id:"t13",cat:"time",lv:2,ar:"\u0635\u0628\u062d",ph:"\u05e6\u05bb\u05d1\u05bc\u05d5\u05bc\u05d7",he:"\u05d1\u05d5\u05e7\u05e8",ex:[]},
+  {id:"t14",cat:"time",lv:2,ar:"\u0636\u0647\u0631",ph:"\u05d3\u05bb\u05bc\u05d4\u05b6\u05e8",he:"\u05e6\u05d4\u05e8\u05d9\u05d9\u05dd",ex:[]},
+  {id:"t15",cat:"time",lv:2,ar:"\u0645\u0633\u0627",ph:"\u05de\u05b7\u05e1\u05b8\u05bc\u05d4",he:"\u05e2\u05e8\u05d1",ex:[]},
+  {id:"t16",cat:"time",lv:2,ar:"\u0644\u064a\u0644",ph:"\u05dc\u05b5\u05d9\u05dc",he:"\u05dc\u05d9\u05dc\u05d4",ex:[]},
+  {id:"t17",cat:"time",lv:2,ar:"\u0627\u0644\u0625\u062b\u0646\u064a\u0646",ph:"\u05d0\u05b7\u05dc-\u05d0\u05b4\u05ea\u05b0\u05e0\u05b5\u05d9\u05df",he:"\u05d9\u05d5\u05dd \u05e9\u05e0\u05d9",ex:[]},
+  {id:"t18",cat:"time",lv:2,ar:"\u0627\u0644\u062b\u0644\u0627\u062b\u0627\u0621",ph:"\u05d0\u05b7\u05ea-\u05ea\u05b0\u05bc\u05dc\u05b8\u05d0\u05ea\u05b8\u05d4",he:"\u05d9\u05d5\u05dd \u05e9\u05dc\u05d9\u05e9\u05d9",ex:[]},
+  {id:"t19",cat:"time",lv:2,ar:"\u0627\u0644\u0623\u0631\u0628\u0639\u0627\u0621",ph:"\u05d0\u05b7\u05dc-\u05d0\u05b7\u05e8\u05b0\u05d1\u05b0\u05bc\u05e2\u05b8\u05d4",he:"\u05d9\u05d5\u05dd \u05e8\u05d1\u05d9\u05e2\u05d9",ex:[]},
+  {id:"t20",cat:"time",lv:2,ar:"\u0627\u0644\u062e\u0645\u064a\u0633",ph:"\u05d0\u05b7\u05dc-\u05d7\u05b0\u05de\u05b4\u05d9\u05e1",he:"\u05d9\u05d5\u05dd \u05d7\u05de\u05d9\u05e9\u05d9",ex:[]},
+  {id:"t21",cat:"time",lv:2,ar:"\u0627\u0644\u062c\u0645\u0639\u0629",ph:"\u05d0\u05b7\u05dc-\u05d2\u05bb'\u05de\u05b0\u05e2\u05b6\u05d4",he:"\u05d9\u05d5\u05dd \u05e9\u05d9\u05e9\u05d9",ex:[]},
+  {id:"t22",cat:"time",lv:2,ar:"\u0627\u0644\u0633\u0628\u062a",ph:"\u05d0\u05b7\u05e1-\u05e1\u05b7\u05d1\u05b6\u05bc\u05ea",he:"\u05e9\u05d1\u05ea",ex:[]},
+  {id:"t23",cat:"time",lv:2,ar:"\u0627\u0644\u0623\u062d\u062f",ph:"\u05d0\u05b7\u05dc-\u05d0\u05b7\u05d7\u05b7\u05d3",he:"\u05d9\u05d5\u05dd \u05e8\u05d0\u05e9\u05d5\u05df",ex:[]},
+  {id:"t24",cat:"time",lv:3,ar:"\u0631\u0628\u064a\u0639",ph:"\u05e8\u05b7\u05d1\u05b4\u05bc\u05d9\u05e2",he:"\u05d0\u05d1\u05d9\u05d1",ex:[]},
+  {id:"t25",cat:"time",lv:3,ar:"\u0635\u064a\u0641",ph:"\u05e6\u05b5\u05d9\u05d9\u05e3",he:"\u05e7\u05d9\u05e5",ex:[]},
+  {id:"t26",cat:"time",lv:3,ar:"\u062e\u0631\u064a\u0641",ph:"\u05d7\u05b0\u05e8\u05b4\u05d9\u05e3",he:"\u05e1\u05ea\u05d9\u05d5",ex:[]},
+  {id:"t27",cat:"time",lv:3,ar:"\u0634\u062a\u0627",ph:"\u05e9\u05b0\u05c1\u05ea\u05b8\u05bc\u05d4",he:"\u05d7\u05d5\u05e8\u05e3",ex:[]},
+  // BODY
+  {id:"b1",cat:"body",lv:1,ar:"\u0631\u0623\u0633",ph:"\u05e8\u05b8\u05d0\u05e1",he:"\u05e8\u05d0\u05e9",ex:[]},
+  {id:"b2",cat:"body",lv:1,ar:"\u0648\u062c\u0647",ph:"\u05d5\u05b7\u05d2\u05b4'\u05d4",he:"\u05e4\u05e0\u05d9\u05dd",ex:[]},
+  {id:"b3",cat:"body",lv:1,ar:"\u0639\u064a\u0646",ph:"\u05e2\u05b5\u05d9\u05df",he:"\u05e2\u05d9\u05df",ex:[]},
+  {id:"b4",cat:"body",lv:1,ar:"\u0623\u0630\u0646",ph:"\u05d0\u05bb\u05d3\u05bb\u05df",he:"\u05d0\u05d5\u05d6\u05df",ex:[]},
+  {id:"b5",cat:"body",lv:1,ar:"\u0623\u0646\u0641",ph:"\u05d0\u05b7\u05e0\u05b0\u05e3",he:"\u05d0\u05e3",ex:[]},
+  {id:"b6",cat:"body",lv:1,ar:"\u0641\u0645",ph:"\u05e4\u05bb\u05de\u05bc",he:"\u05e4\u05d4",ex:[]},
+  {id:"b7",cat:"body",lv:1,ar:"\u064a\u062f",ph:"\u05d0\u05b4\u05d9\u05d3",he:"\u05d9\u05d3",ex:[]},
+  {id:"b8",cat:"body",lv:1,ar:"\u0631\u062c\u0644",ph:"\u05e8\u05b4\u05d2\u05b4'\u05dc",he:"\u05e8\u05d2\u05dc",ex:[]},
+  {id:"b9",cat:"body",lv:2,ar:"\u0642\u0644\u0628",ph:"\u05e7\u05b7\u05dc\u05b0\u05d1\u05bc",he:"\u05dc\u05d1",ex:[]},
+  {id:"b10",cat:"body",lv:2,ar:"\u0628\u0637\u0646",ph:"\u05d1\u05b7\u05bc\u05d8\u05b6\u05df",he:"\u05d1\u05d8\u05df",ex:[]},
+  {id:"b11",cat:"body",lv:2,ar:"\u0643\u062a\u0641",ph:"\u05db\u05b4\u05bc\u05ea\u05b6\u05e3",he:"\u05db\u05ea\u05e3",ex:[]},
+  {id:"b12",cat:"body",lv:2,ar:"\u0631\u0643\u0628\u0629",ph:"\u05e8\u05bb\u05db\u05b0\u05bc\u05d1\u05b6\u05bc\u05d4",he:"\u05d1\u05e8\u05da",ex:[]},
+  {id:"b13",cat:"body",lv:2,ar:"\u0638\u0647\u0631",ph:"\u05d3\u05b0\u05bc\u05d4\u05b6\u05e8",he:"\u05d2\u05d1",ex:[]},
+  {id:"b14",cat:"body",lv:2,ar:"\u0639\u0646\u0642",ph:"\u05e2\u05bb\u05e0\u05bb\u05e7",he:"\u05e6\u05d5\u05d5\u05d0\u05e8",ex:[]},
+  {id:"b15",cat:"body",lv:2,ar:"\u0623\u0633\u0646\u0627\u0646",ph:"\u05d0\u05b7\u05e1\u05b0\u05e0\u05b8\u05d0\u05df",he:"\u05e9\u05d9\u05e0\u05d9\u05d9\u05dd",ex:[]},
+  {id:"b16",cat:"body",lv:2,ar:"\u0634\u0639\u0631",ph:"\u05e9\u05b7\u05c1\u05e2\u05b6\u05e8",he:"\u05e9\u05d9\u05e2\u05e8",ex:[]},
+  {id:"b17",cat:"body",lv:3,ar:"\u0635\u062f\u0631",ph:"\u05e6\u05b7\u05d3\u05b6\u05bc\u05e8",he:"\u05d7\u05d6\u05d4",ex:[]},
+  {id:"b18",cat:"body",lv:3,ar:"\u062f\u0645",ph:"\u05d3\u05b7\u05de\u05bc",he:"\u05d3\u05dd",ex:[]},
+  {id:"b19",cat:"body",lv:3,ar:"\u062c\u0644\u062f",ph:"\u05d2\u05b4'\u05dc\u05b0\u05d3",he:"\u05e2\u05d5\u05e8",ex:[]},
+  {id:"b20",cat:"body",lv:4,ar:"\u0639\u0638\u0645",ph:"\u05e2\u05b7\u05d3\u05b0'\u05dd",he:"\u05e2\u05e6\u05dd",ex:[]},
+  // HOME
+  {id:"h1",cat:"home",lv:1,ar:"\u0628\u064a\u062a",ph:"\u05d1\u05b5\u05bc\u05d9\u05ea",he:"\u05d1\u05d9\u05ea",ex:[]},
+  {id:"h2",cat:"home",lv:1,ar:"\u0628\u0627\u0628",ph:"\u05d1\u05b8\u05bc\u05d0\u05d1",he:"\u05d3\u05dc\u05ea",ex:[]},
+  {id:"h3",cat:"home",lv:1,ar:"\u0634\u0628\u0627\u0643",ph:"\u05e9\u05bb\u05c1\u05d1\u05b8\u05bc\u05d0\u05e7",he:"\u05d7\u05dc\u05d5\u05df",ex:[]},
+  {id:"h4",cat:"home",lv:1,ar:"\u063a\u0631\u0641\u0629",ph:"\u05d2\u05bb'\u05e8\u05b0\u05e4\u05b6\u05d4",he:"\u05d7\u05d3\u05e8",ex:[]},
+  {id:"h5",cat:"home",lv:1,ar:"\u0645\u0637\u0628\u062e",ph:"\u05de\u05b7\u05d8\u05b0\u05d1\u05b7\u05bc\u05d7",he:"\u05de\u05d8\u05d1\u05d7",ex:[]},
+  {id:"h6",cat:"home",lv:1,ar:"\u062d\u0645\u0627\u0645",ph:"\u05d7\u05b7\u05de\u05b8\u05bc\u05d0\u05dd",he:"\u05e9\u05d9\u05e8\u05d5\u05ea\u05d9\u05dd",ex:[]},
+  {id:"h7",cat:"home",lv:1,ar:"\u0633\u0631\u064a\u0631",ph:"\u05e1\u05b0\u05e8\u05b4\u05d9\u05e8",he:"\u05de\u05d9\u05d8\u05d4",ex:[]},
+  {id:"h8",cat:"home",lv:1,ar:"\u0643\u0631\u0633\u064a",ph:"\u05db\u05bb\u05bc\u05e8\u05b0\u05e1\u05b4\u05d9",he:"\u05db\u05d9\u05e1\u05d0",ex:[]},
+  {id:"h9",cat:"home",lv:2,ar:"\u0637\u0627\u0648\u0644\u0629",ph:"\u05d8\u05b8\u05d0\u05d5\u05b0\u05dc\u05b6\u05d4",he:"\u05e9\u05d5\u05dc\u05d7\u05df",ex:[]},
+  {id:"h10",cat:"home",lv:2,ar:"\u062a\u0644\u0641\u0632\u064a\u0648\u0646",ph:"\u05ea\u05b4\u05bc\u05dc\u05b0\u05e4\u05b4\u05bc\u05d6\u05b0\u05d9\u05d5\u05b9\u05df",he:"\u05d8\u05dc\u05d5\u05d5\u05d9\u05d6\u05d9\u05d4",ex:[]},
+  {id:"h11",cat:"home",lv:2,ar:"\u062b\u0644\u0627\u062c\u0629",ph:"\u05ea\u05b7\u05bc\u05dc\u05b8\u05bc\u05d2\u05b6\u05d4",he:"\u05de\u05e7\u05e8\u05e8",ex:[]},
+  {id:"h12",cat:"home",lv:2,ar:"\u0645\u0643\u064a\u0641",ph:"\u05de\u05b0\u05db\u05b7\u05d9\u05b0\u05bc\u05e3",he:"\u05de\u05d6\u05d2\u05df",ex:[]},
+  {id:"h13",cat:"home",lv:2,ar:"\u0645\u0641\u062a\u0627\u062d",ph:"\u05de\u05b7\u05e4\u05b0\u05ea\u05b8\u05bc\u05d0\u05d7",he:"\u05de\u05e4\u05ea\u05d7",ex:[]},
+  {id:"h14",cat:"home",lv:2,ar:"\u0646\u0648\u0631",ph:"\u05e0\u05d5\u05bc\u05e8",he:"\u05d0\u05d5\u05e8 / \u05d7\u05e9\u05de\u05dc",ex:[]},
+  {id:"h15",cat:"home",lv:3,ar:"\u063a\u0633\u0627\u0644\u0629",ph:"\u05d2\u05b7'\u05e1\u05b8\u05bc\u05d0\u05dc\u05b6\u05d4",he:"\u05de\u05db\u05d5\u05e0\u05ea \u05db\u05d1\u05d9\u05e1\u05d4",ex:[]},
+  {id:"h16",cat:"home",lv:3,ar:"\u0633\u062c\u0627\u062f\u0629",ph:"\u05e1\u05b7\u05d2\u05b8\u05bc\u05d0\u05d3\u05b6\u05d4",he:"\u05e9\u05d8\u05d9\u05d7",ex:[]},
+  {id:"h17",cat:"home",lv:3,ar:"\u0628\u0644\u0643\u0648\u0646",ph:"\u05d1\u05b7\u05bc\u05dc\u05b0\u05db\u05bc\u05d5\u05b9\u05df",he:"\u05de\u05e8\u05e4\u05e1\u05ea",ex:[]},
+  {id:"h18",cat:"home",lv:3,ar:"\u062d\u0648\u0634",ph:"\u05d7\u05d5\u05b9\u05e9\u05c1",he:"\u05d7\u05e6\u05e8",ex:[]},
+  // MARKET
+  {id:"m1",cat:"market",lv:1,ar:"\u0633\u0648\u0642",ph:"\u05e1\u05d5\u05bc\u05e7",he:"\u05e9\u05d5\u05e7",ex:[]},
+  {id:"m2",cat:"market",lv:1,ar:"\u062f\u0643\u0627\u0646",ph:"\u05d3\u05bb\u05bc\u05db\u05b8\u05bc\u05d0\u05df",he:"\u05d7\u05e0\u05d5\u05ea",ex:[]},
+  {id:"m3",cat:"market",lv:1,ar:"\u0628\u0643\u0645\u061f",ph:"\u05d1\u05b0\u05bc\u05db\u05b7\u05dd?",he:"\u05db\u05de\u05d4 \u05e2\u05d5\u05dc\u05d4?",ex:[]},
+  {id:"m4",cat:"market",lv:1,ar:"\u063a\u0627\u0644\u064a",ph:"\u05d2\u05b8'\u05d0\u05dc\u05b4\u05d9",he:"\u05d9\u05e7\u05e8",ex:[]},
+  {id:"m5",cat:"market",lv:1,ar:"\u0631\u062e\u064a\u0635",ph:"\u05e8\u05b0\u05d7\u05b4\u05d9\u05e5",he:"\u05d6\u05d5\u05dc",ex:[]},
+  {id:"m6",cat:"market",lv:1,ar:"\u0628\u062f\u064a",ph:"\u05d1\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05d0\u05e0\u05d9 \u05e8\u05d5\u05e6\u05d4",ex:[]},
+  {id:"m7",cat:"market",lv:1,ar:"\u0645\u0627 \u0628\u062f\u064a",ph:"\u05de\u05b8\u05d0 \u05d1\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05d0\u05e0\u05d9 \u05dc\u05d0 \u05e8\u05d5\u05e6\u05d4",ex:[]},
+  {id:"m8",cat:"market",lv:1,ar:"\u0643\u062a\u064a\u0631",ph:"\u05db\u05b0\u05bc\u05ea\u05b4\u05d9\u05e8",he:"\u05d4\u05e8\u05d1\u05d4",ex:[]},
+  {id:"m9",cat:"market",lv:1,ar:"\u0634\u0648\u064a",ph:"\u05e9\u05b0\u05c1\u05d5\u05b5\u05d9",he:"\u05e7\u05e6\u05ea",ex:[]},
+  {id:"m10",cat:"market",lv:2,ar:"\u0627\u0634\u062a\u0631\u064a\u062a",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05ea\u05b0\u05bc\u05e8\u05b5\u05d9\u05ea",he:"\u05e7\u05e0\u05d9\u05ea\u05d9",ex:[]},
+  {id:"m11",cat:"market",lv:2,ar:"\u0646\u0642\u0648\u062f",ph:"\u05e0\u05b0\u05e7\u05d5\u05bc\u05d3",he:"\u05de\u05d6\u05d5\u05de\u05df",ex:[]},
+  {id:"m12",cat:"market",lv:2,ar:"\u0628\u0637\u0627\u0642\u0629",ph:"\u05d1\u05b4\u05bc\u05d8\u05b8\u05bc\u05d0\u05e7\u05b6\u05d4",he:"\u05db\u05e8\u05d8\u05d9\u05e1 \u05d0\u05e9\u05e8\u05d0\u05d9",ex:[]},
+  {id:"m13",cat:"market",lv:2,ar:"\u062d\u0633\u0627\u0628",ph:"\u05d7\u05b0\u05e1\u05b8\u05d0\u05d1",he:"\u05d7\u05e9\u05d1\u05d5\u05df",ex:[]},
+  {id:"m14",cat:"market",lv:3,ar:"\u062a\u062e\u0641\u064a\u0636",ph:"\u05ea\u05b7\u05bc\u05d7\u05b0\u05e4\u05b4\u05bc\u05d9\u05d3",he:"\u05d4\u05e0\u05d7\u05d4",ex:[]},
+  {id:"m15",cat:"market",lv:3,ar:"\u0648\u0635\u0644",ph:"\u05d5\u05b7\u05e6\u05b6\u05bc\u05dc",he:"\u05e7\u05d1\u05dc\u05d4",ex:[]},
+  // DIRECTIONS
+  {id:"d1",cat:"directions",lv:1,ar:"\u0648\u064a\u0646\u061f",ph:"\u05d5\u05b5\u05d9\u05df?",he:"\u05d0\u05d9\u05e4\u05d4?",ex:[]},
+  {id:"d2",cat:"directions",lv:1,ar:"\u064a\u0645\u064a\u0646",ph:"\u05d9\u05b0\u05de\u05b4\u05d9\u05df",he:"\u05d9\u05de\u05d9\u05df",ex:[]},
+  {id:"d3",cat:"directions",lv:1,ar:"\u0634\u0645\u0627\u0644",ph:"\u05e9\u05b0\u05c1\u05de\u05b8\u05d0\u05dc",he:"\u05e9\u05de\u05d0\u05dc",ex:[]},
+  {id:"d4",cat:"directions",lv:1,ar:"\u062f\u063a\u0631\u064a",ph:"\u05d3\u05bb\u05bc\u05d2\u05b0\u05e8\u05b4\u05d9",he:"\u05d9\u05e9\u05e8",ex:[]},
+  {id:"d5",cat:"directions",lv:1,ar:"\u0642\u0631\u064a\u0628",ph:"\u05e7\u05b7\u05e8\u05b4\u05d9\u05d1",he:"\u05e7\u05e8\u05d5\u05d1",ex:[]},
+  {id:"d6",cat:"directions",lv:1,ar:"\u0628\u0639\u064a\u062f",ph:"\u05d1\u05b0\u05bc\u05e2\u05b4\u05d9\u05d3",he:"\u05e8\u05d7\u05d5\u05e7",ex:[]},
+  {id:"d7",cat:"directions",lv:1,ar:"\u0641\u0648\u0642",ph:"\u05e4\u05d5\u05b9\u05e7",he:"\u05dc\u05de\u05e2\u05dc\u05d4",ex:[]},
+  {id:"d8",cat:"directions",lv:2,ar:"\u062a\u062d\u062a",ph:"\u05ea\u05b7\u05d7\u05b0\u05ea\u05bc",he:"\u05dc\u05de\u05d8\u05d4",ex:[]},
+  {id:"d9",cat:"directions",lv:2,ar:"\u062c\u0646\u0628",ph:"\u05d2\u05b7'\u05e0\u05b0\u05d1\u05bc",he:"\u05dc\u05d9\u05d3",ex:[]},
+  {id:"d10",cat:"directions",lv:2,ar:"\u0642\u062f\u0627\u0645",ph:"\u05e7\u05bb\u05d3\u05b8\u05bc\u05d0\u05dd",he:"\u05dc\u05e4\u05e0\u05d9 / \u05de\u05d5\u05dc",ex:[]},
+  {id:"d11",cat:"directions",lv:2,ar:"\u0648\u0631\u0627",ph:"\u05d5\u05b0\u05e8\u05b8\u05d4",he:"\u05de\u05d0\u05d7\u05d5\u05e8\u05d9",ex:[]},
+  {id:"d12",cat:"directions",lv:2,ar:"\u062d\u0627\u0631\u0629",ph:"\u05d7\u05b8\u05d0\u05e8\u05b6\u05d4",he:"\u05e9\u05db\u05d5\u05e0\u05d4",ex:[]},
+  {id:"d13",cat:"directions",lv:3,ar:"\u0645\u0646\u0637\u0642\u0629",ph:"\u05de\u05b7\u05e0\u05b0\u05d8\u05b7\u05e7\u05b6\u05d4",he:"\u05d0\u05d6\u05d5\u05e8",ex:[]},
+  {id:"d14",cat:"directions",lv:3,ar:"\u062a\u0642\u0631\u064a\u0628\u0627\u064b",ph:"\u05ea\u05b7\u05bc\u05e7\u05b0\u05e8\u05b4\u05d9\u05d1\u05b7\u05df",he:"\u05d1\u05e2\u05e8\u05da",ex:[]},
+  {id:"d15",cat:"directions",lv:3,ar:"\u0639\u0644\u0649 \u0637\u0648\u0644",ph:"\u05e2\u05b7\u05dc\u05b7-\u05d8\u05d5\u05bc\u05dc",he:"\u05d9\u05e9\u05e8 / \u05db\u05dc \u05d4\u05d6\u05de\u05df",ex:[]},
+  // FEELINGS
+  {id:"fe1",cat:"feelings",lv:1,ar:"\u0645\u0628\u0633\u0648\u0637",ph:"\u05de\u05b7\u05d1\u05b0\u05e1\u05d5\u05bc\u05d8",he:"\u05e9\u05de\u05d7",ex:[]},
+  {id:"fe2",cat:"feelings",lv:1,ar:"\u0632\u0639\u0644\u0627\u0646",ph:"\u05d6\u05b7\u05e2\u05b0\u05dc\u05b8\u05d0\u05df",he:"\u05e2\u05e6\u05d5\u05d1 / \u05db\u05d5\u05e2\u05e1",ex:[]},
+  {id:"fe3",cat:"feelings",lv:1,ar:"\u062a\u0639\u0628\u0627\u0646",ph:"\u05ea\u05b7\u05bc\u05e2\u05b0\u05d1\u05b8\u05bc\u05d0\u05df",he:"\u05e2\u05d9\u05d9\u05e3 / \u05d7\u05d5\u05dc\u05d4",ex:[]},
+  {id:"fe4",cat:"feelings",lv:1,ar:"\u062e\u0627\u064a\u0641",ph:"\u05d7\u05b8\u05d0\u05d9\u05b4\u05e3",he:"\u05de\u05e4\u05d5\u05d7\u05d3",ex:[]},
+  {id:"fe5",cat:"feelings",lv:1,ar:"\u062c\u0648\u0639\u0627\u0646",ph:"\u05d2\u05b7'\u05d5\u05b0\u05e2\u05b8\u05d0\u05df",he:"\u05e8\u05e2\u05d1",ex:[]},
+  {id:"fe6",cat:"feelings",lv:1,ar:"\u0639\u0637\u0634\u0627\u0646",ph:"\u05e2\u05b7\u05d8\u05b0\u05e9\u05b8\u05c1\u05d0\u05df",he:"\u05e6\u05de\u05d0",ex:[]},
+  {id:"fe7",cat:"feelings",lv:1,ar:"\u0628\u0631\u062f",ph:"\u05d1\u05b7\u05bc\u05e8\u05b0\u05d3",he:"\u05e7\u05e8 (\u05dc\u05d9 \u05e7\u05e8)",ex:[]},
+  {id:"fe8",cat:"feelings",lv:1,ar:"\u062d\u0631",ph:"\u05d7\u05b7\u05e8\u05bc",he:"\u05d7\u05dd (\u05dc\u05d9 \u05d7\u05dd)",ex:[]},
+  {id:"fe9",cat:"feelings",lv:2,ar:"\u0645\u0646\u064a\u062d",ph:"\u05de\u05b0\u05e0\u05b4\u05d9\u05d7",he:"\u05d1\u05e1\u05d3\u05e8 / \u05d8\u05d5\u05d1",ex:[]},
+  {id:"fe10",cat:"feelings",lv:2,ar:"\u0645\u0634 \u0645\u0646\u064a\u062d",ph:"\u05de\u05b4\u05e9\u05c1 \u05de\u05b0\u05e0\u05b4\u05d9\u05d7",he:"\u05dc\u05d0 \u05d1\u05e1\u05d3\u05e8",ex:[]},
+  {id:"fe11",cat:"feelings",lv:2,ar:"\u0641\u0631\u062d\u0627\u0646",ph:"\u05e4\u05b7\u05bc\u05e8\u05b0\u05d7\u05b8\u05d0\u05df",he:"\u05e9\u05de\u05d7 / \u05e2\u05dc\u05d9\u05d6",ex:[]},
+  {id:"fe12",cat:"feelings",lv:2,ar:"\u0632\u0647\u0642\u0627\u0646",ph:"\u05d6\u05b8\u05d4\u05b0\u05e7\u05b8\u05d0\u05df",he:"\u05de\u05e9\u05d5\u05e2\u05de\u05dd",ex:[]},
+  {id:"fe13",cat:"feelings",lv:2,ar:"\u0645\u0631\u062a\u0627\u062d",ph:"\u05de\u05bb\u05e8\u05b0\u05ea\u05b8\u05bc\u05d0\u05d7",he:"\u05e8\u05d2\u05d5\u05e2 / \u05e0\u05d5\u05d7",ex:[]},
+  {id:"fe14",cat:"feelings",lv:2,ar:"\u0645\u062a\u062d\u0645\u0633",ph:"\u05de\u05bb\u05ea\u05b0\u05d7\u05b7\u05de\u05b5\u05bc\u05e1",he:"\u05e0\u05dc\u05d4\u05d1 / \u05e0\u05e8\u05d2\u05e9",ex:[]},
+  {id:"fe15",cat:"feelings",lv:3,ar:"\u0642\u0644\u0642\u0627\u0646",ph:"\u05e7\u05b7\u05dc\u05b0\u05e7\u05b8\u05d0\u05df",he:"\u05d7\u05e8\u05d3 / \u05d3\u05d5\u05d0\u05d2",ex:[]},
+  {id:"fe16",cat:"feelings",lv:3,ar:"\u062e\u062c\u0644\u0627\u0646",ph:"\u05d7\u05b7\u05d2\u05b4'\u05dc\u05b8\u05d0\u05df",he:"\u05de\u05ea\u05d1\u05d9\u05d9\u05e9",ex:[]},
+  {id:"fe17",cat:"feelings",lv:3,ar:"\u0645\u062a\u0648\u062a\u0631",ph:"\u05de\u05bb\u05ea\u05b7\u05d5\u05b8\u05bc\u05ea\u05b5\u05bc\u05e8",he:"\u05de\u05ea\u05d5\u05d7 / \u05e2\u05e6\u05d1\u05e0\u05d9",ex:[]},
+  {id:"fe18",cat:"feelings",lv:3,ar:"\u0645\u0634\u062a\u0627\u0642",ph:"\u05de\u05bb\u05e9\u05b0\u05c1\u05ea\u05b8\u05bc\u05d0\u05e7",he:"\u05de\u05ea\u05d2\u05e2\u05d2\u05e2",ex:[]},
+  // NATURE
+  {id:"na1",cat:"nature",lv:1,ar:"\u0634\u0645\u0633",ph:"\u05e9\u05b7\u05c1\u05de\u05b0\u05e1",he:"\u05e9\u05de\u05e9",ex:[]},
+  {id:"na2",cat:"nature",lv:1,ar:"\u0642\u0645\u0631",ph:"\u05e7\u05b7\u05de\u05b7\u05e8",he:"\u05d9\u05e8\u05d7",ex:[]},
+  {id:"na3",cat:"nature",lv:1,ar:"\u0645\u0637\u0631",ph:"\u05de\u05b7\u05d8\u05b7\u05e8",he:"\u05d2\u05e9\u05dd",ex:[]},
+  {id:"na4",cat:"nature",lv:1,ar:"\u0628\u062d\u0631",ph:"\u05d1\u05b7\u05bc\u05d7\u05b7\u05e8",he:"\u05d9\u05dd",ex:[]},
+  {id:"na5",cat:"nature",lv:1,ar:"\u062c\u0628\u0644",ph:"\u05d2\u05b7'\u05d1\u05b7\u05bc\u05dc",he:"\u05d4\u05e8",ex:[]},
+  {id:"na6",cat:"nature",lv:1,ar:"\u0634\u062c\u0631\u0629",ph:"\u05e9\u05b7\u05c1\u05d2\u05b7'\u05e8\u05b6\u05d4",he:"\u05e2\u05e5",ex:[]},
+  {id:"na7",cat:"nature",lv:2,ar:"\u0648\u0627\u062f\u064a",ph:"\u05d5\u05b8\u05d0\u05d3\u05b4\u05d9",he:"\u05d5\u05d0\u05d3\u05d9 / \u05e2\u05de\u05e7",ex:[]},
+  {id:"na8",cat:"nature",lv:2,ar:"\u0647\u0648\u0627",ph:"\u05d4\u05b7\u05d5\u05b8\u05bc\u05d4",he:"\u05d0\u05d5\u05d5\u05d9\u05e8 / \u05e8\u05d5\u05d7",ex:[]},
+  {id:"na9",cat:"nature",lv:2,ar:"\u0646\u062c\u0645\u0629",ph:"\u05e0\u05b7\u05d2\u05b4'\u05de\u05b6\u05d4",he:"\u05db\u05d5\u05db\u05d1",ex:[]},
+  {id:"na10",cat:"nature",lv:2,ar:"\u0633\u0645\u0627\u0621",ph:"\u05e1\u05b7\u05de\u05b8\u05bc\u05d4",he:"\u05e9\u05de\u05d9\u05d9\u05dd",ex:[]},
+  {id:"na11",cat:"nature",lv:2,ar:"\u0623\u0631\u0636",ph:"\u05d0\u05b7\u05e8\u05b0\u05d3",he:"\u05d0\u05d3\u05de\u05d4 / \u05e7\u05e8\u05e7\u05e2",ex:[]},
+  {id:"na12",cat:"nature",lv:2,ar:"\u0646\u0647\u0631",ph:"\u05e0\u05b7\u05d4\u05b7\u05e8",he:"\u05e0\u05d4\u05e8",ex:[]},
+  {id:"na13",cat:"nature",lv:3,ar:"\u063a\u0627\u0628\u0629",ph:"\u05d2\u05b8'\u05d0\u05d1\u05b6\u05bc\u05d4",he:"\u05d9\u05e2\u05e8",ex:[]},
+  {id:"na14",cat:"nature",lv:3,ar:"\u0635\u062d\u0631\u0627",ph:"\u05e6\u05b7\u05d7\u05b0\u05e8\u05b8\u05d4",he:"\u05de\u05d3\u05d1\u05e8",ex:[]},
+  {id:"na15",cat:"nature",lv:3,ar:"\u062d\u062c\u0631",ph:"\u05d7\u05b7\u05d2\u05b7\u05bc\u05e8",he:"\u05d0\u05d1\u05df",ex:[]},
+  // TRANSPORT
+  {id:"tr1",cat:"transport",lv:1,ar:"\u0633\u064a\u0627\u0631\u0629",ph:"\u05e1\u05b7\u05d9\u05b8\u05bc\u05d0\u05e8\u05b6\u05d4",he:"\u05de\u05db\u05d5\u05e0\u05d9\u05ea",ex:[]},
+  {id:"tr2",cat:"transport",lv:1,ar:"\u0628\u0627\u0635",ph:"\u05d1\u05b8\u05bc\u05d0\u05e5",he:"\u05d0\u05d5\u05d8\u05d5\u05d1\u05d5\u05e1",ex:[]},
+  {id:"tr3",cat:"transport",lv:1,ar:"\u062a\u0643\u0633\u064a",ph:"\u05d8\u05b7\u05e7\u05b0\u05e1\u05b4\u05d9",he:"\u05de\u05d5\u05e0\u05d9\u05ea",ex:[]},
+  {id:"tr4",cat:"transport",lv:1,ar:"\u0637\u0631\u064a\u0642",ph:"\u05d8\u05b7\u05e8\u05b4\u05d9\u05e7",he:"\u05d3\u05e8\u05da",ex:[]},
+  {id:"tr5",cat:"transport",lv:2,ar:"\u0645\u062d\u0637\u0629",ph:"\u05de\u05b7\u05d7\u05b7\u05d8\u05b8\u05bc\u05d4",he:"\u05ea\u05d7\u05e0\u05d4",ex:[]},
+  {id:"tr6",cat:"transport",lv:2,ar:"\u062f\u0631\u0627\u062c\u0629",ph:"\u05d3\u05b0\u05bc\u05e8\u05b8\u05d2\u05b6\u05d4",he:"\u05d0\u05d5\u05e4\u05e0\u05d9\u05d9\u05dd",ex:[]},
+  {id:"tr7",cat:"transport",lv:2,ar:"\u0637\u064a\u0627\u0631\u0629",ph:"\u05d8\u05b7\u05d9\u05b8\u05bc\u05d0\u05e8\u05b6\u05d4",he:"\u05de\u05d8\u05d5\u05e1",ex:[]},
+  {id:"tr8",cat:"transport",lv:2,ar:"\u0632\u062d\u0645\u0629",ph:"\u05d6\u05b7\u05d7\u05b0\u05de\u05b6\u05d4",he:"\u05e4\u05e7\u05e7 \u05ea\u05e0\u05d5\u05e2\u05d4",ex:[]},
+  {id:"tr9",cat:"transport",lv:3,ar:"\u0645\u0648\u0642\u0641",ph:"\u05de\u05b7\u05d5\u05b0\u05e7\u05b6\u05e3",he:"\u05d7\u05e0\u05d9\u05d4",ex:[]},
+  {id:"tr10",cat:"transport",lv:3,ar:"\u0623\u0648\u062a\u0648\u0633\u062a\u0631\u0627\u062f",ph:"\u05d0\u05d5\u05b9\u05d8\u05d5\u05b9\u05e1\u05b0\u05d8\u05b0\u05e8\u05b8\u05d0\u05d3",he:"\u05db\u05d1\u05d9\u05e9 \u05de\u05d4\u05d9\u05e8",ex:[]},
+  // WORK
+  {id:"w1",cat:"work",lv:1,ar:"\u0634\u063a\u0644",ph:"\u05e9\u05bb\u05c1\u05d2\u05b4'\u05dc",he:"\u05e2\u05d1\u05d5\u05d3\u05d4",ex:[]},
+  {id:"w2",cat:"work",lv:1,ar:"\u0645\u062f\u0631\u0633\u0629",ph:"\u05de\u05b7\u05d3\u05b0\u05e8\u05b7\u05e1\u05b6\u05d4",he:"\u05d1\u05d9\u05ea \u05e1\u05e4\u05e8",ex:[]},
+  {id:"w3",cat:"work",lv:1,ar:"\u062f\u0643\u062a\u0648\u0631",ph:"\u05d3\u05bb\u05bc\u05db\u05b0\u05bc\u05ea\u05d5\u05bc\u05e8",he:"\u05e8\u05d5\u05e4\u05d0",ex:[]},
+  {id:"w4",cat:"work",lv:1,ar:"\u0645\u0647\u0646\u062f\u0633",ph:"\u05de\u05bb\u05d4\u05b7\u05e0\u05b0\u05d3\u05b4\u05bc\u05e1",he:"\u05de\u05d4\u05e0\u05d3\u05e1",ex:[]},
+  {id:"w5",cat:"work",lv:2,ar:"\u0623\u0633\u062a\u0627\u0630",ph:"\u05d0\u05bb\u05e1\u05b0\u05ea\u05b8\u05bc\u05d0\u05d6",he:"\u05de\u05d5\u05e8\u05d4",ex:[]},
+  {id:"w6",cat:"work",lv:2,ar:"\u0634\u0631\u0637\u064a",ph:"\u05e9\u05bb\u05c1\u05e8\u05b0\u05d8\u05b4\u05bc\u05d9",he:"\u05e9\u05d5\u05d8\u05e8",ex:[]},
+  {id:"w7",cat:"work",lv:2,ar:"\u0645\u0645\u0631\u0636\u0629",ph:"\u05de\u05bb\u05de\u05b7\u05bc\u05e8\u05b0\u05bc\u05d3\u05b6\u05d4",he:"\u05d0\u05d7\u05d5\u05ea",ex:[]},
+  {id:"w8",cat:"work",lv:2,ar:"\u0645\u0648\u0638\u0641",ph:"\u05de\u05bb\u05d5\u05b7\u05d3\u05b0\u05bc\u05d3\u05b7\u05e3",he:"\u05e2\u05d5\u05d1\u05d3 / \u05e4\u05e7\u05d9\u05d3",ex:[]},
+  {id:"w9",cat:"work",lv:3,ar:"\u0645\u062d\u0627\u0645\u064a",ph:"\u05de\u05bb\u05d7\u05b8\u05d0\u05de\u05b4\u05d9",he:"\u05e2\u05d5\u05e8\u05da \u05d3\u05d9\u05df",ex:[]},
+  {id:"w10",cat:"work",lv:3,ar:"\u0645\u062f\u064a\u0631",ph:"\u05de\u05bb\u05d3\u05b4\u05bc\u05d9\u05e8",he:"\u05de\u05e0\u05d4\u05dc",ex:[]},
+  {id:"w11",cat:"work",lv:3,ar:"\u062a\u0627\u062c\u0631",ph:"\u05ea\u05b8\u05bc\u05d2\u05b4'\u05e8",he:"\u05e1\u05d5\u05d7\u05e8",ex:[]},
+  {id:"w12",cat:"work",lv:4,ar:"\u0645\u062d\u0627\u0633\u0628",ph:"\u05de\u05bb\u05d7\u05b8\u05d0\u05e1\u05b5\u05d1",he:"\u05e8\u05d5\u05d0\u05d4 \u05d7\u05e9\u05d1\u05d5\u05df",ex:[]},
+  {id:"w13",cat:"work",lv:4,ar:"\u0631\u0627\u062a\u0628",ph:"\u05e8\u05b8\u05d0\u05ea\u05b5\u05d1",he:"\u05de\u05e9\u05db\u05d5\u05e8\u05ea",ex:[]},
+  // VERBS
+  {id:"v1",cat:"verbs",lv:1,ar:"\u0631\u0648\u062d",ph:"\u05e8\u05d5\u05bc\u05d7",he:"\u05dc\u05da",ex:[]},
+  {id:"v2",cat:"verbs",lv:1,ar:"\u062a\u0639\u0627\u0644",ph:"\u05ea\u05b0\u05bc\u05e2\u05b8\u05d0\u05dc",he:"\u05d1\u05d5\u05d0",ex:[]},
+  {id:"v3",cat:"verbs",lv:1,ar:"\u0643\u0644",ph:"\u05db\u05bb\u05bc\u05dc",he:"\u05d0\u05db\u05d5\u05dc",ex:[]},
+  {id:"v4",cat:"verbs",lv:1,ar:"\u0627\u0634\u0631\u0628",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05e8\u05b7\u05d1",he:"\u05e9\u05ea\u05d4",ex:[]},
+  {id:"v5",cat:"verbs",lv:1,ar:"\u0646\u0627\u0645",ph:"\u05e0\u05b8\u05d0\u05dd",he:"\u05d9\u05e9\u05df",ex:[]},
+  {id:"v6",cat:"verbs",lv:2,ar:"\u0627\u0642\u0639\u062f",ph:"\u05d0\u05b4\u05e7\u05b0\u05e2\u05bb\u05d3",he:"\u05e9\u05d1",ex:[]},
+  {id:"v7",cat:"verbs",lv:2,ar:"\u0642\u0648\u0645",ph:"\u05e7\u05d5\u05bc\u05dd",he:"\u05e7\u05d5\u05dd",ex:[]},
+  {id:"v8",cat:"verbs",lv:2,ar:"\u0634\u0648\u0641",ph:"\u05e9\u05c1\u05d5\u05bc\u05e3",he:"\u05ea\u05e8\u05d0\u05d4",ex:[]},
+  {id:"v9",cat:"verbs",lv:2,ar:"\u0633\u0645\u0639",ph:"\u05e1\u05b0\u05de\u05b7\u05e2",he:"\u05ea\u05e9\u05de\u05e2",ex:[]},
+  {id:"v10",cat:"verbs",lv:2,ar:"\u062d\u0643\u064a",ph:"\u05d7\u05b0\u05db\u05b4\u05bc\u05d9",he:"\u05d3\u05d1\u05e8",ex:[]},
+  {id:"v11",cat:"verbs",lv:2,ar:"\u062e\u0630",ph:"\u05d7\u05d5\u05bc\u05d3",he:"\u05e7\u05d7",ex:[]},
+  {id:"v12",cat:"verbs",lv:2,ar:"\u0639\u0637\u064a",ph:"\u05e2\u05b0\u05d8\u05b4\u05d9",he:"\u05ea\u05df",ex:[]},
+  {id:"v13",cat:"verbs",lv:2,ar:"\u0627\u0639\u0645\u0644",ph:"\u05d0\u05b4\u05e2\u05b0\u05de\u05b7\u05dc",he:"\u05e2\u05e9\u05d4",ex:[]},
+  {id:"v14",cat:"verbs",lv:3,ar:"\u0641\u062a\u062d",ph:"\u05e4\u05b0\u05bc\u05ea\u05b7\u05d7",he:"\u05e4\u05ea\u05d7",ex:[]},
+  {id:"v15",cat:"verbs",lv:3,ar:"\u0633\u0643\u0631",ph:"\u05e1\u05b7\u05db\u05b6\u05bc\u05e8",he:"\u05e1\u05d2\u05d5\u05e8",ex:[]},
+  {id:"v16",cat:"verbs",lv:3,ar:"\u0643\u062a\u0628",ph:"\u05db\u05b0\u05bc\u05ea\u05bb\u05d1",he:"\u05db\u05ea\u05d5\u05d1",ex:[]},
+  {id:"v17",cat:"verbs",lv:3,ar:"\u0627\u0634\u062a\u0631\u0649",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05ea\u05b0\u05bc\u05e8\u05b4\u05d9",he:"\u05e7\u05e0\u05d4",ex:[]},
+  {id:"v18",cat:"verbs",lv:3,ar:"\u0631\u062c\u0639",ph:"\u05e8\u05b0\u05d2\u05b7\u05e2",he:"\u05d7\u05d6\u05d5\u05e8",ex:[]},
+  {id:"v19",cat:"verbs",lv:3,ar:"\u0628\u062d\u0628",ph:"\u05d1\u05b0\u05bc\u05d7\u05bb\u05d1\u05bc",he:"\u05d0\u05e0\u05d9 \u05d0\u05d5\u05d4\u05d1",ex:[]},
+  {id:"v20",cat:"verbs",lv:4,ar:"\u0633\u0627\u0639\u062f",ph:"\u05e1\u05b8\u05d0\u05e2\u05b4\u05d3",he:"\u05e2\u05d6\u05d5\u05e8",ex:[]},
+  {id:"v21",cat:"verbs",lv:4,ar:"\u0641\u0643\u0631",ph:"\u05e4\u05b7\u05bc\u05db\u05b6\u05bc\u05e8",he:"\u05d7\u05e9\u05d5\u05d1",ex:[]},
+  {id:"v22",cat:"verbs",lv:4,ar:"\u0641\u0647\u0645",ph:"\u05e4\u05b0\u05bc\u05d4\u05b4\u05dd",he:"\u05d4\u05d1\u05df",ex:[]},
+  // ADJECTIVES
+  {id:"adj1",cat:"adjectives",lv:1,ar:"\u0643\u0628\u064a\u0631",ph:"\u05db\u05b0\u05bc\u05d1\u05b4\u05d9\u05e8",he:"\u05d2\u05d3\u05d5\u05dc",ex:[]},
+  {id:"adj2",cat:"adjectives",lv:1,ar:"\u0632\u063a\u064a\u0631",ph:"\u05d6\u05b0\u05d2\u05b4\u05d9\u05e8",he:"\u05e7\u05d8\u05df",ex:[]},
+  {id:"adj3",cat:"adjectives",lv:1,ar:"\u062d\u0644\u0648",ph:"\u05d7\u05bb\u05dc\u05b0\u05d5\u05b6\u05d4",he:"\u05d9\u05e4\u05d4 / \u05e0\u05d7\u05de\u05d3",ex:[]},
+  {id:"adj4",cat:"adjectives",lv:1,ar:"\u0648\u062d\u0634",ph:"\u05d5\u05b7\u05d7\u05b6\u05e9\u05c1",he:"\u05e8\u05e2 / \u05de\u05d2\u05e2\u05d9\u05dc",ex:[]},
+  {id:"adj5",cat:"adjectives",lv:2,ar:"\u0637\u0648\u064a\u0644",ph:"\u05d8\u05b0\u05d5\u05b4\u05d9\u05dc",he:"\u05d2\u05d1\u05d5\u05d4 / \u05d0\u05e8\u05d5\u05da",ex:[]},
+  {id:"adj6",cat:"adjectives",lv:2,ar:"\u0642\u0635\u064a\u0631",ph:"\u05e7\u05b0\u05e6\u05b4\u05d9\u05e8",he:"\u05e0\u05de\u05d5\u05da / \u05e7\u05e6\u05e8",ex:[]},
+  {id:"adj7",cat:"adjectives",lv:2,ar:"\u062c\u062f\u064a\u062f",ph:"\u05d2\u05b4'\u05d3\u05b4\u05d9\u05d3",he:"\u05d7\u05d3\u05e9",ex:[]},
+  {id:"adj8",cat:"adjectives",lv:2,ar:"\u0642\u062f\u064a\u0645",ph:"\u05e7\u05b0\u05d3\u05b4\u05d9\u05dd",he:"\u05d9\u05e9\u05df / \u05e2\u05ea\u05d9\u05e7",ex:[]},
+  {id:"adj9",cat:"adjectives",lv:2,ar:"\u0646\u0638\u064a\u0641",ph:"\u05e0\u05b0\u05d3\u05b4\u05d9\u05e3",he:"\u05e0\u05e7\u05d9",ex:[]},
+  {id:"adj10",cat:"adjectives",lv:2,ar:"\u0648\u0633\u062e",ph:"\u05d5\u05b0\u05e1\u05b4\u05d7",he:"\u05de\u05dc\u05d5\u05db\u05dc\u05da",ex:[]},
+  {id:"adj11",cat:"adjectives",lv:3,ar:"\u0633\u0631\u064a\u0639",ph:"\u05e1\u05b0\u05e8\u05b4\u05d9\u05e2\u05b7",he:"\u05de\u05d4\u05d9\u05e8",ex:[]},
+  {id:"adj12",cat:"adjectives",lv:3,ar:"\u0628\u0637\u064a\u0621",ph:"\u05d1\u05b0\u05bc\u05d8\u05b4\u05d9",he:"\u05d0\u05d9\u05d8\u05d9",ex:[]},
+  {id:"adj13",cat:"adjectives",lv:3,ar:"\u0635\u0639\u0628",ph:"\u05e6\u05b7\u05e2\u05b6\u05d1",he:"\u05e7\u05e9\u05d4",ex:[]},
+  {id:"adj14",cat:"adjectives",lv:3,ar:"\u0633\u0647\u0644",ph:"\u05e1\u05b7\u05d4\u05b6\u05dc",he:"\u05e7\u05dc / \u05e4\u05e9\u05d5\u05d8",ex:[]},
+  {id:"adj15",cat:"adjectives",lv:3,ar:"\u0645\u0645\u062a\u0627\u0632",ph:"\u05de\u05bb\u05de\u05b0\u05ea\u05b8\u05bc\u05d0\u05d6",he:"\u05de\u05e6\u05d5\u05d9\u05df",ex:[]},
+  {id:"adj16",cat:"adjectives",lv:3,ar:"\u0645\u0647\u0645",ph:"\u05de\u05bb\u05d4\u05b4\u05de\u05bc",he:"\u05d7\u05e9\u05d5\u05d1",ex:[]},
+  {id:"adj17",cat:"adjectives",lv:4,ar:"\u0645\u0634\u063a\u0648\u0644",ph:"\u05de\u05b7\u05e9\u05b0\u05c1\u05d2\u05bb\u05bc\u05d5\u05dc",he:"\u05e2\u05e1\u05d5\u05e7",ex:[]},
+  {id:"adj18",cat:"adjectives",lv:4,ar:"\u0641\u0627\u0636\u064a",ph:"\u05e4\u05b8\u05bc\u05d0\u05d3\u05b4\u05bc\u05d9",he:"\u05e4\u05e0\u05d5\u05d9 / \u05e8\u05d9\u05e7",ex:[]},
+  {id:"adj19",cat:"adjectives",lv:4,ar:"\u0645\u0631\u064a\u062d",ph:"\u05de\u05b0\u05e8\u05b4\u05d9\u05d7\u05b7",he:"\u05e0\u05d5\u05d7 / \u05e0\u05e2\u05d9\u05dd",ex:[]},
+  {id:"adj20",cat:"adjectives",lv:4,ar:"\u0639\u0627\u062f\u064a",ph:"\u05e2\u05b8\u05d0\u05d3\u05b4\u05d9",he:"\u05e8\u05d2\u05d9\u05dc",ex:[]},
+  // PLACES
+  {id:"pl1",cat:"places",lv:1,ar:"\u0645\u0633\u062a\u0634\u0641\u0649",ph:"\u05de\u05bb\u05e1\u05b0\u05ea\u05b7\u05bc\u05e9\u05b0\u05c1\u05e4\u05b8\u05d4",he:"\u05d1\u05d9\u05ea \u05d7\u05d5\u05dc\u05d9\u05dd",ex:[]},
+  {id:"pl2",cat:"places",lv:1,ar:"\u0645\u0637\u0639\u0645",ph:"\u05de\u05b7\u05d8\u05b0\u05e2\u05b7\u05dd",he:"\u05de\u05e1\u05e2\u05d3\u05d4",ex:[]},
+  {id:"pl3",cat:"places",lv:1,ar:"\u0645\u0633\u062c\u062f",ph:"\u05de\u05b7\u05e1\u05b0\u05d2\u05b4'\u05d3",he:"\u05de\u05e1\u05d2\u05d3",ex:[]},
+  {id:"pl4",cat:"places",lv:2,ar:"\u0643\u0646\u064a\u0633\u0629",ph:"\u05db\u05b0\u05bc\u05e0\u05b4\u05d9\u05e1\u05b6\u05d4",he:"\u05db\u05e0\u05e1\u05d9\u05d9\u05d4",ex:[]},
+  {id:"pl5",cat:"places",lv:2,ar:"\u0634\u0627\u0631\u0639",ph:"\u05e9\u05b8\u05c1\u05d0\u05e8\u05b5\u05e2\u05b7",he:"\u05e8\u05d7\u05d5\u05d1",ex:[]},
+  {id:"pl6",cat:"places",lv:2,ar:"\u062d\u062f\u064a\u0642\u0629",ph:"\u05d7\u05b0\u05d3\u05b4\u05d9\u05e7\u05b6\u05d4",he:"\u05d2\u05df / \u05e4\u05d0\u05e8\u05e7",ex:[]},
+  {id:"pl7",cat:"places",lv:2,ar:"\u0645\u0643\u062a\u0628",ph:"\u05de\u05b7\u05db\u05b0\u05ea\u05b7\u05bc\u05d1",he:"\u05de\u05e9\u05e8\u05d3",ex:[]},
+  {id:"pl8",cat:"places",lv:2,ar:"\u0628\u0646\u0643",ph:"\u05d1\u05b7\u05bc\u05e0\u05b0\u05e7",he:"\u05d1\u05e0\u05e7",ex:[]},
+  {id:"pl9",cat:"places",lv:2,ar:"\u0635\u064a\u062f\u0644\u064a\u0629",ph:"\u05e6\u05b5\u05d9\u05b0\u05d3\u05b0\u05bc\u05dc\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05d1\u05d9\u05ea \u05de\u05e8\u05e7\u05d7\u05ea",ex:[]},
+  {id:"pl10",cat:"places",lv:2,ar:"\u0633\u0648\u0628\u0631\u0645\u0627\u0631\u0643\u062a",ph:"\u05e1\u05d5\u05bc\u05e4\u05b6\u05bc\u05e8\u05b0\u05de\u05b7\u05e8\u05b0\u05e7\u05b6\u05d8",he:"\u05e1\u05d5\u05e4\u05e8\u05de\u05e8\u05e7\u05d8",ex:[]},
+  {id:"pl11",cat:"places",lv:3,ar:"\u0645\u0637\u0627\u0631",ph:"\u05de\u05b8\u05d8\u05b8\u05d0\u05e8",he:"\u05e9\u05d3\u05d4 \u05ea\u05e2\u05d5\u05e4\u05d4",ex:[]},
+  {id:"pl12",cat:"places",lv:3,ar:"\u0641\u0646\u062f\u0642",ph:"\u05e4\u05bb\u05e0\u05b0\u05d3\u05bb\u05bc\u05e7",he:"\u05de\u05dc\u05d5\u05df",ex:[]},
+  {id:"pl13",cat:"places",lv:3,ar:"\u0645\u062a\u062d\u0641",ph:"\u05de\u05b7\u05ea\u05b0\u05d7\u05b7\u05e3",he:"\u05de\u05d5\u05d6\u05d9\u05d0\u05d5\u05df",ex:[]},
+  {id:"pl14",cat:"places",lv:3,ar:"\u062c\u0627\u0645\u0639\u0629",ph:"\u05d2\u05b8'\u05d0\u05de\u05b0\u05e2\u05b6\u05d4",he:"\u05d0\u05d5\u05e0\u05d9\u05d1\u05e8\u05e1\u05d9\u05d8\u05d4",ex:[]},
+  {id:"pl15",cat:"places",lv:3,ar:"\u0645\u0644\u0639\u0628",ph:"\u05de\u05b7\u05dc\u05b0\u05e2\u05b7\u05d1",he:"\u05de\u05d2\u05e8\u05e9 / \u05d0\u05e6\u05d8\u05d3\u05d9\u05d5\u05df",ex:[]},
+  {id:"pl16",cat:"places",lv:4,ar:"\u0633\u0641\u0627\u0631\u0629",ph:"\u05e1\u05b0\u05e4\u05b8\u05d0\u05e8\u05b6\u05d4",he:"\u05e9\u05d2\u05e8\u05d9\u05e8\u05d5\u05ea",ex:[]},
+  {id:"pl17",cat:"places",lv:4,ar:"\u0628\u0644\u062f\u064a\u0629",ph:"\u05d1\u05b7\u05bc\u05dc\u05b0\u05d3\u05b4\u05bc\u05d9\u05b6\u05d4",he:"\u05e2\u05d9\u05e8\u05d9\u05d9\u05d4",ex:[]},
+  {id:"pl18",cat:"places",lv:4,ar:"\u0645\u062d\u0643\u0645\u0629",ph:"\u05de\u05b7\u05d7\u05b0\u05db\u05b0\u05bc\u05de\u05b6\u05d4",he:"\u05d1\u05d9\u05ea \u05de\u05e9\u05e4\u05d8",ex:[]},
+  // CLOTHES
+  {id:"cl1",cat:"clothes",lv:2,ar:"\u0642\u0645\u064a\u0635",ph:"\u05e7\u05b0\u05de\u05b4\u05d9\u05e5",he:"\u05d7\u05d5\u05dc\u05e6\u05d4",ex:[]},
+  {id:"cl2",cat:"clothes",lv:2,ar:"\u0628\u0646\u0637\u0644\u0648\u0646",ph:"\u05d1\u05b7\u05bc\u05e0\u05b0\u05d8\u05b7\u05dc\u05d5\u05b9\u05df",he:"\u05de\u05db\u05e0\u05e1\u05d9\u05d9\u05dd",ex:[]},
+  {id:"cl3",cat:"clothes",lv:2,ar:"\u0641\u0633\u062a\u0627\u0646",ph:"\u05e4\u05bb\u05e1\u05b0\u05ea\u05b8\u05bc\u05d0\u05df",he:"\u05e9\u05de\u05dc\u05d4",ex:[]},
+  {id:"cl4",cat:"clothes",lv:2,ar:"\u0643\u0646\u062f\u0631\u0629",ph:"\u05db\u05bb\u05bc\u05e0\u05b0\u05d3\u05b0\u05bc\u05e8\u05b6\u05d4",he:"\u05e0\u05e2\u05dc",ex:[]},
+  {id:"cl5",cat:"clothes",lv:2,ar:"\u062c\u0627\u0643\u064a\u062a",ph:"\u05d2\u05b8'\u05d0\u05e7\u05b5\u05d9\u05d8",he:"\u05d6'\u05e7\u05d8",ex:[]},
+  {id:"cl6",cat:"clothes",lv:2,ar:"\u062d\u0642\u064a\u0628\u0629",ph:"\u05d7\u05b0\u05e7\u05b4\u05d9\u05d1\u05b6\u05bc\u05d4",he:"\u05ea\u05d9\u05e7",ex:[]},
+  {id:"cl7",cat:"clothes",lv:3,ar:"\u0634\u0631\u0627\u0628",ph:"\u05e9\u05b0\u05c1\u05e8\u05b8\u05d0\u05d1",he:"\u05d2\u05e8\u05d1",ex:[]},
+  {id:"cl8",cat:"clothes",lv:3,ar:"\u0642\u0628\u0639\u0629",ph:"\u05e7\u05bb\u05d1\u05b7\u05bc\u05e2\u05b6\u05d4",he:"\u05db\u05d5\u05d1\u05e2",ex:[]},
+  {id:"cl9",cat:"clothes",lv:3,ar:"\u062d\u0632\u0627\u0645",ph:"\u05d7\u05b0\u05d6\u05b8\u05d0\u05dd",he:"\u05d7\u05d2\u05d5\u05e8\u05d4",ex:[]},
+  {id:"cl10",cat:"clothes",lv:3,ar:"\u062a\u064a\u0634\u064a\u0631\u062a",ph:"\u05ea\u05b4\u05bc\u05d9-\u05e9\u05b5\u05c1\u05e8\u05b0\u05d8",he:"\u05d7\u05d5\u05dc\u05e6\u05ea \u05d8\u05d9",ex:[]},
+  {id:"cl11",cat:"clothes",lv:3,ar:"\u0634\u0648\u0631\u062a",ph:"\u05e9\u05d5\u05b9\u05e8\u05b0\u05d8",he:"\u05de\u05db\u05e0\u05e1\u05d9\u05d9\u05dd \u05e7\u05e6\u05e8\u05d9\u05dd",ex:[]},
+  {id:"cl12",cat:"clothes",lv:4,ar:"\u0645\u0639\u0637\u0641",ph:"\u05de\u05b7\u05e2\u05b0\u05d8\u05b7\u05e3",he:"\u05de\u05e2\u05d9\u05dc",ex:[]},
+  {id:"cl13",cat:"clothes",lv:4,ar:"\u0648\u0634\u0627\u062d",ph:"\u05d5\u05b0\u05e9\u05b8\u05c1\u05d0\u05d7",he:"\u05e6\u05e2\u05d9\u05e3",ex:[]},
+  {id:"cl14",cat:"clothes",lv:4,ar:"\u0628\u064a\u062c\u0627\u0645\u0629",ph:"\u05d1\u05b4\u05bc\u05d9\u05d2\u05b8'\u05d0\u05de\u05b6\u05d4",he:"\u05e4\u05d9\u05d2'\u05de\u05d4",ex:[]},
+  // HEALTH
+  {id:"he1",cat:"health",lv:2,ar:"\u0645\u0631\u064a\u0636",ph:"\u05de\u05b0\u05e8\u05b4\u05d9\u05d3",he:"\u05d7\u05d5\u05dc\u05d4",ex:[]},
+  {id:"he2",cat:"health",lv:2,ar:"\u0623\u0644\u0645",ph:"\u05d0\u05b7\u05dc\u05b7\u05dd",he:"\u05db\u05d0\u05d1",ex:[]},
+  {id:"he3",cat:"health",lv:2,ar:"\u062f\u0648\u0627",ph:"\u05d3\u05b7\u05d5\u05b8\u05bc\u05d4",he:"\u05ea\u05e8\u05d5\u05e4\u05d4",ex:[]},
+  {id:"he4",cat:"health",lv:2,ar:"\u0637\u0648\u0627\u0631\u0626",ph:"\u05d8\u05b7\u05d5\u05b8\u05bc\u05d0\u05e8\u05b5\u05e2\u05b7",he:"\u05d7\u05d9\u05e8\u05d5\u05dd",ex:[]},
+  {id:"he5",cat:"health",lv:3,ar:"\u062d\u0645\u0649",ph:"\u05d7\u05bb\u05de\u05b8\u05bc\u05d4",he:"\u05d7\u05d5\u05dd (\u05de\u05d7\u05dc\u05d4)",ex:[]},
+  {id:"he6",cat:"health",lv:3,ar:"\u0633\u0639\u0627\u0644",ph:"\u05e1\u05bb\u05e2\u05b8\u05d0\u05dc",he:"\u05e9\u05d9\u05e2\u05d5\u05dc",ex:[]},
+  {id:"he7",cat:"health",lv:3,ar:"\u0632\u0643\u0627\u0645",ph:"\u05d6\u05bb\u05db\u05b8\u05bc\u05d0\u05dd",he:"\u05d4\u05e6\u05d8\u05e0\u05e0\u05d5\u05ea",ex:[]},
+  {id:"he8",cat:"health",lv:3,ar:"\u0635\u062f\u0627\u0639",ph:"\u05e6\u05bb\u05d3\u05b8\u05bc\u05d0\u05e2\u05b7",he:"\u05db\u05d0\u05d1 \u05e8\u05d0\u05e9",ex:[]},
+  {id:"he9",cat:"health",lv:3,ar:"\u0639\u064a\u0627\u062f\u0629",ph:"\u05e2\u05b4\u05d9\u05d0\u05b8\u05d3\u05b6\u05d4",he:"\u05e7\u05dc\u05d9\u05e0\u05d9\u05e7\u05d4",ex:[]},
+  {id:"he10",cat:"health",lv:4,ar:"\u0639\u0645\u0644\u064a\u0629",ph:"\u05e2\u05b7\u05de\u05b7\u05dc\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05e0\u05d9\u05ea\u05d5\u05d7",ex:[]},
+  {id:"he11",cat:"health",lv:4,ar:"\u0625\u0633\u0639\u0627\u0641",ph:"\u05d0\u05b4\u05e1\u05b0\u05e2\u05b8\u05d0\u05e3",he:"\u05d0\u05de\u05d1\u05d5\u05dc\u05e0\u05e1",ex:[]},
+  {id:"he12",cat:"health",lv:4,ar:"\u0644\u0642\u0627\u062d",ph:"\u05dc\u05b7\u05e7\u05b8\u05bc\u05d0\u05d7",he:"\u05d7\u05d9\u05e1\u05d5\u05df",ex:[]},
+  // WEATHER
+  {id:"we1",cat:"weather",lv:2,ar:"\u0637\u0642\u0633",ph:"\u05d8\u05b7\u05e7\u05b0\u05e1",he:"\u05de\u05d6\u05d2 \u05d0\u05d5\u05d5\u05d9\u05e8",ex:[]},
+  {id:"we2",cat:"weather",lv:2,ar:"\u0631\u064a\u062d",ph:"\u05e8\u05b4\u05d9\u05d7",he:"\u05e8\u05d5\u05d7",ex:[]},
+  {id:"we3",cat:"weather",lv:2,ar:"\u0633\u062d\u0627\u0628",ph:"\u05e1\u05b7\u05d7\u05b8\u05d0\u05d1",he:"\u05e2\u05e0\u05df",ex:[]},
+  {id:"we4",cat:"weather",lv:2,ar:"\u062b\u0644\u062c",ph:"\u05ea\u05b7\u05bc\u05dc\u05b0\u05d2\u05b4'",he:"\u05e9\u05dc\u05d2",ex:[]},
+  {id:"we5",cat:"weather",lv:3,ar:"\u0639\u0627\u0635\u0641\u0629",ph:"\u05e2\u05b8\u05d0\u05e6\u05b0\u05e4\u05b6\u05d4",he:"\u05e1\u05e2\u05e8\u05d4",ex:[]},
+  {id:"we6",cat:"weather",lv:3,ar:"\u0636\u0628\u0627\u0628\u064a",ph:"\u05d3\u05b7\u05bc\u05d1\u05b8\u05bc\u05d0\u05d1\u05b4\u05bc\u05d9",he:"\u05e2\u05e8\u05e4\u05d9\u05dc\u05d9",ex:[]},
+  {id:"we7",cat:"weather",lv:3,ar:"\u0631\u0637\u0648\u0628\u0629",ph:"\u05e8\u05b0\u05d8\u05d5\u05bc\u05d1\u05b6\u05bc\u05d4",he:"\u05dc\u05d7\u05d5\u05ea",ex:[]},
+  {id:"we8",cat:"weather",lv:4,ar:"\u0628\u0631\u0642",ph:"\u05d1\u05b7\u05bc\u05e8\u05b0\u05e7",he:"\u05d1\u05e8\u05e7",ex:[]},
+  {id:"we9",cat:"weather",lv:4,ar:"\u0631\u0639\u062f",ph:"\u05e8\u05b7\u05e2\u05b6\u05d3",he:"\u05e8\u05e2\u05dd",ex:[]},
+  {id:"we10",cat:"weather",lv:4,ar:"\u0641\u064a\u0636\u0627\u0646",ph:"\u05e4\u05b5\u05bc\u05d9\u05b0\u05d3\u05b8\u05d0\u05df",he:"\u05e9\u05d9\u05d8\u05e4\u05d5\u05df",ex:[]},
+  // GREETINGS extra
+  {id:"g21",cat:"greetings",lv:2,ar:"\u0643\u064a\u0641\u0643 \u0627\u0644\u064a\u0648\u0645\u061f",ph:"\u05db\u05d9\u05e4\u05e7 \u05d0\u05dc-\u05d9\u05d5\u05dd?",he:"\u05d0\u05d9\u05da \u05d0\u05ea\u05d4 \u05d4\u05d9\u05d5\u05dd?",ex:[]},
+  {id:"g22",cat:"greetings",lv:2,ar:"\u0645\u062a\u0623\u062e\u0631",ph:"\u05de\u05bb\u05ea\u05b0\u05d0\u05b7\u05d7'\u05bc\u05e8",he:"\u05de\u05d0\u05d5\u05d7\u05e8",ex:[]},
+  {id:"g23",cat:"greetings",lv:3,ar:"\u0628\u0627\u0644\u0647\u0646\u0627 \u0648\u0627\u0644\u0634\u0641\u0627",ph:"\u05d1\u05b8\u05bc\u05d0\u05dc-\u05d4\u05b7\u05e0\u05b8\u05bc\u05d4 \u05d5\u05bc\u05e9\u05b0\u05c1\u05e9\u05b4\u05bc\u05c1\u05d9\u05e4\u05b8\u05d0",he:"\u05dc\u05d1\u05e8\u05d9\u05d0\u05d5\u05ea (\u05d1\u05e1\u05e2\u05d5\u05d3\u05d4)",ex:[]},
+  {id:"g24",cat:"greetings",lv:3,ar:"\u0645\u0627 \u0641\u064a \u0645\u0634\u0643\u0644\u0629",ph:"\u05de\u05b8\u05d0 \u05e4\u05b4\u05d9 \u05de\u05bb\u05e9\u05b0\u05c1\u05db\u05b0\u05bc\u05dc\u05b6\u05d4",he:"\u05d0\u05d9\u05df \u05d1\u05e2\u05d9\u05d4",ex:[]},
+  // FOOD extra
+  {id:"fo21",cat:"food",lv:2,ar:"\u0641\u0644\u0627\u0641\u0644",ph:"\u05e4\u05b7\u05dc\u05b8\u05d0\u05e4\u05b6\u05dc",he:"\u05e4\u05dc\u05d0\u05e4\u05dc",ex:[]},
+  {id:"fo22",cat:"food",lv:2,ar:"\u0634\u0627\u0648\u0631\u0645\u0627",ph:"\u05e9\u05b7\u05d0\u05d5\u05b9\u05e8\u05b0\u05de\u05b8\u05d4",he:"\u05e9\u05d5\u05d5\u05d0\u05e8\u05de\u05d4",ex:[]},
+  {id:"fo23",cat:"food",lv:2,ar:"\u062d\u0645\u0635",ph:"\u05d7\u05bb\u05de\u05bc\u05d5\u05bc\u05e1",he:"\u05d7\u05d5\u05de\u05d5\u05e1",ex:[]},
+  {id:"fo24",cat:"food",lv:2,ar:"\u062e\u0628\u0632",ph:"\u05d7\u05bb'\u05d1\u05b7\u05bc\u05d6",he:"\u05dc\u05d7\u05dd",ex:[]},
+  {id:"fo25",cat:"food",lv:2,ar:"\u0632\u064a\u062a \u0632\u064a\u062a\u0648\u0646",ph:"\u05d6\u05b5\u05d9\u05ea \u05d6\u05b5\u05d9\u05ea\u05d5\u05bc\u05df",he:"\u05e9\u05de\u05df \u05d6\u05d9\u05ea",ex:[]},
+  {id:"fo26",cat:"food",lv:3,ar:"\u0645\u0646\u0633\u0641",ph:"\u05de\u05b7\u05e0\u05b0\u05e1\u05b7\u05e3",he:"\u05de\u05e0\u05e1\u05e3 (\u05ea\u05d1\u05e9\u05d9\u05dc \u05dc\u05d0\u05d5\u05de\u05d9)",ex:[]},
+  {id:"fo27",cat:"food",lv:3,ar:"\u0639\u0631\u064a\u0633",ph:"\u05e2\u05b8'\u05e8\u05b4\u05d9\u05e1",he:"\u05e1\u05e0\u05d3\u05d5\u05d5\u05d9\u05e5' \u05e4\u05d9\u05ea\u05d4",ex:[]},
+  {id:"fo28",cat:"food",lv:3,ar:"\u0628\u0642\u0644\u0627\u0648\u0629",ph:"\u05d1\u05b7\u05bc\u05e7\u05b0\u05dc\u05b7\u05d0\u05d5\u05b8\u05d4",he:"\u05d1\u05e7\u05dc\u05d5\u05d5\u05d4",ex:[]},
+  {id:"fo29",cat:"food",lv:3,ar:"\u0645\u0639\u0633\u0644",ph:"\u05de\u05b7\u05e2\u05b0\u05e1\u05b5\u05dc",he:"\u05d8\u05d1\u05e7 \u05e0\u05e8\u05d2\u05d9\u05dc\u05d4",ex:[]},
+  {id:"fo30",cat:"food",lv:4,ar:"\u0645\u0642\u0644\u0648\u0628\u0629",ph:"\u05de\u05b7\u05e7\u05b0\u05dc\u05d5\u05bc\u05d1\u05b6\u05d4",he:"\u05de\u05e7\u05dc\u05d5\u05d1\u05d4 (\u05d0\u05d5\u05e8\u05d6 \u05d4\u05e4\u05d5\u05da)",ex:[]},
+  // VERBS extra
+  {id:"v21",cat:"verbs",lv:2,ar:"\u0628\u062f\u064a",ph:"\u05d1\u05b4\u05bc\u05d3\u05b4\u05bc\u05d9",he:"\u05d0\u05e0\u05d9 \u05e8\u05d5\u05e6\u05d4",ex:[]},
+  {id:"v22",cat:"verbs",lv:2,ar:"\u0628\u062a\u0639\u0631\u0641",ph:"\u05d1\u05b4\u05bc\u05ea\u05b0\u05e2\u05b7\u05e8\u05b7\u05bc\u05e3",he:"\u05d0\u05ea\u05d4 \u05d9\u05d5\u05d3\u05e2",ex:[]},
+  {id:"v23",cat:"verbs",lv:2,ar:"\u0631\u0648\u062d",ph:"\u05e8\u05d5\u05bc\u05d7",he:"\u05dc\u05da / \u05ea\u05dc\u05da",ex:[]},
+  {id:"v24",cat:"verbs",lv:2,ar:"\u062a\u0639\u0627\u0644",ph:"\u05ea\u05b0\u05bc\u05e2\u05b8\u05d0\u05dc",he:"\u05d1\u05d5\u05d0",ex:[]},
+  {id:"v25",cat:"verbs",lv:2,ar:"\u0634\u0648\u0641",ph:"\u05e9\u05d5\u05bc\u05e3",he:"\u05ea\u05e8\u05d0\u05d4 / \u05ea\u05e1\u05ea\u05db\u05dc",ex:[]},
+  {id:"v26",cat:"verbs",lv:2,ar:"\u0627\u0633\u0645\u0639",ph:"\u05d0\u05b4\u05e1\u05b0\u05de\u05b7\u05e2",he:"\u05ea\u05e9\u05de\u05e2",ex:[]},
+  {id:"v27",cat:"verbs",lv:3,ar:"\u0627\u0633\u062a\u0646\u0649",ph:"\u05d0\u05b4\u05e1\u05b0\u05ea\u05b7\u05e0\u05b8\u05bc\u05d4",he:"\u05d7\u05db\u05d4 / \u05d4\u05de\u05ea\u05df",ex:[]},
+  {id:"v28",cat:"verbs",lv:3,ar:"\u0628\u0643\u0649",ph:"\u05d1\u05b7\u05bc\u05db\u05b8\u05bc\u05d4",he:"\u05d1\u05db\u05d4",ex:[]},
+  {id:"v29",cat:"verbs",lv:3,ar:"\u0636\u062d\u0643",ph:"\u05d3\u05b7'\u05d7\u05b7'\u05e7",he:"\u05e6\u05d7\u05e7",ex:[]},
+  {id:"v30",cat:"verbs",lv:3,ar:"\u0627\u0634\u062a\u063a\u0644",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05ea\u05b7\u05bc\u05d2'\u05b7\u05bc\u05dc",he:"\u05e2\u05d1\u05d3 / \u05e2\u05e1\u05e7",ex:[]},
+  {id:"v31",cat:"verbs",lv:3,ar:"\u0646\u0633\u064a",ph:"\u05e0\u05b7\u05e1\u05b4\u05d9",he:"\u05e9\u05db\u05d7",ex:[]},
+  {id:"v32",cat:"verbs",lv:4,ar:"\u0627\u062a\u0639\u0644\u0645",ph:"\u05d0\u05b4\u05ea\u05b0\u05e2\u05b7\u05dc\u05b7\u05bc\u05dd",he:"\u05dc\u05de\u05d3 / \u05d4\u05ea\u05dc\u05de\u05d3",ex:[]},
+  {id:"v33",cat:"verbs",lv:4,ar:"\u0627\u062a\u0641\u0642",ph:"\u05d0\u05b4\u05ea\u05b0\u05e4\u05b7\u05bc\u05e7",he:"\u05d4\u05e1\u05db\u05d9\u05dd",ex:[]},
+  {id:"v34",cat:"verbs",lv:4,ar:"\u062e\u0627\u0641",ph:"\u05d7'\u05b8\u05d0\u05e3",he:"\u05e4\u05d7\u05d3",ex:[]},
+  {id:"v35",cat:"verbs",lv:4,ar:"\u0641\u0631\u062d",ph:"\u05e4\u05b7\u05e8\u05b7\u05d7",he:"\u05e9\u05de\u05d7",ex:[]},
+  {id:"v36",cat:"verbs",lv:5,ar:"\u0627\u0634\u062a\u0627\u0642",ph:"\u05d0\u05b4\u05e9\u05b0\u05c1\u05ea\u05b8\u05bc\u05d0\u05e7",he:"\u05d2\u05e2\u05d2\u05e2",ex:[]},
+  {id:"v37",cat:"verbs",lv:5,ar:"\u062d\u0643\u0645 \u0639\u0644\u0649",ph:"\u05d7\u05b7'\u05db\u05b7\u05bc\u05dd \u05e2\u05b7\u05dc\u05b7",he:"\u05e9\u05e4\u05d8 / \u05d4\u05db\u05e8\u05d9\u05e2",ex:[]},
+  // ADJECTIVES extra
+  {id:"adj21",cat:"adjectives",lv:2,ar:"\u0632\u0627\u0643\u064a",ph:"\u05d6\u05b8\u05d0\u05db\u05b4\u05bc\u05d9",he:"\u05d8\u05e2\u05d9\u05dd",ex:[]},
+  {id:"adj22",cat:"adjectives",lv:2,ar:"\u0633\u0631\u064a\u0639",ph:"\u05e1\u05b7\u05e8\u05b4\u05d9\u05e2",he:"\u05de\u05d4\u05d9\u05e8",ex:[]},
+  {id:"adj23",cat:"adjectives",lv:2,ar:"\u0628\u0637\u064a\u0621",ph:"\u05d1\u05b7\u05bc\u05d8\u05b4\u05bc\u05d9",he:"\u05d0\u05d9\u05d8\u05d9",ex:[]},
+  {id:"adj24",cat:"adjectives",lv:2,ar:"\u0646\u0638\u064a\u0641",ph:"\u05e0\u05b7\u05d3\u05b4'\u05d9\u05e3",he:"\u05e0\u05e7\u05d9",ex:[]},
+  {id:"adj25",cat:"adjectives",lv:2,ar:"\u0648\u0633\u062e",ph:"\u05d5\u05bb\u05e1\u05b7\u05d7'",he:"\u05de\u05dc\u05d5\u05db\u05dc\u05da",ex:[]},
+  {id:"adj26",cat:"adjectives",lv:3,ar:"\u062d\u0644\u0648",ph:"\u05d7\u05bb'\u05dc\u05b0\u05d5\u05b6\u05d4",he:"\u05de\u05ea\u05d5\u05e7 / \u05d9\u05e4\u05d4",ex:[]},
+  {id:"adj27",cat:"adjectives",lv:3,ar:"\u0645\u0631\u0651",ph:"\u05de\u05bb\u05e8\u05bc",he:"\u05de\u05e8",ex:[]},
+  {id:"adj28",cat:"adjectives",lv:3,ar:"\u0646\u0627\u0639\u0645",ph:"\u05e0\u05b8\u05d0\u05e2\u05b4\u05dd",he:"\u05e8\u05da / \u05d7\u05dc\u05e7",ex:[]},
+  {id:"adj29",cat:"adjectives",lv:3,ar:"\u0645\u0644\u064a\u062d",ph:"\u05de\u05b7\u05dc\u05b4\u05d9\u05d7",he:"\u05d9\u05e4\u05d4 / \u05d7\u05de\u05d5\u05d3",ex:[]},
+  {id:"adj30",cat:"adjectives",lv:4,ar:"\u0634\u0627\u0637\u0631",ph:"\u05e9\u05b8\u05c1\u05d0\u05d8\u05b5\u05e8",he:"\u05d7\u05db\u05dd / \u05de\u05d9\u05d5\u05de\u05df",ex:[]},
+  {id:"adj31",cat:"adjectives",lv:4,ar:"\u062e\u0633\u064a\u0633",ph:"\u05d7'\u05b7\u05e1\u05b4\u05bc\u05d9\u05e1",he:"\u05e7\u05de\u05e6\u05df / \u05e0\u05d1\u05d6\u05d9",ex:[]},
+  {id:"adj32",cat:"adjectives",lv:5,ar:"\u0645\u062c\u0646\u0648\u0646",ph:"\u05de\u05b7\u05d2'\u05e0\u05d5\u05bc\u05df",he:"\u05de\u05e9\u05d5\u05d2\u05e2",ex:[]},
+  // FEELINGS extra
+  {id:"fe11",cat:"feelings",lv:2,ar:"\u0645\u0628\u0633\u0648\u0637",ph:"\u05de\u05b7\u05d1\u05b0\u05bc\u05e1\u05d5\u05bc\u05d8",he:"\u05e9\u05de\u05d7 / \u05de\u05e8\u05d5\u05e6\u05d4",ex:[]},
+  {id:"fe12",cat:"feelings",lv:2,ar:"\u0632\u0639\u0644\u0627\u0646",ph:"\u05d6\u05b7\u05e2\u05b0\u05dc\u05b8\u05d0\u05df",he:"\u05e2\u05e6\u05d5\u05d1 / \u05db\u05d5\u05e2\u05e1",ex:[]},
+  {id:"fe13",cat:"feelings",lv:2,ar:"\u062e\u0627\u064a\u0641",ph:"\u05d7'\u05b7\u05d0\u05d9\u05b4\u05e3",he:"\u05de\u05e4\u05d7\u05d3",ex:[]},
+  {id:"fe14",cat:"feelings",lv:3,ar:"\u0645\u0634\u062a\u0627\u0642",ph:"\u05de\u05bb\u05e9\u05b0\u05c1\u05ea\u05b8\u05bc\u05d0\u05e7",he:"\u05de\u05ea\u05d2\u05e2\u05d2\u05e2",ex:[]},
+  {id:"fe15",cat:"feelings",lv:3,ar:"\u0632\u0647\u0642\u0627\u0646",ph:"\u05d6\u05b7\u05d4\u05b0\u05e7\u05b8\u05d0\u05df",he:"\u05de\u05e9\u05d5\u05e2\u05de\u05dd / \u05e2\u05d9\u05d9\u05e3",ex:[]},
+  {id:"fe16",cat:"feelings",lv:3,ar:"\u0645\u062a\u0648\u062a\u0631",ph:"\u05de\u05bb\u05ea\u05b7\u05d5\u05b7\u05bc\u05d5\u05d8\u05b5\u05bc\u05e8",he:"\u05dc\u05d7\u05d5\u05e5 / \u05de\u05ea\u05d5\u05d7",ex:[]},
+  {id:"fe17",cat:"feelings",lv:4,ar:"\u0645\u063a\u0631\u0648\u0631",ph:"\u05de\u05b7\u05d2\u05b0'\u05e8\u05d5\u05bc\u05e8",he:"\u05d9\u05d4\u05d9\u05e8 / \u05de\u05ea\u05e0\u05e9\u05d0",ex:[]},
+  {id:"fe18",cat:"feelings",lv:4,ar:"\u0645\u062a\u0623\u0633\u0641",ph:"\u05de\u05bb\u05ea\u05b0\u05d0\u05b7\u05e1\u05b5\u05bc\u05e3",he:"\u05de\u05e6\u05d8\u05e2\u05e8",ex:[]},
+  // PLACES extra
+  {id:"pl21",cat:"places",lv:2,ar:"\u0633\u0648\u0628\u0631\u0645\u0627\u0631\u0643\u062a",ph:"\u05e1\u05d5\u05bc\u05e4\u05b6\u05bc\u05e8\u05b0\u05de\u05b7\u05e8\u05b0\u05db\u05b5\u05bc\u05d8",he:"\u05e1\u05d5\u05e4\u05e8\u05de\u05e8\u05e7\u05d8",ex:[]},
+  {id:"pl22",cat:"places",lv:2,ar:"\u0645\u0633\u062a\u0634\u0641\u0649",ph:"\u05de\u05bb\u05e1\u05b0\u05ea\u05b7\u05e9\u05b0\u05c1\u05e4\u05b8\u05d4",he:"\u05d1\u05d9\u05ea \u05d7\u05d5\u05dc\u05d9\u05dd",ex:[]},
+  {id:"pl23",cat:"places",lv:2,ar:"\u062c\u0627\u0645\u0639",ph:"\u05d2\u05b8'\u05d0\u05de\u05b4\u05e2",he:"\u05de\u05e1\u05d2\u05d3",ex:[]},
+  {id:"pl24",cat:"places",lv:3,ar:"\u0635\u064a\u062f\u0644\u064a\u0629",ph:"\u05e6\u05b7\u05d9\u05d3\u05b7\u05dc\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05d1\u05d9\u05ea \u05de\u05e8\u05e7\u05d7\u05ea",ex:[]},
+  {id:"pl25",cat:"places",lv:3,ar:"\u0633\u0641\u0627\u0631\u0629",ph:"\u05e1\u05b7\u05e4\u05b8\u05bc\u05d0\u05e8\u05b6\u05d4",he:"\u05e9\u05d2\u05e8\u05d9\u05e8\u05d5\u05ea",ex:[]},
+  {id:"pl26",cat:"places",lv:3,ar:"\u0645\u0644\u0639\u0628",ph:"\u05de\u05b7\u05dc\u05b0\u05e2\u05b7\u05d1",he:"\u05de\u05d2\u05e8\u05e9 \u05e1\u05e4\u05d5\u05e8\u05d8",ex:[]},
+  {id:"pl27",cat:"places",lv:4,ar:"\u0645\u062e\u064a\u0645",ph:"\u05de\u05b7\u05d7'\u05b4\u05d9\u05dd",he:"\u05de\u05d7\u05e0\u05d4",ex:[]},
+  // TECHNOLOGY (new practical category under work)
+  {id:"wk11",cat:"work",lv:3,ar:"\u0645\u0648\u0628\u0627\u064a\u0644",ph:"\u05de\u05d5\u05b9\u05d1\u05b7\u05bc\u05d0\u05d9\u05b4\u05dc",he:"\u05d8\u05dc\u05e4\u05d5\u05df \u05e0\u05d9\u05d9\u05d3",ex:[]},
+  {id:"wk12",cat:"work",lv:3,ar:"\u0625\u0646\u062a\u0631\u0646\u062a",ph:"\u05d0\u05b4\u05d9\u05e0\u05b0\u05ea\u05b7\u05bc\u05e8\u05b0\u05e0\u05b6\u05d8",he:"\u05d0\u05d9\u05e0\u05d8\u05e8\u05e0\u05d8",ex:[]},
+  {id:"wk13",cat:"work",lv:3,ar:"\u0648\u0627\u062a\u0633\u0627\u0628",ph:"\u05d5\u05b7\u05d0\u05d0\u05d8\u05b0\u05e1\u05b7\u05d0\u05d1\u05bc",he:"\u05d5\u05d5\u05d0\u05d8\u05e1\u05d0\u05e4",ex:[]},
+  {id:"wk14",cat:"work",lv:3,ar:"\u0635\u0648\u0631\u0629",ph:"\u05e6\u05d5\u05bc\u05e8\u05b8\u05d4",he:"\u05ea\u05de\u05d5\u05e0\u05d4 / \u05ea\u05e6\u05dc\u05d5\u05dd",ex:[]},
+  {id:"wk15",cat:"work",lv:4,ar:"\u0634\u0627\u0634\u0629",ph:"\u05e9\u05b7\u05c1\u05d0\u05e9\u05b6\u05c1\u05d4",he:"\u05de\u05e1\u05da",ex:[]},
+  {id:"wk16",cat:"work",lv:4,ar:"\u0634\u062d\u0646",ph:"\u05e9\u05b7\u05c1\u05d7\u05b7\u05df",he:"\u05d8\u05e2\u05d9\u05e0\u05d4 (\u05e1\u05d5\u05dc\u05dc\u05d4)",ex:[]},
+  {id:"wk17",cat:"work",lv:4,ar:"\u0628\u0637\u0627\u0631\u064a\u0629",ph:"\u05d1\u05b7\u05bc\u05d8\u05b7\u05bc\u05e8\u05b4\u05d9\u05b6\u05bc\u05d4",he:"\u05e1\u05d5\u05dc\u05dc\u05d4",ex:[]},
+  {id:"wk18",cat:"work",lv:5,ar:"\u0630\u0643\u0627\u0621 \u0627\u0635\u0637\u0646\u0627\u0639\u064a",ph:"\u05d3\u05b7'\u05db\u05b7\u05bc\u05d0\u05d0 \u05d0\u05b4\u05e6\u05b0\u05d8\u05b4\u05e0\u05b7\u05d0\u05e2\u05b4\u05d9",he:"\u05d1\u05d9\u05e0\u05d4 \u05de\u05dc\u05d0\u05db\u05d5\u05ea\u05d9\u05ea",ex:[]},
+  // MARKET/SHOPPING extra
+  {id:"ma21",cat:"market",lv:2,ar:"\u0631\u062e\u064a\u0635",ph:"\u05e8\u05b7\u05d7'\u05b4\u05d9\u05e1",he:"\u05d6\u05d5\u05dc",ex:[]},
+  {id:"ma22",cat:"market",lv:2,ar:"\u063a\u0627\u0644\u064a",ph:"\u05d2\u05b8'\u05d0\u05dc\u05b4\u05d9",he:"\u05d9\u05e7\u05e8",ex:[]},
+  {id:"ma23",cat:"market",lv:2,ar:"\u0646\u0627\u0642\u0635",ph:"\u05e0\u05b8\u05d0\u05e7\u05b5\u05e5",he:"\u05d7\u05e1\u05e8",ex:[]},
+  {id:"ma24",cat:"market",lv:3,ar:"\u062e\u0635\u0645",ph:"\u05d7'\u05b7\u05e1\u05b0\u05dd",he:"\u05d4\u05e0\u05d7\u05d4",ex:[]},
+  {id:"ma25",cat:"market",lv:3,ar:"\u0641\u0627\u062a\u0648\u0631\u0629",ph:"\u05e4\u05b8\u05d0\u05d8\u05d5\u05bc\u05e8\u05b6\u05d4",he:"\u05d7\u05e9\u05d1\u05d5\u05e0\u05d9\u05ea",ex:[]},
+  {id:"ma26",cat:"market",lv:4,ar:"\u062f\u0641\u0639",ph:"\u05d3\u05b7\u05e4\u05b7\u05e2",he:"\u05e9\u05d9\u05dc\u05dd",ex:[]},
+  {id:"ma27",cat:"market",lv:4,ar:"\u0628\u0636\u0627\u0639\u0629",ph:"\u05d1\u05b7\u05bc\u05d3\u05b8'\u05d0\u05e2\u05b6\u05d4",he:"\u05e1\u05d7\u05d5\u05e8\u05d4",ex:[]},
+  // TRANSPORT extra
+  {id:"tr21",cat:"transport",lv:2,ar:"\u0637\u064a\u0627\u0631\u0629",ph:"\u05d8\u05b7\u05d9\u05b8\u05bc\u05d0\u05e8\u05b6\u05d4",he:"\u05de\u05d8\u05d5\u05e1",ex:[]},
+  {id:"tr22",cat:"transport",lv:2,ar:"\u0642\u0637\u0627\u0631",ph:"\u05e7\u05b4\u05d8\u05b8\u05bc\u05d0\u05e8",he:"\u05e8\u05db\u05d1\u05ea",ex:[]},
+  {id:"tr23",cat:"transport",lv:3,ar:"\u062f\u0648\u0627\u0631",ph:"\u05d3\u05b7\u05d5\u05b8\u05bc\u05d0\u05e8",he:"\u05db\u05d9\u05db\u05e8 \u05ea\u05e0\u05d5\u05e2\u05d4",ex:[]},
+  {id:"tr24",cat:"transport",lv:3,ar:"\u0631\u062e\u0635\u0629",ph:"\u05e8\u05bb\u05d7'\u05b0\u05e6\u05b6\u05d4",he:"\u05e8\u05d9\u05e9\u05d9\u05d5\u05df",ex:[]},
+  {id:"tr25",cat:"transport",lv:4,ar:"\u0627\u0634\u0627\u0631\u0629 \u0636\u0648\u0626\u064a\u0629",ph:"\u05d0\u05b4\u05e9\u05b8\u05c1\u05d0\u05e8\u05b6\u05d4 \u05d3\u05b7'\u05d5\u05b9\u05d0\u05d9\u05b6\u05bc\u05d4",he:"\u05e8\u05de\u05d6\u05d5\u05e8",ex:[]},
+];
+
+const dialogues = [
+  { id:'cafe', title:'בבית קפה', emoji:'☕', desc:'הזמנת שתייה ואוכל', lines:[
+    { s:'A', ph:"אהלן, שו בדק?", he:"שלום, מה תרצה?", ar:"أهلا، شو بدك؟" },
+    { s:'B', ph:"בדי קהוה מן פדלק", he:"אני רוצה קפה בבקשה", ar:"بدي قهوة من فضلك" },
+    { s:'A', ph:"מע חליב וולא בלא?", he:"עם חלב או בלי?", ar:"مع حليب ولا بلا؟" },
+    { s:'B', ph:"בלא חליב, שוכראן", he:"בלי חלב, תודה", ar:"بلا حليب، شكرا" },
+    { s:'A', ph:"אדיש הדא?", he:"כמה זה?", ar:"أديش هاد؟" },
+    { s:'B', ph:"ע'שרה שקאלים", he:"עשרה שקלים", ar:"عشرة شواقل" },
+  ]},
+  { id:'market', title:'בשוק', emoji:'🛒', desc:'קנייה בשוק', lines:[
+    { s:'A', ph:"בכם הבטאטא?", he:"כמה תפוחי האדמה?", ar:"بكم البطاطا؟" },
+    { s:'B', ph:"תלתה שקאלים אל קילו", he:"שלושה שקלים לקילו", ar:"ثلاثة شواقل الكيلو" },
+    { s:'A', ph:"ע'טיני קילו מן פדלק", he:"תן לי קילו בבקשה", ar:"عطيني كيلو من فضلك" },
+    { s:'B', ph:"תפדל, ביסלמאק", he:"בבקשה, בריאות", ar:"تفضل، بيسلمك" },
+    { s:'A', ph:"שו ע'ינדק כמאן?", he:"מה עוד יש לך?", ar:"شو عندك كمان؟" },
+    { s:'B', ph:"ע'ינדי ח'יאר ובנדורה טאזג'ה", he:"יש לי מלפפון ועגבניות טריות", ar:"عندي خيار وبندورة طازجة" },
+  ]},
+  { id:'directions', title:'שאלת כיוון', emoji:'🗺️', desc:'מציאת דרך ברחוב', lines:[
+    { s:'A', ph:"לו סמחת, ויין אל-סוק?", he:"סליחה, איפה השוק?", ar:"لو سمحت، وين السوق؟" },
+    { s:'B', ph:"רוח ע'לא טול, ח'ד יסאר", he:"לך ישר, קח שמאל", ar:"روح على طول، خد يسار" },
+    { s:'A', ph:"בעיד?", he:"רחוק?", ar:"بعيد؟" },
+    { s:'B', ph:"לא, קריב. ח'מס דקאיק ע'לא אל-קדם", he:"לא, קרוב. חמש דקות ברגל", ar:"لا، قريب. خمس دقائق على القدم" },
+    { s:'A', ph:"שוכראן כתיר", he:"תודה רבה", ar:"شكرا كتير" },
+    { s:'B', ph:"ע'פואן, יסלמו", he:"על לא דבר", ar:"عفوان، يسلمو" },
+  ]},
+  { id:'taxi', title:'מונית', emoji:'🚕', desc:'נסיעה במונית', lines:[
+    { s:'A', ph:"הלא, פאדי?", he:"היי, פנוי?", ar:"هلا، فاضي؟" },
+    { s:'B', ph:"אה, ויין בדק תרוח?", he:"כן, לאן תרצה?", ar:"آه، وين بدك تروح؟" },
+    { s:'A', ph:"ע'ל אל-מרכז מן פדלק", he:"למרכז העיר בבקשה", ar:"على المركز من فضلك" },
+    { s:'B', ph:"תפדל אתלוג'", he:"בוא תיכנס", ar:"تفضل اتلج" },
+    { s:'A', ph:"אדיש בדה ייג'י?", he:"כמה זמן זה ייקח?", ar:"أديش بده يجي؟" },
+    { s:'B', ph:"תקריבן ע'שר דקאיק", he:"בערך עשר דקות", ar:"تقريبا عشر دقائق" },
+    { s:'A', ph:"אדיש אל-אג'רה?", he:"כמה עולה הנסיעה?", ar:"أديش الأجرة؟" },
+    { s:'B', ph:"ע'שרין שקל", he:"עשרים שקל", ar:"عشرين شقل" },
+  ]},
+  { id:'visit', title:'ביקור בבית', emoji:'🏠', desc:'ביקור אצל חברים', lines:[
+    { s:'A', ph:"אהלן וסהלן! תפדלו", he:"ברוכים הבאים! היכנסו", ar:"أهلا وسهلا! تفضلو" },
+    { s:'B', ph:"שוכראן, כיפך?", he:"תודה, איך אתה?", ar:"شكرا، كيفك؟" },
+    { s:'A', ph:"מניח, שוכראן! ואנתו?", he:"בסדר, תודה! ואתם?", ar:"منيح، شكرا! وأنتو؟" },
+    { s:'B', ph:"אלחמדו-ללה, מניחין", he:"ברוך השם, בסדר", ar:"الحمدلله، منيحين" },
+    { s:'A', ph:"שו תחבו? קהוה וולא שאי?", he:"מה תרצו? קפה או תה?", ar:"شو تحبو؟ قهوة ولا شاي؟" },
+    { s:'B', ph:"שאי מן פדלך, שוכראן", he:"תה בבקשה, תודה", ar:"شاي من فضلك، شكرا" },
+  ]},
+  { id:'hospital', title:'בבית חולים', emoji:'🏥', desc:'ביקור רופא', lines:[
+    { s:'A', ph:"מרחבא, שו בדך?", he:"שלום, מה תרצה?", ar:"مرحبا، شو بدك؟" },
+    { s:'B', ph:"אנא תעבאן, בדי דוכתור", he:"אני חולה, אני צריך רופא", ar:"أنا تعبان، بدي دكتور" },
+    { s:'A', ph:"שו ביאע'לק?", he:"מה כואב לך?", ar:"شو بيأذيك؟" },
+    { s:'B', ph:"ראסי ביאג'עני כתיר", he:"ראשי כואב לי מאוד", ar:"راسي بيوجعني كتير" },
+    { s:'A', ph:"מן אימטא הייק?", he:"מתי זה התחיל?", ar:"من إمتى هيك؟" },
+    { s:'B', ph:"מן אמס", he:"מאתמול", ar:"من أمس" },
+  ]},
+  { id:'supermarket', title:'בסופרמרקט', emoji:'🛍️', desc:'קניות בסופרמרקט', lines:[
+    { s:'A', ph:"ויין ראיח?", he:"לאן אתה הולך?", ar:"وين رايح؟" },
+    { s:'B', ph:"עלא-ס-סופרמרכט", he:"לסופרמרקט", ar:"على السوبرماركت" },
+    { s:'A', ph:"פי ח'ובז טאזג'?", he:"יש לחם טרי?", ar:"في خبز طازج؟" },
+    { s:'B', ph:"אה, הון קדאם", he:"כן, פה קדימה", ar:"آه، هون قدام" },
+    { s:'A', ph:"בכם הלבן?", he:"כמה עולה גבינה לבנה?", ar:"بكم اللبنة؟" },
+    { s:'B', ph:"ח'מסה שקאלים", he:"חמישה שקלים", ar:"خمسة شواقل" },
+  ]},
+  { id:'friends', title:'עם חברים', emoji:'👫', desc:'יציאה עם חברים', lines:[
+    { s:'A', ph:"שו עמלאן הלייל?", he:"מה אתה עושה הלילה?", ar:"شو عاملان هالليل؟" },
+    { s:'B', ph:"מא-לי שי. שו בדך תעמל?", he:"אין לי תוכניות. מה אתה רוצה לעשות?", ar:"ما الي شي. شو بدك تعمل؟" },
+    { s:'A', ph:"יאללה נרוח נאכול שי", he:"יאללה נלך לאכול משהו", ar:"يلا نروح ناكل شي" },
+    { s:'B', ph:"פכרה מניחה! ויין?", he:"רעיון טוב! איפה?", ar:"فكرة منيحة! وين؟" },
+    { s:'A', ph:"פי מטעם קריב מן הון", he:"יש מסעדה קרובה מכאן", ar:"في مطعم قريب من هون" },
+    { s:'B', ph:"יאללה, קדיש נלתקי?", he:"יאללה, מתי נפגש?", ar:"يلا، قديش نلتقي؟" },
+  ]},
+];
+
+const phrases = [
+  {ar:'من فضلك',ph:"מִן פַּדְּלַק",he:'בבקשה',tag:'נימוסים'},
+  {ar:'شكراً كتير',ph:"שֻׁקְרַן כְּתִיר",he:'תודה רבה',tag:'נימוסים'},
+  {ar:'عفواً',ph:"עַפְוַן",he:'על לא דבר / סליחה',tag:'נימוסים'},
+  {ar:'آسف',ph:"אָאסִף",he:'סליחה / מצטער',tag:'נימוסים'},
+  {ar:'ما بفهم',ph:"מָא בִּפְהַם",he:'אני לא מבין',tag:'תקשורת'},
+  {ar:'بتحكي عبري؟',ph:"בִּתְחְכִּי עִבְרִי?",he:'אתה מדבר עברית?',tag:'תקשורת'},
+  {ar:'حكيلي بالعربي',ph:"חְכִּי-לִי בִּלְעַרַבִּי",he:'דבר איתי בערבית',tag:'תקשורת'},
+  {ar:'شو يعني؟',ph:"שוּ יַעְנִי?",he:'מה זה אומר?',tag:'תקשורת'},
+  {ar:'وين الحمام؟',ph:"וֵין אַל-חַמָּאם?",he:'איפה השירותים?',tag:'ניווט'},
+  {ar:'وين المحطة؟',ph:"וֵין אַל-מַחַטָּה?",he:'איפה התחנה?',tag:'ניווט'},
+  {ar:'كيف بروح على...؟',ph:"כִיפ בּרוּח עַלַ...?",he:'איך מגיעים ל...?',tag:'ניווט'},
+  {ar:'بدي آكل شي',ph:"בִּדִּי אָכֻל שִׁי",he:'אני רוצה לאכול משהו',tag:'אוכל'},
+  {ar:'الأكل زاكي',ph:"אַל-אָכַל זָאכִּי",he:'האוכל טעים',tag:'אוכל'},
+  {ar:'بدي شي حلو',ph:"בִּדִּי שִׁי חֻלְוֶה",he:'אני רוצה משהו מתוק',tag:'אוכל'},
+  {ar:'حساب من فضلك',ph:"חְסָאב מִן פַּדְּלַק",he:'חשבון בבקשה',tag:'אוכל'},
+  {ar:'بكم هذا؟',ph:"בְּכַם הָאדָה?",he:'כמה זה עולה?',tag:'קניות'},
+  {ar:'في خصم؟',ph:"פִי חַסְם?",he:'יש הנחה?',tag:'קניות'},
+  {ar:'غالي كتير',ph:"גָ'אלִי כְּתִיר",he:'יקר מדי',tag:'קניות'},
+  {ar:'رح آخده',ph:"רַח אָאחְדֶה",he:'אני אקח את זה',tag:'קניות'},
+  {ar:'بدي دكتور',ph:"בִּדִּי דֻּכְּתוּר",he:'אני צריך רופא',tag:'חירום'},
+  {ar:'ساعدني',ph:"סָאעִדְנִי",he:'עזור לי',tag:'חירום'},
+  {ar:'في مشكلة',ph:"פִי מֻשְׁכְּלֶה",he:'יש בעיה',tag:'חירום'},
+  {ar:'اتصل على البوليس',ph:"אִתַּצַּל עַל אַל-בּוּלִיס",he:'התקשר למשטרה',tag:'חירום'},
+  {ar:'مين أنت؟',ph:"מִין אַנְתְ?",he:'מי אתה?',tag:'היכרות'},
+  {ar:'كم عمرك؟',ph:"כַּם עֻמְרַק?",he:'בן כמה אתה?',tag:'היכרות'},
+  {ar:'متزوج؟',ph:"מֻתְזַוְּוִג?",he:'נשוי?',tag:'היכרות'},
+  {ar:'شو شغلتك؟',ph:"שוּ שֻׁגְ'לְתַק?",he:'מה העבודה שלך?',tag:'היכרות'},
+  {ar:'سكنت وين؟',ph:"סַכַּנְתּ וֵין?",he:'איפה אתה גר?',tag:'היכרות'},
+  {ar:'يلا نروح',ph:"יַלָּה נְרוּח",he:'יאללה נלך',tag:'יומיומי'},
+  {ar:'خلصنا',ph:"חְלַצְנָה",he:'סיימנו / גמרנו',tag:'יומיומי'},
+  {ar:'شو في؟',ph:"שוּ פִי?",he:'מה יש? מה קורה?',tag:'יומיומי'},
+  {ar:'ما في شي',ph:"מָא פִי שִׁי",he:'אין כלום',tag:'יומיומי'},
+  {ar:'طمني',ph:"טַמְּנִי",he:'הרגיע אותי / ספר לי מה שלומך',tag:'יומיומי'},
+  {ar:'كل شي تمام',ph:"כֻּל שִׁי תַּמָּאם",he:'הכל בסדר',tag:'יומיומי'},
+  {ar:'معك موبايل؟',ph:"מַעַק מוֹבַּאיִל?",he:'יש לך טלפון?',tag:'יומיומי'},
+];
+
+// ===== STATE =====
+let currentCategory = null;
+let filteredWords = [];
+let fcDeck = [];
+let fcIndex = 0;
+let fcFlipped = false;
+let currentFCWord = null;
+let fcSelectedCats = new Set(categories.map(c => c.id));
+let quizScore = 0;
+let quizTotal = 0;
+let currentQuizWord = null;
+let currentQuizArabic = '';
+let stats = {words:0,correct:0,streak:0,total:0,lastVisit:"",mastered:[],xp:0,badges:[],dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0};
+try {
+  const saved = localStorage.getItem('arabicStats');
+  if (saved) { const l = JSON.parse(saved); stats = {...stats, ...l}; }
+} catch(e) {}
+if (!stats.xp) stats.xp = 0;
+if (!stats.badges) stats.badges = [];
+if (!stats.dailyChallenge) stats.dailyChallenge = {date:'',correct:0,completed:false};
+if (!('lessonIndex' in stats)) stats.lessonIndex = 0;
+
+// Word mastery: {wordId: {level: 0-3, correct: N, seen: N}}
+let wordProgress = {};
+try {
+  const wp = localStorage.getItem('arabicWordProgress');
+  if (wp) wordProgress = JSON.parse(wp);
+} catch(e) {}
+
+function saveStats() {
+  try { localStorage.setItem('arabicStats', JSON.stringify(stats)); } catch(e) {}
+  try { const el = document.getElementById('headerStreakNum'); if(el) el.textContent = stats.streak||0; } catch(e) {}
+}
+function saveWordProgress() { try { localStorage.setItem('arabicWordProgress', JSON.stringify(wordProgress)); } catch(e) {} }
+
+function getWordLevel(id) { return (wordProgress[id] || {}).level || 0; }
+
+function updateWordLevel(id, correct) {
+  if (!wordProgress[id]) wordProgress[id] = {level:0, correct:0, seen:0};
+  const wp = wordProgress[id];
+  wp.seen++;
+  if (!wp.interval) wp.interval = 1;
+  if (correct) {
+    wp.correct++;
+    if (wp.level < 3) wp.level++;
+    wp.interval = Math.min(wp.interval * 2, 30);
+    wp.nextReview = Date.now() + wp.interval * 86400000;
+  } else {
+    if (wp.level > 0) wp.level--;
+    wp.interval = 1;
+    wp.nextReview = Date.now() + 3600000;
+  }
+  saveWordProgress();
+  updateDueBadge();
+}
+
+function getMasteredCount() { return vocabulary.filter(w => getWordLevel(w.id) >= 3).length; }
+
+function getUserLevel() {
+  const mastered = getMasteredCount();
+  const unlocked = getUnlockedVocabulary().length;
+  const pct = unlocked ? mastered / unlocked * 100 : 0;
+  const levels = [
+    {min:0,  name:'מתחיל',  icon:'🌱', next:'יסודי'},
+    {min:15, name:'יסודי',  icon:'🌿', next:'בינוני'},
+    {min:35, name:'בינוני', icon:'🌳', next:'מתקדם'},
+    {min:55, name:'מתקדם', icon:'⭐', next:'שולט'},
+    {min:75, name:'שולט',  icon:'🏆', next:''},
+  ];
+  let lvl = levels[0];
+  for (const l of levels) { if (pct >= l.min) lvl = l; }
+  return {...lvl, pct, mastered};
+}
+
+// Smart word selection: weight unmastered words higher + 8x weight for SR due words
+function selectQuizWord() {
+  const pool = getUnlockedVocabulary();
+  const now = Date.now();
+  const weights = pool.map(w => {
+    const lv = getWordLevel(w.id);
+    const base = lv === 0 ? 5 : lv === 1 ? 4 : lv === 2 ? 2 : 1;
+    const isDue = (wordProgress[w.id]?.nextReview || 0) <= now;
+    return isDue ? base * 8 : base;
+  });
+  const total = weights.reduce((a,b) => a+b, 0);
+  let rand = Math.random() * total;
+  for (let i = 0; i < pool.length; i++) {
+    rand -= weights[i];
+    if (rand <= 0) return pool[i];
+  }
+  return pool[pool.length - 1];
+}
+
+function getMasteryStars(id) {
+  const lv = getWordLevel(id);
+  return '★'.repeat(lv) + '☆'.repeat(3 - lv);
+}
+
+// ===== TTS =====
+function speakArabic(text, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  // Native TTS plugin (works in Android WebView via Capacitor)
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeTTS) {
+      window.Capacitor.Plugins.NativeTTS.speak({ text: text, rate: 0.75 });
+      return;
+    }
+  } catch(err) {}
+  // Fallback: Web Speech API (works in browser)
+  if (!('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ar';
+    u.rate = 0.75;
+    u.pitch = 1;
+    speechSynthesis.speak(u);
+  } catch(err) {}
+}
+
+function speakCurrentFC(e) {
+  if (currentFCWord) speakArabic(currentFCWord.ar, e);
+}
+
+function speakCurrentQuiz(e) {
+  speakArabic(currentQuizArabic, e);
+}
+
+// Count visits
+try {
+  const today = new Date().toDateString();
+  if (stats.lastVisit !== today) {
+    stats.total++;
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (stats.lastVisit === yesterday) stats.streak++;
+    else stats.streak = 1;
+    stats.lastVisit = today;
+    saveStats();
+  }
+} catch(e) {}
+
+// ===== NAVIGATION =====
+function showScreen(id, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'stats') renderStats();
+  if (id === 'phrases') { renderDialogues(); renderPhrases(); }
+  if (id === 'flashcards') { renderFCCategories(); updateDueBadge(); }
+  if (id === 'quiz') startQuiz();
+  if (id === 'categories') { renderCategories(); renderWordOfDay(); }
+}
+
+// ===== CATEGORIES =====
+function renderCategories() {
+  const m = getMasteredCount();
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = categories.map(cat => {
+    const allInCat = vocabulary.filter(w => w.cat === cat.id);
+    const unlocked = allInCat.filter(w => (UNLOCK_AT[w.lv] || 0) <= m);
+    const locked = allInCat.length - unlocked.length;
+    const mastered = unlocked.filter(w => getWordLevel(w.id) >= 3).length;
+    const pct = unlocked.length ? Math.round(mastered / unlocked.length * 100) : 0;
+    const lockBadge = locked > 0 ? `<div class="cat-locked">🔒 +${locked}</div>` : '';
+    const [g1,g2] = CAT_COLORS[cat.id]||['#667eea','#764ba2'];
+    return `<div class="category-card" onclick="showWordList('${cat.id}')" style="background:linear-gradient(135deg,${g1},${g2})">
+      <span class="emoji">${cat.emoji}</span>
+      <div class="name">${cat.name}</div>
+      <div class="count">${mastered}/${unlocked.length} מילים</div>
+      ${lockBadge}
+      <div class="cat-progress"><div class="cat-progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function showWordList(catId) {
+  const cat = categories.find(c => c.id === catId);
+  currentCategory = catId;
+  const m = getMasteredCount();
+  filteredWords = vocabulary.filter(w => w.cat === catId && (UNLOCK_AT[w.lv] || 0) <= m);
+  document.getElementById('category-grid-view').style.display = 'none';
+  document.getElementById('word-list-view').style.display = 'block';
+  document.getElementById('wordListTitle').textContent = cat.emoji + ' ' + cat.name;
+  document.getElementById('wordSearch').value = '';
+  renderWordList(filteredWords, catId);
+}
+
+function showCategoryGrid() {
+  document.getElementById('word-list-view').style.display = 'none';
+  document.getElementById('category-grid-view').style.display = 'block';
+}
+
+function filterWords() {
+  const q = document.getElementById('wordSearch').value.trim().toLowerCase();
+  const m = getMasteredCount();
+  const base = currentCategory
+    ? vocabulary.filter(w => w.cat === currentCategory && (UNLOCK_AT[w.lv] || 0) <= m)
+    : getUnlockedVocabulary();
+  filteredWords = q ? base.filter(w =>
+    w.ph.toLowerCase().includes(q) || w.he.includes(q)
+  ) : base;
+  renderWordList(filteredWords, currentCategory);
+}
+
+function renderWordList(words, catId) {
+  document.getElementById('resultsSummary').textContent = words.length + ' מילים';
+  let html = words.map(w => `
+    <div class="word-card" onclick="toggleWord(this)">
+      <div class="word-card-header">
+        <div class="word-card-content">
+          <div class="word-arabic">${w.ar}</div>
+          <div class="word-phonetic">${w.ph}</div>
+          <div class="word-hebrew">${w.he}</div>
+          <div class="mastery-stars" style="color:${getWordLevel(w.id)>=3?'#ff8f00':'#bbb'}">${getMasteryStars(w.id)}</div>
+        </div>
+        <button class="speak-btn" onclick="speakArabic('${w.ar.replace(/'/g,"\\'")}',event)">🔊</button>
+      </div>
+    </div>
+  `).join('');
+  // Show locked words teaser at the bottom
+  if (catId) {
+    const m = getMasteredCount();
+    const lockedInCat = vocabulary.filter(w => w.cat === catId && (UNLOCK_AT[w.lv] || 0) > m);
+    if (lockedInCat.length > 0) {
+      const nextThreshold = Math.min(...lockedInCat.map(w => UNLOCK_AT[w.lv]));
+      html += `<div class="locked-notice">🔒 עוד ${lockedInCat.length} מילים נעולות — שלוט ב-${nextThreshold} מילים כדי לפתוח</div>`;
+    }
+  }
+  document.getElementById('wordList').innerHTML = html;
+}
+
+function toggleWord(el) {
+  el.classList.toggle('expanded');
+  stats.words = Math.max(stats.words, parseInt(document.getElementById('resultsSummary').textContent));
+  saveStats();
+}
+
+// ===== PHRASES =====
+function renderPhrases(q) {
+  const search = (q || document.getElementById('phraseSearch')?.value || '').trim().toLowerCase();
+  const list = search ? phrases.filter(p =>
+    p.ar.includes(search) || p.ph.toLowerCase().includes(search) ||
+    p.he.includes(search) || p.tag.includes(search)
+  ) : phrases;
+  document.getElementById('phraseList').innerHTML = list.map(p => `
+    <div class="phrase-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div class="phrase-arabic">${p.ar}</div>
+          <div class="phrase-phonetic">${p.ph}</div>
+          <div class="phrase-hebrew">${p.he}</div>
+          <span class="phrase-tag">${p.tag}</span>
+        </div>
+        <button class="speak-btn" onclick="speakArabic('${p.ar.replace(/'/g,"\\'")}',event)">🔊</button>
+      </div>
+    </div>
+  `).join('');
+}
+function filterPhrases() { renderPhrases(document.getElementById('phraseSearch').value); }
+
+// ===== FLASHCARDS =====
+function renderFCCategories() {
+  document.getElementById('fcCategoryRow').innerHTML = categories.map(c => `
+    <button class="fc-category-btn ${fcSelectedCats.has(c.id)?'active':''}"
+      onclick="toggleFCCat('${c.id}',this)">${c.emoji} ${c.name}</button>
+  `).join('');
+}
+
+function toggleFCCat(id, el) {
+  if (fcSelectedCats.has(id)) { fcSelectedCats.delete(id); el.classList.remove('active'); }
+  else { fcSelectedCats.add(id); el.classList.add('active'); }
+}
+
+function startFlashcards() {
+  const pool = getUnlockedVocabulary().filter(w => fcSelectedCats.has(w.cat));
+  if (!pool.length) { alert('בחר לפחות קטגוריה אחת'); return; }
+  fcDeck = [...pool].sort(() => Math.random() - 0.5);
+  fcIndex = 0;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+}
+
+function showFCCard() {
+  if (fcIndex >= fcDeck.length) {
+    document.getElementById('fcPhonetic').textContent = '🎉 סיימת!';
+    document.getElementById('fcHebrew').textContent = 'לחץ התחל לסבב חדש';
+    document.getElementById('fcSpeakBtn').style.display = 'none';
+    document.getElementById('btnWrong').style.display = 'none';
+    document.getElementById('btnRight').style.display = 'none';
+    document.getElementById('btnStart').style.display = 'block';
+    document.getElementById('btnStart').textContent = '🔄 סבב חדש';
+    document.getElementById('flashcard').classList.add('flipped');
+    currentFCWord = null;
+    return;
+  }
+  fcFlipped = false;
+  const card = fcDeck[fcIndex];
+  currentFCWord = card;
+  const cat = categories.find(c => c.id === card.cat);
+  document.getElementById('fcCategory').textContent = cat.emoji + ' ' + cat.name;
+  const emojiEl = document.getElementById('fcBigEmoji');
+  if (emojiEl) emojiEl.textContent = cat ? cat.emoji : '';
+  document.getElementById('fcPhonetic').textContent = card.ph;
+  document.getElementById('fcHebrew').textContent = card.he;
+  document.getElementById('fcSpeakBtn').style.display = 'block';
+  document.getElementById('flashcard').classList.remove('flipped');
+  const pct = Math.round((fcIndex / fcDeck.length) * 100);
+  document.getElementById('fcProgressBar').style.width = pct + '%';
+  document.getElementById('fcProgressText').textContent = fcIndex + ' / ' + fcDeck.length;
+}
+
+function flipCard() {
+  if (fcIndex >= fcDeck.length) return;
+  fcFlipped = !fcFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', fcFlipped);
+}
+
+function nextCard(knew) {
+  if (knew) { stats.correct++; stats.xp = (stats.xp||0) + 1; checkBadges(); saveStats(); }
+  fcIndex++;
+  showFCCard();
+}
+
+// ===== QUIZ =====
+let quizAnswer = null;
+
+function updateQuizLevelDisplay() {
+  const lvl = getUserLevel();
+  document.getElementById('quizLevelName').textContent = lvl.icon + ' ' + lvl.name;
+  document.getElementById('quizMasteredCount').textContent = lvl.mastered;
+}
+
+function startQuiz() {
+  quizAnswer = null;
+  currentQuizWord = null;
+  currentQuizArabic = '';
+  document.getElementById('btnNextQuiz').style.display = 'none';
+  document.getElementById('quizSpeakBtn').style.display = 'none';
+  renderDailyChallenge();
+  const ti = document.getElementById('typingInput');
+  if (ti) { ti.value = ''; ti.disabled = false; ti.style.borderColor = ''; ti.style.background = ''; }
+  const tiw = document.getElementById('typingInputWrap');
+  if (tiw) { const old = tiw.querySelectorAll('div[style*="color:#10b981"]'); old.forEach(el=>el.remove()); }
+  const speechBtn = document.getElementById('speechBtn');
+  if (speechBtn) speechBtn.style.display = 'none';
+  const sfb = document.getElementById('speechFeedback');
+  if (sfb) sfb.textContent = '';
+  updateQuizLevelDisplay();
+
+  const correct = selectQuizWord();
+  currentQuizWord = correct;
+  currentQuizArabic = correct.ar;
+
+  const wrong = getUnlockedVocabulary().filter(w => w.id !== correct.id).sort(() => Math.random()-0.5).slice(0, 3);
+  const options = [...wrong, correct].sort(() => Math.random() - 0.5);
+
+  // Only spoken-relevant types: phonetic→meaning or Hebrew→phonetic
+  const type = Math.random() < 0.6 ? 'phToHe' : 'heToPh';
+
+  let q, sub, hint, optionsFn, showSpeak;
+  if (listeningMode) {
+    q = '🔊 מה המשמעות?';
+    sub = '';
+    hint = 'הקשב לדיבור הערבי';
+    optionsFn = o => o.he; quizAnswer = correct.he; showSpeak = false;
+    setTimeout(() => speakArabic(correct.ar), 400);
+  } else if (type === 'phToHe') {
+    q = correct.ph; sub = ''; hint = 'מה המשמעות בעברית?';
+    optionsFn = o => o.he; quizAnswer = correct.he; showSpeak = true;
+  } else {
+    q = correct.he; sub = ''; hint = 'כיצד אומרים בערבית?';
+    optionsFn = o => o.ph; quizAnswer = correct.ph; showSpeak = true;
+  }
+
+  document.getElementById('quizQ').textContent = q;
+  document.getElementById('quizSub').textContent = sub;
+  document.getElementById('quizHint').textContent = hint;
+  document.getElementById('quizSpeakBtn').style.display = showSpeak ? 'inline' : 'none';
+  if (speechBtn) speechBtn.style.display = 'block';
+  document.getElementById('quizOptions').innerHTML = options.map(o => `
+    <button class="quiz-option" onclick="checkAnswer(this,'${optionsFn(o).replace(/'/g,"\\'")}','${quizAnswer.replace(/'/g,"\\'")}')">
+      ${optionsFn(o)}
+    </button>
+  `).join('');
+  showTypingOrOptions(options, optionsFn);
+  startSpeedTimer();
+}
+
+function checkAnswer(btn, chosen, correct) {
+  clearSpeedTimer();
+  document.getElementById('speechBtn').style.display = 'none';
+  document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+  quizTotal++;
+  const isCorrect = chosen === correct;
+  if (isCorrect) {
+    if (btn) btn.classList.add('correct');
+    quizScore++;
+    stats.correct++;
+    showQuizAnim(true, btn);
+  } else {
+    if (btn) btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-option').forEach(b => {
+      if (b.textContent.trim() === correct) b.classList.add('correct');
+    });
+    showQuizAnim(false, btn);
+  }
+  if (currentQuizWord) updateWordLevel(currentQuizWord.id, isCorrect);
+  if (isCorrect) { stats.xp = (stats.xp||0) + 1; updateDailyChallenge(); checkBadges(); }
+  // Bounce the score number
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.textContent = quizScore;
+  scoreEl.classList.remove('score-bounce');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-bounce');
+  document.getElementById('quizTotal').textContent = quizTotal;
+  document.getElementById('btnNextQuiz').style.display = 'block';
+  updateQuizLevelDisplay();
+  saveStats();
+}
+
+function showQuizAnim(isCorrect, btn) {
+  const rect = btn ? btn.getBoundingClientRect() : {left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0};
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // Big result icon overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'quiz-result-overlay';
+  overlay.style.animation = 'resultFade 1s ease forwards';
+  const icon = document.createElement('div');
+  icon.className = 'quiz-result-icon';
+  icon.textContent = isCorrect ? '✅' : '❌';
+  overlay.appendChild(icon);
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 1000);
+
+  if (isCorrect) {
+    // Floating +1
+    const pop = document.createElement('div');
+    pop.className = 'score-float';
+    pop.textContent = '+1';
+    pop.style.color = '#10b981';
+    pop.style.left = cx + 'px';
+    pop.style.top = cy + 'px';
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 950);
+
+    // Confetti burst
+    const colors = ['#7c3aed','#f59e0b','#10b981','#3b82f6','#f43f5e','#fbbf24'];
+    for (let i = 0; i < 22; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'confetti-dot';
+      dot.style.background = colors[i % colors.length];
+      dot.style.left = cx + 'px';
+      dot.style.top = cy + 'px';
+      dot.style.setProperty('--dx', ((Math.random() - 0.5) * 220) + 'px');
+      dot.style.setProperty('--dy', (-Math.random() * 200 - 60) + 'px');
+      dot.style.animationDelay = (i * 20) + 'ms';
+      document.body.appendChild(dot);
+      setTimeout(() => dot.remove(), 900);
+    }
+  }
+}
+
+function nextQuiz() { startQuiz(); }
+
+// ===== STATS =====
+function renderStats() {
+  const lvl = getUserLevel();
+  document.getElementById('levelIcon').textContent = lvl.icon;
+  document.getElementById('levelName').textContent = lvl.name;
+  const unlocked = getUnlockedVocabulary();
+  const nextUnlockAt = Object.values(UNLOCK_AT).filter(v => v > lvl.mastered).sort((a,b)=>a-b)[0];
+  document.getElementById('levelSub').textContent = lvl.next
+    ? `הרמה הבאה: ${lvl.next} — עוד ${unlocked.filter(w=>getWordLevel(w.id)<3).length} מילים לשלוט`
+    : '🏆 שלטת בכל החומר הנוכחי!';
+  document.getElementById('levelBar').style.width = Math.min(100, lvl.pct) + '%';
+  const lockInfo = nextUnlockAt ? ` | 🔒 ${nextUnlockAt - lvl.mastered} עד פתיחה` : '';
+  document.getElementById('levelCount').textContent = `${lvl.mastered} / ${unlocked.length} מילים שולטות${lockInfo}`;
+
+  document.getElementById('statCorrect').textContent = stats.correct;
+  document.getElementById('statStreak').textContent = stats.streak;
+  document.getElementById('statTotal').textContent = stats.total;
+  document.getElementById('statMastered').textContent = lvl.mastered;
+
+  const allBadges = [
+    {id:'beginner',name:'מתחיל',emoji:'🌱',xp:0},
+    {id:'curious', name:'סקרן',  emoji:'🔍',xp:100},
+    {id:'diligent',name:'שוקד',  emoji:'📚',xp:500},
+    {id:'steady',  name:'מתמיד', emoji:'💪',xp:1000},
+    {id:'expert',  name:'מומחה', emoji:'🏆',xp:3000},
+  ];
+  const earned = allBadges.filter(b => (stats.xp||0) >= b.xp);
+  const badgesEl = document.getElementById('badgesSection');
+  if (badgesEl) badgesEl.innerHTML = `<div class="stat-card" style="margin-bottom:0">
+    <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">🏅 תגים | XP: ${stats.xp||0}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${allBadges.map(b => {
+        const got = (stats.xp||0) >= b.xp;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${got?1:0.3}">
+          <span style="font-size:1.6rem">${b.emoji}</span>
+          <span style="font-size:0.65rem;font-weight:700;color:var(--text-muted)">${b.name}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  const dueCount = getDueWords().length;
+  const dueEl = document.getElementById('srDueCount');
+  if (dueEl) dueEl.textContent = dueCount + ' מילים ממתינות לחזרה';
+
+  const catRows = categories.map(cat => {
+    const m = getMasteredCount();
+    const words = vocabulary.filter(w => w.cat === cat.id && (UNLOCK_AT[w.lv]||0) <= m);
+    const mastered = words.filter(w => getWordLevel(w.id) >= 3).length;
+    const pct = words.length ? Math.round(mastered / words.length * 100) : 0;
+    return `<div class="cat-stat-row">
+      <div class="cat-stat-label">${cat.emoji} ${cat.name}</div>
+      <div class="cat-stat-bar"><div class="cat-stat-fill" style="width:${pct}%"></div></div>
+      <div class="cat-stat-num">${mastered}/${words.length}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('masteredList').innerHTML = `
+    <div class="stat-card" style="margin-bottom:12px;text-align:center">
+      <div style="font-size:1.5rem;font-weight:900;color:var(--accent)">${dueCount}</div>
+      <div id="srDueCount" style="font-size:0.85rem;color:var(--text-muted);margin-top:4px">${dueCount} מילים ממתינות לחזרה</div>
+    </div>
+    <div class="stat-card" style="margin-bottom:12px">
+      <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:12px">📊 התקדמות לפי קטגוריה</div>
+      ${catRows}
+    </div>
+    <div class="stat-card">
+      <div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">💡 מפתח צלילים</div>
+      <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.8">
+        ח' — ח' כבד (כמו ח' בעברית)<br>
+        ע' — כמו ר' צרפתית<br>
+        ג' — ג' רכה (כמו ז' צרפתית)<br>
+        צ' — צ' מודגשת<br>
+        כ' — כ' רגיל
+      </div>
+    </div>
+  `;
+  renderWeeklyPlan();
+}
+
+function renderWeeklyPlan() {
+  const themes = ['ברכות','מספרים','משפחה','אוכל','כיוונים','רגשות','חזרה כללית'];
+  const catIds = ['greetings','numbers','family','food','directions','feelings',null];
+  const day = new Date().getDay(); // 0=Sun
+  const todayIdx = day === 0 ? 6 : day - 1; // Mon=0..Sun=6 → idx 0..6
+  const rows = themes.map((t,i) => {
+    const isToday = i === todayIdx;
+    const isPast = i < todayIdx;
+    const catWords = catIds[i] ? vocabulary.filter(w=>w.cat===catIds[i]) : getUnlockedVocabulary();
+    const mastered = catWords.filter(w=>getWordLevel(w.id)>=3).length;
+    const goal = Math.min(5, catWords.length);
+    const done = Math.min(mastered, goal);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${isToday?'font-weight:700;color:var(--primary)':''}${isPast?'opacity:0.55':''}">
+      <span style="font-size:1rem">${isToday?'📍':isPast?'✓':'○'}</span>
+      <span style="flex:1;font-size:0.88rem">${t}${isToday?' — היום':''}${ catIds[i]&&categories.find(c=>c.id===catIds[i]) ? ' ' + (categories.find(c=>c.id===catIds[i])?.emoji||'') : ''}</span>
+      <span style="font-size:0.78rem;color:var(--text-muted)">${done}/${goal}</span>
+    </div>`;
+  }).join('<hr style="border:none;border-top:1px solid #f0f0f0;margin:0">');
+  const el = document.getElementById('weeklyPlan');
+  if (el) el.innerHTML = `<div class="stat-card"><div style="font-size:0.95rem;font-weight:700;color:var(--primary-dark);margin-bottom:8px">📅 תוכנית שבועית</div>${rows}</div>`;
+}
+
+// ===== SPACED REPETITION =====
+function getSRData(id) {
+  const d = wordProgress[id] || {};
+  return { nextReview: d.nextReview || 0, interval: d.interval || 1 };
+}
+
+function getDueCount() {
+  return vocabulary.filter(w => getSRData(w.id).nextReview <= Date.now()).length;
+}
+
+function getDueWords() {
+  return vocabulary.filter(w => getSRData(w.id).nextReview <= Date.now());
+}
+
+function updateDueBadge() {
+  const n = getDueCount();
+  const badge = document.getElementById('dueBadge');
+  if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'inline-block' : 'none'; }
+}
+
+function startSRReview() {
+  const due = getDueWords();
+  if (!due.length) {
+    alert('✓ אין מילים לחזרה כרגע! חזור מאוחר יותר.');
+    return;
+  }
+  fcDeck = [...due].sort(() => Math.random() - 0.5);
+  fcIndex = 0;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+}
+
+// ===== AUDIO MODE =====
+let amDeck = [], amIndex = 0, amPaused = false, amTimer = null;
+
+function startAudioMode() {
+  amDeck = [...getUnlockedVocabulary()].sort(() => Math.random() - 0.5);
+  amIndex = 0; amPaused = false;
+  document.getElementById('audioModeOverlay').style.display = 'flex';
+  document.getElementById('amPauseBtn').textContent = '⏸';
+  amShowWord();
+}
+
+function stopAudioMode() {
+  clearTimeout(amTimer);
+  document.getElementById('audioModeOverlay').style.display = 'none';
+}
+
+function amShowWord() {
+  if (amPaused) return;
+  if (!amDeck.length) return;
+  if (amIndex >= amDeck.length) amIndex = 0;
+  const w = amDeck[amIndex];
+  const cat = categories.find(c => c.id === w.cat);
+  document.getElementById('amPhonetic').textContent = w.ph;
+  document.getElementById('amHebrew').textContent = '';
+  document.getElementById('amHebrew').style.opacity = '0';
+  document.getElementById('amCategory').textContent = cat ? cat.emoji + ' ' + cat.name : '';
+  document.getElementById('amProgress').textContent = (amIndex + 1) + ' / ' + amDeck.length;
+  speakArabic(w.ar);
+  amTimer = setTimeout(() => {
+    document.getElementById('amHebrew').textContent = w.he;
+    document.getElementById('amHebrew').style.opacity = '1';
+    amTimer = setTimeout(() => { amIndex++; amShowWord(); }, 2600);
+  }, 2000);
+}
+
+function amTogglePause() {
+  amPaused = !amPaused;
+  document.getElementById('amPauseBtn').textContent = amPaused ? '▶' : '⏸';
+  if (!amPaused) { clearTimeout(amTimer); amShowWord(); }
+  else clearTimeout(amTimer);
+}
+
+function amNext() { clearTimeout(amTimer); amIndex++; amShowWord(); }
+function amPrev() { clearTimeout(amTimer); amIndex = Math.max(0, amIndex - 1); amShowWord(); }
+
+// ===== SPEED QUIZ =====
+let speedMode = false, speedTimer = null, speedTimeLeft = 5;
+
+function toggleSpeedMode(btn) {
+  speedMode = !speedMode;
+  btn.classList.toggle('active', speedMode);
+  document.getElementById('speedTimerWrap').style.display = speedMode ? 'block' : 'none';
+  startQuiz();
+}
+
+function startSpeedTimer() {
+  clearSpeedTimer();
+  if (!speedMode) return;
+  speedTimeLeft = 5;
+  updateTimerUI(5);
+  speedTimer = setInterval(() => {
+    speedTimeLeft = Math.max(0, speedTimeLeft - 0.1);
+    updateTimerUI(speedTimeLeft);
+    if (speedTimeLeft <= 0) {
+      clearSpeedTimer();
+      checkAnswer(null, '__timeout__', quizAnswer || '');
+    }
+  }, 100);
+}
+
+function clearSpeedTimer() {
+  if (speedTimer) { clearInterval(speedTimer); speedTimer = null; }
+}
+
+function updateTimerUI(t) {
+  const circle = document.getElementById('timerCircle');
+  const num = document.getElementById('timerNum');
+  if (!circle || !num) return;
+  const circ = 169.6;
+  circle.setAttribute('stroke-dashoffset', (circ * (1 - t / 5)).toFixed(1));
+  const color = t > 2 ? '#f59e0b' : '#ef4444';
+  circle.setAttribute('stroke', color);
+  num.textContent = Math.ceil(t);
+  num.style.color = color;
+}
+
+// ===== SPEECH QUIZ =====
+function normalizeArabic(text) {
+  return text.replace(/[ً-ٰٟ]/g, '').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').trim();
+}
+
+function levenshteinMatch(a, b) {
+  if (!a.length || !b.length) return false;
+  const m = b.length, n = a.length;
+  const dp = Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for (let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j] = a[j-1]===b[i-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+  return (Math.max(m,n)-dp[m][n])/Math.max(m,n) >= 0.72;
+}
+
+async function startSpeechQuiz() {
+  if (!window.Capacitor?.isNativePlatform()) {
+    document.getElementById('speechFeedback').textContent = '⚠️ זמין רק באפליקציה';
+    return;
+  }
+  document.getElementById('speechFeedback').textContent = '🎤 מאזין...';
+  clearSpeedTimer();
+  try {
+    const result = await Capacitor.Plugins.NativeSpeech.startListening({ language: 'ar' });
+    const rec = normalizeArabic(result.text);
+    const exp = normalizeArabic(currentQuizArabic || '');
+    const ok = rec.includes(exp) || exp.includes(rec) || levenshteinMatch(rec, exp);
+    document.getElementById('speechFeedback').textContent = ok
+      ? '✓ מצוין! "' + result.text + '"'
+      : '✗ שמעתי: "' + result.text + '"';
+    // Always trigger checkAnswer for both correct and wrong (btn=null is handled safely)
+    const opts = document.querySelectorAll('.quiz-option');
+    let matchBtn = null;
+    opts.forEach(b => { if (b.textContent.trim() === quizAnswer) matchBtn = b; });
+    if (ok) {
+      checkAnswer(matchBtn, quizAnswer, quizAnswer);
+    } else {
+      checkAnswer(null, ' ', quizAnswer); // non-matching → triggers wrong feedback
+    }
+  } catch(e) {
+    document.getElementById('speechFeedback').textContent = e.message === 'cancelled' ? '' : '⚠️ לא זוהה דיבור';
+  }
+}
+
+// ===== DIALOGUES =====
+function renderDialogues() {
+  document.getElementById('dialogueList').innerHTML = dialogues.map(d => `
+    <div class="dialogue-card" id="dlg-${d.id}">
+      <div class="dialogue-header" onclick="toggleDialogue('${d.id}')">
+        <span class="dialogue-emoji">${d.emoji}</span>
+        <div style="flex:1">
+          <div class="dialogue-title">${d.title}</div>
+          <div class="dialogue-desc">${d.desc}</div>
+        </div>
+        <span class="dialogue-chevron">▼</span>
+        <button class="speak-btn" style="font-size:0.78rem;padding:4px 8px;border-radius:8px;background:rgba(124,58,237,0.12);border:none;cursor:pointer;color:var(--primary);margin-right:4px" onclick="startKaraoke('${d.id}',event)">▶ קריאוקי</button>
+      </div>
+      <div class="dialogue-body">
+        ${d.lines.map(l => `
+          <div class="dl-line">
+            <div class="dl-side ${l.s}">${l.s}</div>
+            <div style="flex:1">
+              <div class="dl-ph">${l.ph} <button class="speak-btn" style="font-size:1rem;vertical-align:middle" onclick="speakArabic(${JSON.stringify(l.ar)},event)">🔊</button></div>
+              <div class="dl-he">${l.he}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleDialogue(id) {
+  document.getElementById('dlg-' + id).classList.toggle('open');
+}
+
+// ===== DIALOGUE KARAOKE =====
+let karaokeTimer = null;
+
+function startKaraoke(dialogueId, e) {
+  if (e) e.stopPropagation();
+  const dlg = dialogues.find(d => d.id === dialogueId);
+  if (!dlg) return;
+  // Open the dialogue
+  const card = document.getElementById('dlg-' + dialogueId);
+  if (card && !card.classList.contains('open')) card.classList.add('open');
+  clearTimeout(karaokeTimer);
+  playKaraokeLine(dlg, 0, card);
+}
+
+function playKaraokeLine(dlg, idx, card) {
+  const lines = card.querySelectorAll('.dl-line');
+  lines.forEach((l,i) => l.style.background = i === idx ? 'rgba(124,58,237,0.08)' : '');
+  if (idx >= dlg.lines.length) {
+    lines.forEach(l => l.style.background = '');
+    return;
+  }
+  const line = dlg.lines[idx];
+  speakArabic(line.ar);
+  const duration = Math.max(2000, line.ar.length * 120);
+  karaokeTimer = setTimeout(() => playKaraokeLine(dlg, idx + 1, card), duration);
+}
+
+// ===== SENTENCE BUILDER =====
+let sbTarget = '', sbBuilt = [];
+
+function startSentenceBuilder() {
+  // Pick a random dialogue line
+  const allLines = dialogues.flatMap(d => d.lines).filter(l => l.ph.split(/\s+/).length >= 3);
+  const line = allLines[Math.floor(Math.random() * allLines.length)];
+  sbTarget = line.ph;
+  sbBuilt = [];
+  const words = line.ph.split(/\s+/).filter(w=>w).sort(() => Math.random() - 0.5);
+  const area = document.getElementById('sentenceBuilderArea');
+  area.style.display = 'block';
+  renderSentenceBuilder(words, line.he, line.ar);
+}
+
+function renderSentenceBuilder(words, he, ar) {
+  const area = document.getElementById('sentenceBuilderArea');
+  area.innerHTML = `
+    <div style="background:white;border-radius:14px;padding:14px;box-shadow:var(--shadow-card)">
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:6px">בנה את המשפט:</div>
+      <div style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:10px;min-height:28px;border-bottom:2px dashed var(--border);padding-bottom:8px" id="sbBuilt" onclick="sbRemoveLast()">
+        ${sbBuilt.length ? sbBuilt.join(' ') : '<span style="opacity:0.4">לחץ על המילים למטה...</span>'}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="sbWords">
+        ${words.map((w,i) => `<button onclick="sbAddWord('${w.replace(/'/g,"\\'")}',${i},this)" style="padding:6px 12px;background:var(--primary-light);color:var(--primary-dark);border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer">${w}</button>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="sbCheck('${ar.replace(/'/g,"\\'")}','${he.replace(/'/g,"\\'")}','${sbTarget.replace(/'/g,"\\'")}',this.closest('div').parentElement)" style="flex:2;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer">✓ בדוק</button>
+        <button onclick="startSentenceBuilder()" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">דלג ←</button>
+      </div>
+    </div>`;
+}
+
+function sbAddWord(word, idx, btn) {
+  sbBuilt.push(word);
+  btn.disabled = true;
+  btn.style.opacity = '0.3';
+  const builtEl = document.getElementById('sbBuilt');
+  if (builtEl) builtEl.textContent = sbBuilt.join(' ');
+}
+
+function sbRemoveLast() {
+  if (!sbBuilt.length) return;
+  sbBuilt.pop();
+  const builtEl = document.getElementById('sbBuilt');
+  if (builtEl) builtEl.textContent = sbBuilt.length ? sbBuilt.join(' ') : '';
+  document.querySelectorAll('#sbWords button').forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+}
+
+function sbCheck(ar, he, target, container) {
+  const built = sbBuilt.join(' ');
+  const ok = built.trim() === target.trim();
+  const res = document.createElement('div');
+  res.style.cssText = `margin-top:8px;padding:10px;border-radius:10px;font-weight:700;text-align:center;background:${ok?'#d1fae5':'#fee2e2'};color:${ok?'#065f46':'#991b1b'}`;
+  res.textContent = ok ? '✓ מצוין! ' + he : '✗ הנכון: ' + target;
+  if (ok) { speakArabic(ar); stats.xp = (stats.xp||0)+1; checkBadges(); saveStats(); }
+  container.appendChild(res);
+  setTimeout(() => { if (ok) startSentenceBuilder(); }, ok ? 1800 : 3000);
+}
+
+function startSRFlashcards() {
+  const due = getDueWords();
+  if (!due.length) {
+    showToast('✓ אין מילים לחזרה כרגע! חזור מאוחר יותר.');
+    return;
+  }
+  fcDeck = [...due].sort(() => Math.random() - 0.5);
+  fcIndex = 0;
+  showScreen('flashcards', document.querySelector('.nav-item[onclick*="flashcards"]'));
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toastMsg');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastMsg';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1e1b4b;color:white;padding:10px 20px;border-radius:12px;font-size:0.88rem;z-index:9999;transition:opacity 0.3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+// ===== NOTIFICATIONS =====
+function isNative() {
+  return !!(window.Capacitor?.isNativePlatform?.());
+}
+
+async function scheduleWordNotifications() {
+  if (!isNative()) return;
+  const { LocalNotifications } = Capacitor.Plugins;
+  try {
+    const perm = await LocalNotifications.requestPermissions();
+    if (perm.display !== 'granted') {
+      localStorage.setItem('notifEnabled', 'false');
+      const tog = document.getElementById('notifToggle');
+      if (tog) tog.checked = false;
+      setNotifStatus('⚠️ אין הרשאה להתראות');
+      return;
+    }
+    // Cancel old
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications?.length) {
+      await LocalNotifications.cancel({ notifications: pending.notifications });
+    }
+    // Build 7 daily notifications, each with a different word
+    const timeParts = (localStorage.getItem('notifTime') || '09:00').split(':');
+    const hour = parseInt(timeParts[0]);
+    const min  = parseInt(timeParts[1]);
+    const notifications = [];
+    const baseDay = Math.floor(Date.now() / 86400000);
+    let id = 2000;
+    for (let i = 0; i < 7; i++) {
+      const at = new Date();
+      at.setHours(hour, min, 0, 0);
+      at.setDate(at.getDate() + i);
+      if (at <= new Date()) at.setDate(at.getDate() + 1);
+      const word = vocabulary[(baseDay + i) % vocabulary.length];
+      notifications.push({
+        id: id++,
+        title: '📖 מילה יומית בערבית',
+        body: `${word.he} ← "${word.ph}"`,
+        schedule: { at },
+        smallIcon: 'ic_launcher',
+        iconColor: '#f59e0b',
+        extra: { wordId: word.id }
+      });
+    }
+    await LocalNotifications.schedule({ notifications });
+    setNotifStatus(`✓ התראה נקבעה ל-${String(hour).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
+  } catch (e) {
+    setNotifStatus('⚠️ שגיאה: ' + e.message);
+  }
+}
+
+async function cancelNotifications() {
+  if (!isNative()) return;
+  try {
+    const { LocalNotifications } = Capacitor.Plugins;
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications?.length) {
+      await LocalNotifications.cancel({ notifications: pending.notifications });
+    }
+  } catch(e) {}
+}
+
+function setNotifStatus(msg) {
+  const el = document.getElementById('notifStatus');
+  if (el) el.textContent = msg;
+}
+
+function onNotifToggle(el) {
+  const enabled = el.checked;
+  localStorage.setItem('notifEnabled', enabled ? 'true' : 'false');
+  const row = document.getElementById('notifTimeRow');
+  if (row) row.style.display = enabled ? 'block' : 'none';
+  if (enabled) {
+    scheduleWordNotifications();
+  } else {
+    cancelNotifications();
+    setNotifStatus('התראות כבויות');
+  }
+}
+
+function saveNotifSettings() {
+  const timeEl = document.getElementById('notifTime');
+  if (timeEl) localStorage.setItem('notifTime', timeEl.value);
+  scheduleWordNotifications();
+}
+
+function openWordFromNotif(wordId) {
+  const word = vocabulary.find(w => w.id === wordId);
+  if (!word) return;
+  // Find flashcards nav button
+  let fcNavEl = null;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.getAttribute('onclick')?.includes('flashcards')) fcNavEl = el;
+  });
+  showScreen('flashcards', fcNavEl);
+  // Set up a single-word mini-session
+  fcDeck = [word];
+  fcIndex = 0;
+  fcFlipped = false;
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'flex';
+  document.getElementById('btnRight').style.display = 'flex';
+  showFCCard();
+  // Auto-speak the word
+  setTimeout(() => { if (word.ar) speakArabic(word.ar); }, 700);
+}
+
+function initNotifUI() {
+  const enabled = localStorage.getItem('notifEnabled') === 'true';
+  const tog = document.getElementById('notifToggle');
+  const row = document.getElementById('notifTimeRow');
+  const timeEl = document.getElementById('notifTime');
+  if (tog) tog.checked = enabled;
+  if (row) row.style.display = enabled ? 'block' : 'none';
+  const savedTime = localStorage.getItem('notifTime');
+  if (timeEl && savedTime) timeEl.value = savedTime;
+  if (enabled) scheduleWordNotifications();
+  // Listen for notification taps
+  if (isNative() && window.Capacitor?.Plugins?.LocalNotifications) {
+    Capacitor.Plugins.LocalNotifications.addListener(
+      'localNotificationActionPerformed',
+      (action) => {
+        const wordId = action.notification?.extra?.wordId;
+        if (wordId) openWordFromNotif(wordId);
+      }
+    );
+  }
+}
+
+// ===== WORD OF DAY =====
+function renderWordOfDay() {
+  const idx = Math.floor(Date.now() / 86400000) % vocabulary.length;
+  const w = vocabulary[idx];
+  if (!w) return;
+  window._wotdAr = w.ar;
+  const ph = document.getElementById('wotdPh');
+  const he = document.getElementById('wotdHe');
+  if (ph) ph.textContent = w.ph;
+  if (he) he.textContent = w.he;
+}
+
+// ===== DAILY CHALLENGE =====
+function updateDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  const dc = stats.dailyChallenge;
+  if (dc.date !== today) { dc.date = today; dc.correct = 0; dc.completed = false; }
+  if (!dc.completed) {
+    dc.correct = Math.min(10, dc.correct + 1);
+    if (dc.correct >= 10) {
+      dc.completed = true;
+      stats.xp = (stats.xp||0) + 50;
+      showToast('🎉 אתגר יומי הושלם! +50 XP');
+    }
+  }
+  saveStats();
+  renderDailyChallenge();
+}
+
+function renderDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  const dc = stats.dailyChallenge;
+  if (!dc || dc.date !== today) { dc.correct = 0; dc.completed = false; }
+  const n = dc.correct || 0;
+  const el = document.getElementById('dcProgress');
+  const bar = document.getElementById('dcBarFill');
+  if (el) el.textContent = dc.completed ? '✅ הושלם! +50 XP' : n + ' / 10';
+  if (bar) bar.style.width = Math.min(100, n * 10) + '%';
+}
+
+// ===== XP & BADGES =====
+const BADGE_DEFS = [
+  {id:'beginner',name:'מתחיל',emoji:'🌱',xp:0},
+  {id:'curious', name:'סקרן',  emoji:'🔍',xp:100},
+  {id:'diligent',name:'שוקד',  emoji:'📚',xp:500},
+  {id:'steady',  name:'מתמיד', emoji:'💪',xp:1000},
+  {id:'expert',  name:'מומחה', emoji:'🏆',xp:3000},
+];
+
+function checkBadges() {
+  const xp = stats.xp || 0;
+  if (!stats.badges) stats.badges = [];
+  BADGE_DEFS.forEach(b => {
+    if (xp >= b.xp && !stats.badges.includes(b.id)) {
+      stats.badges.push(b.id);
+      showToast(b.emoji + ' תג חדש: ' + b.name + '!');
+    }
+  });
+  saveStats();
+}
+
+// ===== TYPING MODE =====
+let typingMode = false;
+let listeningMode = false;
+
+function toggleTypingMode(btn) {
+  typingMode = !typingMode;
+  btn.classList.toggle('active', typingMode);
+  btn.style.background = typingMode ? 'var(--primary-light)' : 'white';
+  btn.style.borderColor = typingMode ? 'var(--primary)' : 'var(--border)';
+  btn.style.color = typingMode ? 'var(--primary-dark)' : 'var(--text-muted)';
+  startQuiz();
+}
+
+function toggleListeningMode(btn) {
+  listeningMode = !listeningMode;
+  btn.classList.toggle('active', listeningMode);
+  btn.style.background = listeningMode ? '#ede9fe' : 'white';
+  btn.style.borderColor = listeningMode ? 'var(--primary)' : 'var(--border)';
+  btn.style.color = listeningMode ? 'var(--primary-dark)' : 'var(--text-muted)';
+  startQuiz();
+}
+
+function showTypingOrOptions(options, optionsFn) {
+  if (!typingMode) {
+    document.getElementById('quizOptions').style.display = '';
+    document.getElementById('typingInputWrap').style.display = 'none';
+    return;
+  }
+  document.getElementById('quizOptions').style.display = 'none';
+  const wrap = document.getElementById('typingInputWrap');
+  wrap.style.display = 'block';
+  const inp = document.getElementById('typingInput');
+  if (inp) { inp.value = ''; inp.disabled = false; setTimeout(() => inp.focus(), 150); }
+}
+
+function checkTypedAnswer() {
+  const inp = document.getElementById('typingInput');
+  if (!inp || inp.disabled) return;
+  const typed = inp.value.trim().toLowerCase();
+  const correct = (quizAnswer || '').trim().toLowerCase();
+  if (!typed) return;
+  inp.disabled = true;
+  clearSpeedTimer();
+  document.getElementById('speechBtn').style.display = 'none';
+  quizTotal++;
+  const isCorrect = typed === correct || typed.includes(correct) || correct.includes(typed);
+  inp.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
+  inp.style.background = isCorrect ? '#f0fdf4' : '#fef2f2';
+  if (isCorrect) {
+    quizScore++;
+    stats.correct++;
+    showQuizAnim(true, null);
+    stats.xp = (stats.xp||0) + 1;
+    updateDailyChallenge();
+    checkBadges();
+  } else {
+    showQuizAnim(false, null);
+    const correctEl = document.createElement('div');
+    correctEl.style.cssText = 'margin-top:6px;font-size:0.9rem;color:#10b981;font-weight:700;text-align:center';
+    correctEl.textContent = '✓ ' + quizAnswer;
+    inp.parentNode.insertBefore(correctEl, inp.nextSibling.nextSibling || null);
+  }
+  if (currentQuizWord) updateWordLevel(currentQuizWord.id, isCorrect);
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.textContent = quizScore;
+  scoreEl.classList.remove('score-bounce');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-bounce');
+  document.getElementById('quizTotal').textContent = quizTotal;
+  document.getElementById('btnNextQuiz').style.display = 'block';
+  updateQuizLevelDisplay();
+  saveStats();
+}
+
+// ===== BACKUP / RESTORE =====
+function exportProgress() {
+  const data = {version:1, exported:new Date().toISOString(), stats:stats, wordProgress:wordProgress};
+  const json = JSON.stringify(data, null, 2);
+  if (navigator.share) {
+    navigator.share({title:'Arabic Progress Backup', text:json}).catch(() => showExportModal(json));
+    return;
+  }
+  showExportModal(json);
+}
+
+function showExportModal(json) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:16px;padding:20px;width:100%;display:flex;flex-direction:column;gap:10px;max-height:85vh';
+  box.innerHTML = `
+    <div style="font-weight:800;font-size:1rem">📤 ייצוא גיבוי</div>
+    <div style="font-size:0.78rem;color:#6b7280">העתק את הטקסט ושמור אותו כגיבוי</div>
+    <textarea readonly style="height:180px;border:1px solid #e5e7eb;border-radius:8px;padding:8px;font-size:0.7rem;font-family:monospace;resize:none;direction:ltr">${json}</textarea>
+    <button id="_copyBtn" style="padding:11px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.95rem">📋 העתק ללוח</button>
+    <button id="_closeBtn" style="padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">סגור</button>
+  `;
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  const ta = box.querySelector('textarea');
+  box.querySelector('#_copyBtn').onclick = () => {
+    ta.select(); try { document.execCommand('copy'); } catch(e) {}
+    navigator.clipboard?.writeText(json).catch(()=>{});
+    showToast('✓ הועתק ללוח!');
+  };
+  box.querySelector('#_closeBtn').onclick = () => wrap.remove();
+}
+
+function importProgress(input) {
+  // Show paste modal (file input not reliable in WebView)
+  showImportModal();
+  if (input) input.value = '';
+}
+
+function showImportModal() {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:16px;padding:20px;width:100%;display:flex;flex-direction:column;gap:10px;max-height:85vh';
+  box.innerHTML = `
+    <div style="font-weight:800;font-size:1rem">📥 ייבוא גיבוי</div>
+    <div style="font-size:0.78rem;color:#6b7280">הדבק כאן את טקסט הגיבוי</div>
+    <textarea id="_pasteArea" style="height:180px;border:2px solid #e5e7eb;border-radius:8px;padding:8px;font-size:0.7rem;font-family:monospace;resize:none;direction:ltr" placeholder="הדבק JSON כאן..."></textarea>
+    <button id="_importBtn" style="padding:11px;background:var(--primary);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:0.95rem">✓ שחזר התקדמות</button>
+    <button id="_closeBtn2" style="padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">סגור</button>
+  `;
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  box.querySelector('#_closeBtn2').onclick = () => wrap.remove();
+  box.querySelector('#_importBtn').onclick = () => {
+    try {
+      const text = box.querySelector('#_pasteArea').value.trim();
+      if (!text) { showToast('⚠️ אנא הדבק טקסט'); return; }
+      const data = JSON.parse(text);
+      if (!data.stats || !data.wordProgress) { showToast('⚠️ קובץ לא תקין'); return; }
+      const defaults = {words:0,correct:0,streak:0,total:0,lastVisit:'',mastered:[],xp:0,badges:[],dailyChallenge:{date:'',correct:0,completed:false},lessonIndex:0};
+      stats = {...defaults, ...data.stats};
+      wordProgress = data.wordProgress;
+      localStorage.setItem('arabicStats', JSON.stringify(stats));
+      localStorage.setItem('arabicWordProgress', JSON.stringify(wordProgress));
+      wrap.remove();
+      renderStats();
+      showToast('📥 ההתקדמות שוחזרה!');
+    } catch(e) { showToast('⚠️ שגיאה: ' + e.message); }
+  };
+}
+
+// ===== DAILY LESSON =====
+let lessonDeck = [], lessonIdx = 0;
+
+function startDailyLesson() {
+  const allUnlocked = getUnlockedVocabulary();
+  const unseen = allUnlocked.filter(w => getWordLevel(w.id) === 0);
+  if (!unseen.length) { showToast('🏆 למדת את כל המילות הנוכחיות!'); return; }
+  lessonDeck = unseen.slice(0, 5);
+  lessonIdx = 0;
+  const overlay = document.getElementById('lessonOverlay');
+  overlay.style.display = 'flex';
+  lessonShowWord();
+}
+
+function lessonShowWord() {
+  if (lessonIdx >= lessonDeck.length) {
+    lessonDeck.forEach(w => {
+      if (!wordProgress[w.id]) wordProgress[w.id] = {level:0, correct:0, seen:0};
+      wordProgress[w.id].level = Math.max(1, wordProgress[w.id].level || 0);
+      wordProgress[w.id].seen = (wordProgress[w.id].seen||0) + 1;
+    });
+    saveWordProgress();
+    stats.lessonIndex = (stats.lessonIndex||0) + 1;
+    stats.xp = (stats.xp||0) + 30;
+    saveStats();
+    checkBadges();
+    stopLesson();
+    showToast('🎉 שיעור הושלם! +30 XP');
+    return;
+  }
+  const w = lessonDeck[lessonIdx];
+  window._lessonAr = w.ar;
+  const total = lessonDeck.length;
+  document.getElementById('lessonProgress').textContent = (lessonIdx + 1) + ' / ' + total;
+  document.getElementById('lessonPh').textContent = w.ph;
+  document.getElementById('lessonHe').textContent = w.he;
+  const btn = document.getElementById('lessonNextBtn');
+  btn.textContent = lessonIdx < total - 1 ? 'הבא ←' : '✓ סיים שיעור';
+  setTimeout(() => speakArabic(w.ar), 400);
+}
+
+function lessonNext() {
+  lessonIdx++;
+  lessonShowWord();
+}
+
+function stopLesson() {
+  document.getElementById('lessonOverlay').style.display = 'none';
+}
+
+
+// ===== DIALOGUE KARAOKE =====
+let _karaokeTimer = null;
+
+function startKaraoke(dialogueId, e) {
+  if (e) e.stopPropagation();
+  const dlg = dialogues.find(d => d.id === dialogueId);
+  if (!dlg) return;
+  const card = document.getElementById('dlg-' + dialogueId);
+  if (card && !card.classList.contains('open')) card.classList.add('open');
+  clearTimeout(_karaokeTimer);
+  _playKaraokeLine(dlg, 0, card);
+}
+
+function _playKaraokeLine(dlg, idx, card) {
+  const lines = card ? card.querySelectorAll('.dl-line') : [];
+  lines.forEach((l, i) => l.style.background = i === idx ? 'rgba(124,58,237,0.1)' : '');
+  if (idx >= dlg.lines.length) {
+    lines.forEach(l => l.style.background = '');
+    return;
+  }
+  const line = dlg.lines[idx];
+  speakArabic(line.ar);
+  const duration = Math.max(2000, line.ar.length * 110);
+  _karaokeTimer = setTimeout(() => _playKaraokeLine(dlg, idx + 1, card), duration);
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  try { renderCategories(); } catch(e) { console.error('renderCategories:', e); }
+  try { renderWordOfDay(); } catch(e) {}
+  try { renderDialogues(); } catch(e) { console.error('renderDialogues:', e); }
+  try { renderPhrases(); } catch(e) { console.error('renderPhrases:', e); }
+  try { renderDailyChallenge(); } catch(e) {}
+  try { checkBadges(); } catch(e) {}
+  try {
+    const el = document.getElementById('headerStreakNum');
+    if (el) el.textContent = stats.streak || 0;
+  } catch(e) {}
+  try { initNotifUI(); } catch(e) { console.error('initNotifUI:', e); }
+});
+// fallback if DOMContentLoaded already fired
+if (document.readyState !== 'loading') {
+  try { renderCategories(); } catch(e) {}
+  try { renderWordOfDay(); } catch(e) {}
+  try { renderDialogues(); } catch(e) {}
+  try { renderPhrases(); } catch(e) {}
+  try { renderDailyChallenge(); } catch(e) {}
+  try { checkBadges(); } catch(e) {}
+  try { initNotifUI(); } catch(e) {}
+}
+</script>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="showScreen('categories',this)">
+    <span class="nav-icon">📚</span>
+    <span class="nav-label">מילים</span>
+  </div>
+  <div class="nav-item" onclick="showScreen('phrases',this)">
+    <span class="nav-icon">🗣️</span>
+    <span class="nav-label">שיחות</span>
+  </div>
+  <div class="nav-item" onclick="showScreen('flashcards',this)">
+    <span class="nav-icon">🃏</span>
+    <span class="nav-label">כרטיסיות</span>
+  </div>
+  <div class="nav-item" onclick="showScreen('quiz',this)">
+    <span class="nav-icon">⚡</span>
+    <span class="nav-label">חידון</span>
+  </div>
+  <div class="nav-item" onclick="showScreen('stats',this)">
+    <span class="nav-icon">🏆</span>
+    <span class="nav-label">רמה</span>
+  </div>
+</nav>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "appId": "com.yiddish.learning",
+  "appName": "יידיש",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

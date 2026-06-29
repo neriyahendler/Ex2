@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Right yud (י) head — diamond -->
+    <path
+        android:fillColor="#7C3AED"
+        android:pathData="M66,26 L73,33 L66,40 L59,33 Z"/>
+    <!-- Right yud body -->
+    <path
+        android:fillColor="#7C3AED"
+        android:pathData="M61.5,41 Q57,53 59.5,65 L64.5,65 Q62.5,53 66.5,41 Z"/>
+
+    <!-- Left yud (י) head — diamond, lighter purple -->
+    <path
+        android:fillColor="#A855F7"
+        android:pathData="M44,26 L51,33 L44,40 L37,33 Z"/>
+    <!-- Left yud body -->
+    <path
+        android:fillColor="#A855F7"
+        android:pathData="M39.5,41 Q35,53 37.5,65 L42.5,65 Q40.5,53 44.5,41 Z"/>
+
+    <!-- Gold accent bar -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M32,70 Q30,70 30,72 L30,76 Q30,78 32,78 L76,78 Q78,78 78,76 L78,72 Q78,70 76,70 Z"/>
+
+</vector>
