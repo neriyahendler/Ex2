@@ -882,15 +882,17 @@ function renderCategoryGrid() {
 
   grid.innerHTML = categories.map(cat => {
     const words = vocabulary.filter(w => w.cat === cat.id);
+    const unlocked = words.filter(w => (w.lv||1) <= unlockedLv);
     const catMastered = words.filter(w => mastered.includes(w.id)).length;
-    const pct = words.length ? Math.round(catMastered/words.length*100) : 0;
-    const minLv = Math.min(...words.map(w => w.lv||1));
-    const locked = minLv > unlockedLv;
-    const xpNeeded = locked ? LV_UNLOCK[minLv] : 0;
-    return `<div class="cat-card ${locked?'locked':''}" onclick="${locked?'showToast(\'🔒 צריך '+xpNeeded+' XP לפתיחה!\')':'openCategory(\''+cat.id+'\')'}">
+    const pct = unlocked.length ? Math.round(catMastered/unlocked.length*100) : 0;
+    const lockedCount = words.length - unlocked.length;
+    const countLabel = lockedCount > 0
+      ? `${catMastered}/${unlocked.length} <span style="color:#9ca3af;font-size:10px">(+${lockedCount}🔒)</span>`
+      : `${catMastered}/${unlocked.length} מילים`;
+    return `<div class="cat-card" onclick="openCategory('${cat.id}')">
       <div class="cat-emoji">${cat.emoji}</div>
       <div class="cat-name">${cat.name}</div>
-      <div class="cat-count">${locked?'🔒 '+xpNeeded+' XP':catMastered+'/'+words.length+' מילים'}</div>
+      <div class="cat-count">${countLabel}</div>
       <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
@@ -918,7 +920,20 @@ function openCategory(catId) {
 
 function renderWordList() {
   const mastered = getMastered();
+  const unlockedLv = getUnlockLevel();
   document.getElementById('wordList').innerHTML = currentWords.map(w => {
+    const wordLv = w.lv || 1;
+    const isLocked = wordLv > unlockedLv;
+    if (isLocked) {
+      return `<div class="word-item" style="opacity:0.45;cursor:default" onclick="showToast('🔒 צריך ${LV_UNLOCK[wordLv]} XP לפתיחה!')">
+        <div class="word-mastered" style="background:var(--border)"></div>
+        <div style="flex:1">
+          <div class="word-yi">${w.yi}</div>
+          <div class="word-ph" style="color:#f59e0b;font-size:11px">🔒 ${LV_UNLOCK[wordLv]} XP נדרש</div>
+        </div>
+        <div class="word-he" style="color:var(--muted)">${w.he}</div>
+      </div>`;
+    }
     const isMastered = mastered.includes(w.id);
     return `<div class="word-item" onclick="speakYiddish('${w.ph.replace(/'/g,"\\'")}')">
       <div class="word-mastered" style="background:${isMastered?'var(--success)':'var(--border)'}"></div>
@@ -955,14 +970,21 @@ function speakWeb(text, lang) {
 }
 
 function speakCurrent() {
-  if (currentWords[fcIndex]) speakYiddish(currentWords[fcIndex].ph);
+  if (fcWords[fcIndex]) speakYiddish(fcWords[fcIndex].ph);
 }
 
 // ── FLASHCARDS ────────────────────────────────────────────────────────────────
+let fcWords = [];
 let fcIndex = 0;
 let fcFlipped = false;
 
 function startFlashcards() {
+  const unlockedLv = getUnlockLevel();
+  fcWords = currentWords.filter(w => (w.lv||1) <= unlockedLv);
+  if (fcWords.length === 0) {
+    showToast('אין מילים פתוחות בקטגוריה זו');
+    return;
+  }
   fcIndex = 0; fcFlipped = false;
   document.getElementById('wordListView').classList.add('hidden');
   document.getElementById('flashcardView').classList.remove('hidden');
@@ -975,18 +997,18 @@ function exitFlashcards() {
 }
 
 function renderFlashcard() {
-  const w = currentWords[fcIndex];
+  const w = fcWords[fcIndex];
   if (!w) return;
   document.getElementById('fcYi').textContent = w.yi;
   document.getElementById('fcPh').textContent = w.ph;
   document.getElementById('fcHe').textContent = w.he;
   document.getElementById('fcHe').style.display = fcFlipped ? 'block' : 'none';
   document.getElementById('fcHint').style.display = fcFlipped ? 'none' : 'block';
-  document.getElementById('fcCounter').textContent = (fcIndex+1)+'/'+currentWords.length;
+  document.getElementById('fcCounter').textContent = (fcIndex+1)+'/'+fcWords.length;
 }
 
-function flipCard() { fcFlipped = !fcFlipped; renderFlashcard(); speakYiddish(currentWords[fcIndex].ph); }
-function nextCard() { if (fcIndex < currentWords.length-1) { fcIndex++; fcFlipped = false; renderFlashcard(); } }
+function flipCard() { fcFlipped = !fcFlipped; renderFlashcard(); speakYiddish(fcWords[fcIndex].ph); }
+function nextCard() { if (fcIndex < fcWords.length-1) { fcIndex++; fcFlipped = false; renderFlashcard(); } }
 function prevCard() { if (fcIndex > 0) { fcIndex--; fcFlipped = false; renderFlashcard(); } }
 
 // ── QUIZ ──────────────────────────────────────────────────────────────────────
@@ -1000,7 +1022,13 @@ let quizAllWords = false;
 
 function startQuiz(all) {
   quizAllWords = all;
-  quizWords = (all ? [...vocabulary] : [...currentWords]).sort(() => Math.random()-0.5).slice(0,15);
+  const unlockedLv = getUnlockLevel();
+  const pool = (all ? [...vocabulary] : [...currentWords]).filter(w => (w.lv||1) <= unlockedLv);
+  if (pool.length < 2) {
+    showToast('אין מספיק מילים פתוחות — למד עוד!');
+    return;
+  }
+  quizWords = pool.sort(() => Math.random()-0.5).slice(0,15);
   quizIndex = 0; quizCorrect = 0;
   document.getElementById('wordListView').classList.add('hidden');
   document.getElementById('flashcardView').classList.add('hidden');
@@ -1215,7 +1243,8 @@ let lessonPos = 0;
 
 function startDailyLesson() {
   const mastered = getMastered();
-  const unseen = vocabulary.filter(w => !mastered.includes(w.id));
+  const unlockedLv = getUnlockLevel();
+  const unseen = vocabulary.filter(w => !mastered.includes(w.id) && (w.lv||1) <= unlockedLv);
   if (unseen.length === 0) {
     showToast('למדת את כל המילים! 🎉');
     return;
